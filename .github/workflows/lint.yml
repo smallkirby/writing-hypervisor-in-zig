@@ -1,0 +1,22 @@
+name: test
+on: [ push, pull_request ]
+env:
+  CI: true
+jobs:
+  lint:
+    name: "Test on Node.js ${{ matrix.node_version }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [ 20 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js ${{ matrix.node_version }}
+        uses: actions/setup-node@v4
+        with:
+          node_version: ${{ matrix.node_version }}
+      - name: Install
+        run: npm install
+      - name: Lint
+        run: npm run lint
