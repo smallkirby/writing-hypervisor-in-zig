@@ -1,0 +1,15 @@
+[book]
+title = "Writing Hypervisor in Zig"
+authors = ["smallkirby"]
+language = "ja"
+multilingual = false
+src = "src"
+
+[output.html]
+git-repository-url = "https://github.com/smallkirby/writing-hypervisor-in-zig"
+additional-css = ["theme/pagetoc.css"]
+additional-js = ["theme/pagetoc.js"]
+
+[preprocessor.toc]
+command = "mdbook-toc"
+renderer = ["html"]
