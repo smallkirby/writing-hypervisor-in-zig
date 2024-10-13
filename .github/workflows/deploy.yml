@@ -14,8 +14,14 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+
       - name: Install dependencies
-        run: cargo install mdbook mdbook-toc
+        run: |
+          cargo install \
+            mdbook@0.4.40 \
+            mdbook-toc@0.14.2
 
       - name: Build book
         run: mdbook build
