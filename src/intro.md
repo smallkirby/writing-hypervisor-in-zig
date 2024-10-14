@@ -1,3 +1,3 @@
-# イントロ
+# Writing Hypervisor in Zig
 
 TODO
