@@ -1,14 +1,36 @@
 [book]
 title = "Writing Hypervisor in Zig"
 authors = ["smallkirby"]
+description = "Write a baremetal hypervisor in Zig that runs on Intel x64 CPUs."
 language = "ja"
+text-direction = "ltr"
 multilingual = false
 src = "src"
+
+[build]
+create-missing = false
+build-dir = "book"
+use-default-preprocessors = true
 
 [output.html]
 git-repository-url = "https://github.com/smallkirby/writing-hypervisor-in-zig"
 additional-css = ["theme/pagetoc.css"]
 additional-js = ["theme/pagetoc.js"]
+default-theme = "ayu"
+site-url = "/"
+cname = "hv.smallkirby.com"
+
+[output.html.search]
+enable = true
+limit-results = 30
+teaser-word-count = 30
+use-boolean-and = false
+boost-title = 2
+boost-hierarchy = 1
+boost-paragraph = 1
+expand = true
+heading-split-level = 3
+copy-js = true
 
 [preprocessor.toc]
 command = "mdbook-toc"
