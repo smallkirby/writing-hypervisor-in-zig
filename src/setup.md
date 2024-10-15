@@ -10,7 +10,7 @@
 
 以下の環境における開発を想定しています:
 
-- [Intel VT-x](https://en.wikipedia.org/wiki/X86_virtualization) がサポートされている x64 (IA-64) アーキテクチャ
+- [Intel VT-x](https://en.wikipedia.org/wiki/X86_virtualization) がサポートされている x64 (Intel64) アーキテクチャ
 - Nested Virtualization がサポートされているVMM
   - Linux であれば QEMU/KVM が Nested Virtualization をサポートしていて、CPUをパススルーできる
 - Zig 0.13.0
