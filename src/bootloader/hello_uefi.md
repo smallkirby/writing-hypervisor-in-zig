@@ -182,7 +182,7 @@ b.getInstallStep().dependOn(&install_surtr.step);
 ```
 
 Zig ではビルド生成物はデフォルトで `zig-out` というディレクトリに出力されます[^5]。
-`addInstallFile()`によって、生成した `BOOTX64.EFI.efi` を `img/efi/boot/BOOTX64.EFI` にコピーします。
+`addInstallFile()`によって、生成した `BOOTX64.EFI.efi` を `zig-out/img/efi/boot/BOOTX64.EFI` にコピーします。
 `install_surtr.step.dependOn()`では、このコピー処理を行う前に Surtr のビルドを行うように依存関係を宣言しています。
 また、続く `dependOn()` ではデフォルトの `install` ターゲットの依存としてこのコピー処理を実行するように宣言しています。
 これにより、`zig build` したときに Surtr のビルドと生成物のコピー処理が行われるようになります。
