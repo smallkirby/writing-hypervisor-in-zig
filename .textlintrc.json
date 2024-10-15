@@ -8,7 +8,10 @@
     "preset-ja-technical-writing": {
       "ja-no-mixed-period": {
         "allowPeriodMarks": [":"]
-      }
+      },
+      "no-mix-dearu-desumasu": false,
+      "no-doubled-joshi": false,
+      "ja-no-weak-phrase": false
     }
   }
 }
