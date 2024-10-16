@@ -6,5 +6,6 @@
 # Bootloader
 
 - [Hello UEFI](bootloader/hello_uefi.md)
+- [ログ出力](bootloader/uefi_log.md)
 
 [ライセンス](license.md)
