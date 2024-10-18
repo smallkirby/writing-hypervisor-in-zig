@@ -11,7 +11,8 @@
       },
       "no-mix-dearu-desumasu": false,
       "no-doubled-joshi": false,
-      "ja-no-weak-phrase": false
+      "ja-no-weak-phrase": false,
+      "sentence-length": false
     }
   }
 }
