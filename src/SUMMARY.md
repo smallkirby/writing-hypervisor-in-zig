@@ -7,5 +7,8 @@
 
 - [Hello UEFI](bootloader/hello_uefi.md)
 - [ログ出力](bootloader/uefi_log.md)
+- [カーネルのパース](bootloader/parse_kernel.md)
+- [簡易ページテーブル]()
+- [カーネルのロード]()
 
 [ライセンス](license.md)
