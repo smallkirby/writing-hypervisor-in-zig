@@ -14,7 +14,7 @@ use-default-preprocessors = true
 
 [output.html]
 git-repository-url = "https://github.com/smallkirby/writing-hypervisor-in-zig"
-additional-css = ["theme/pagetoc.css"]
+additional-css = ["theme/pagetoc.css", "theme/custom.css"]
 additional-js = ["theme/pagetoc.js"]
 default-theme = "navy"
 site-url = "/"
