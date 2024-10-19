@@ -7,3 +7,15 @@ img + em {
     width: 100%;
     opacity: 0.7;
 }
+
+summary {
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
+    transition: background-color 0.3s ease;
+    border-radius: 0.2em;
+    text-decoration: underline;
+}
+
+summary:hover {
+    cursor: pointer;
+}
