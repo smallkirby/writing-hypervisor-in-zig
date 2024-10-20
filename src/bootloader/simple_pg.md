@@ -100,7 +100,7 @@ pub const page = @import("page.zig");
 初期用のページテーブルを構築してくれています。
 [gef](https://github.com/bata24/gef) の `vmmap` コマンドを使ってメモリマップを確認してみましょう。
 `build.zig` で QEMU の起動コマンドとして `-s` を指定しているため、
-ポート `1234` で GDB サーバにアタッチすることができます。
+ポート `1234` で GDB サーバにアタッチできます。
 現在 Surtr は `main()` の最後に無限ループをするようになっているため、その間にGDBでアタッチします:
 
 <details>
@@ -225,7 +225,7 @@ const Lv1Entry = EntryBase(.lv1);
 Zig では関数が型を返すことができ、C++ でいうところのテンプレートに近いようなものを実現できます。
 `EntryBase()` は `TableLevel` というエントリのレベルに相当する `enum` をとり、
 そのレベルに応じたテーブルエントリの構造体を返す関数です。
-引数にとった値は、返される構造体において定数として利用することができます。
+引数にとった値は、返される構造体において定数として利用できます。
 また、`packed struct(u64)` と指定することで、フィールドの合計サイズが 64bit になることを保証しています[^2]。
 
 最後に、この `EntryBase()` を各 `LvXEntry` に対して呼び出すことで4つのテーブルエントリ型を定義しています。
@@ -314,22 +314,104 @@ pub fn newMapTable(table: [*]LowerType, present: bool) Self {
 
 ## 4KiB ページのマップ
 
+テーブルエントリの定義ができたので、実際にページをマップする関数を実装します。
+Surtr では、4KiB ページのみをサポートすることにします。
+
+ページウォークは以下の図[^5]のように CR3 に入っている Lv4 テーブルから始まります。
+仮想アドレスの `[47:39]` ビット目が Lv4 テーブルにおけるインデックスです。
+このインデックスから Lv4 エントリを取得すると、その中に Lv3 テーブルへのポインタが入っています。
+これを繰り返すことで、4KiB ページをマップする Lv1 エントリにたどり着きます。
+
 ![Linear-Address Translation to a 4-KByte Page Using 4-Level Paging](../assets/sdm/address-translation-4level.png)
 *Linear-Address Translation to a 4-KByte Page Using 4-Level Paging. SDM Vol.3A 4.5.4*
+
+まずは各レベルのページテーブルを取得する関数です:
 
 ```zig
 // -- surtr/arch/x86/page.zig --
 
-pub fn map4kTo(virt: Virt, phys: Phys, attr: PageAttribute, bs: *BootServices) PageError!void {
-    if (virt & page_mask_4k != 0) return PageError.InvalidAddress;
-    if (phys & page_mask_4k != 0) return PageError.InvalidAddress;
-    if (!isCanonical(virt)) return PageError.NotCanonical;
+const page_mask_4k = 0xFFF;
+const num_table_entries: usize = 512;
 
+fn getTable(T: type, addr: Phys) []T {
+    const ptr: [*]T = @ptrFromInt(addr & ~page_mask_4k);
+    return ptr[0..num_table_entries];
+}
+fn getLv4Table(cr3: Phys) []Lv4Entry {
+    return getTable(Lv4Entry, cr3);
+}
+fn getLv3Table(lv3_paddr: Phys) []Lv3Entry {
+    return getTable(Lv3Entry, lv3_paddr);
+}
+fn getLv2Table(lv2_paddr: Phys) []Lv2Entry {
+    return getTable(Lv2Entry, lv2_paddr);
+}
+fn getLv1Table(lv1_paddr: Phys) []Lv1Entry {
+    return getTable(Lv1Entry, lv1_paddr);
+}
+```
+
+`getTable()` が内部実装であり、取得したいページテーブルエントリの型と物理アドレスを受け取ります。
+ページテーブルは必ず 4KiB アラインメントされているため、下位12ビットをマスクしてページテーブルの先頭アドレスを取得します。
+そうして計算したアドレスから 256 個のエントリを持つスライスとしてテーブルを返します。
+残りの4つの関数は、それぞれのレベルのページテーブルを取得するためのヘルパー関数です。
+
+続いて、指定された仮想アドレスに対応するページテーブルエントリを取得する関数を実装します。
+この関数は仮想アドレスとページテーブルの物理アドレスを受取ります:
+
+```zig
+// -- surtr/arch/x86/page.zig --
+
+fn getEntry(T: type, vaddr: Virt, paddr: Phys) *T {
+    const table = getTable(T, paddr);
+    const shift = switch (T) {
+        Lv4Entry => 39,
+        Lv3Entry => 30,
+        Lv2Entry => 21,
+        Lv1Entry => 12,
+        else => @compileError("Unsupported type"),
+    };
+    return &table[(vaddr >> shift) & 0x1FFF];
+}
+
+fn getLv4Entry(addr: Virt, cr3: Phys) *Lv4Entry {
+    return getEntry(Lv4Entry, addr, cr3);
+}
+fn getLv3Entry(addr: Virt, lv3tbl_paddr: Phys) *Lv3Entry {
+    return getEntry(Lv3Entry, addr, lv3tbl_paddr);
+}
+fn getLv2Entry(addr: Virt, lv2tbl_paddr: Phys) *Lv2Entry {
+    return getEntry(Lv2Entry, addr, lv2tbl_paddr);
+}
+fn getLv1Entry(addr: Virt, lv1tbl_paddr: Phys) *Lv1Entry {
+    return getEntry(Lv1Entry, addr, lv1tbl_paddr);
+}
+```
+
+`getEntry()` が内部実装で、最初に先程の `getTable()` を呼んでページテーブルをスライスとして取得します。
+その後、先程の図に従って仮想アドレスからエントリのインデックスを計算し、テーブルから該当するエントリを取得して返します。
+`getTable()` と同様に、残りの4つの関数は引数 `T` を具体化したヘルパー関数になっています。
+
+仮想アドレスからページテーブルエントリを取得する準備ができました。
+4KiB ページをマップする関数が以下です:
+
+```zig
+// -- surtr/arch/x86/page.zig --
+
+pub const PageAttribute = enum {
+    /// RO
+    read_only,
+    /// RW
+    read_write,
+    /// RX
+    executable,
+};
+
+pub fn map4kTo(virt: Virt, phys: Phys, attr: PageAttribute, bs: *BootServices) PageError!void {
     const rw = switch (attr) {
         .read_only, .executable => false,
         .read_write => true,
     };
-    const xd = attr == .executable;
 
     const lv4ent = getLv4Entry(virt, am.readCr3());
     if (!lv4ent.present) try allocateNewTable(Lv4Entry, lv4ent, bs);
@@ -339,16 +421,186 @@ pub fn map4kTo(virt: Virt, phys: Phys, attr: PageAttribute, bs: *BootServices) P
 
     const lv2ent = getLv2Entry(virt, lv3ent.address());
     if (!lv2ent.present) try allocateNewTable(Lv2Entry, lv2ent, bs);
-    if (lv2ent.ps) return PageError.AlreadyMapped;
 
     const lv1ent = getLv1Entry(virt, lv2ent.address());
+    if (lv1ent.present) return PageError.AlreadyMapped;
     var new_lv1ent = Lv1Entry.newMapPage(phys, true);
+
     new_lv1ent.rw = rw;
-    new_lv1ent.xd = xd;
     lv1ent.* = new_lv1ent;
     // No need to flush TLB because the page was not present before.
 }
 ```
+
+| Argument | Description |
+| --- | --- |
+| `virt` | マップする仮想アドレス。 |
+| `phys` | マップする物理アドレス。 |
+| `attr` | マップするページの属性。 |
+| `bs` | UEFI Boot Services。新たに作成するページテーブル用のメモリ確保のために使います。 |
+
+先程の図で見たように、CR3 からスタートして Lv1 エントリまでページウォークをします。
+その過程でページテーブルが存在しない、つまり `lvNent.present == false` である場合には `allocateNewTable()` で新しいページテーブルを作成します。
+なお、この関数では対象の仮想アドレスが既にマップされている場合は想定していないため、以下の挙動をします:
+
+- 仮想アドレスが既に 4KiB ページにマップされている場合: `AlreadyMapped` エラーを返す。
+- 仮想アドレスが既に 2MiB 以上のページにマップされている場合: 既存のマップを上書きする。
+
+Lv1 にまでたどり着いたら、事前に定義した `newMapPage()` を使って指定された物理ページにマップします。
+その際、ページの属性に応じて `rw` フラグを設定します。
+`rw == true` の場合は read/write になり、それ以外の場合は read-only になります。
+
+なお、この関数は<u>新たなマッピングを作成することしか想定していない</u>ため、 TLB をフラッシュする必要がありません。
+仮に既存のマップを変更するような場合には、CR3 をリロードするか `invlpg` 等の命令を使って TLB をフラッシュする必要があります。
+
+新たにページテーブルを確保する関数は以下のように実装されています:
+
+```zig
+// -- surtr/arch/x86/page.zig --
+
+fn allocateNewTable(T: type, entry: *T, bs: *BootServices) PageError!void {
+    var ptr: Phys = undefined;
+    const status = bs.allocatePages(.AllocateAnyPages, .BootServicesData, 1, @ptrCast(&ptr));
+    if (status != .Success) return PageError.NoMemory;
+
+    clearPage(ptr);
+    entry.* = T.newMapTable(@ptrFromInt(ptr), true);
+}
+
+fn clearPage(addr: Phys) void {
+    const page_ptr: [*]u8 = @ptrFromInt(addr);
+    @memset(page_ptr[0..page_size_4k], 0);
+}
+```
+
+Boot Services の [AllocatePages()](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#efi-boot-services-allocatepages) を使って1ページだけ確保します。
+この際、メモリタイプは `BootServicesData`[^6] を指定します。
+このページテーブルは Ymir が新たにマッピングを作成するまで Surtr から Ymir に処理が移っても使われ続けます。
+他のチャプターで説明しますが、`BootServicesData` と指定することで Ymir 側からこの領域はページを新たにマッピングした場合に開放して良い領域であることを明示しています。
+
+確保したページは `clearPage()` でゼロクリアしています。
+最後に、エントリに新たに作成したページテーブルの物理アドレスをセットしています。
+
+## Lv4 テーブルを writable にする
+
+以上で 4KiB のページをマップできるようになりました。
+実際に適当の仮想アドレスをマップできることを確認してみましょう。
+
+`boot.zig` で以下のように適当なアドレスをマップします:
+
+```zig
+// -- surtr/boot.zig --
+
+const arch = @import("arch.zig");
+
+arch.page.map4kTo(
+    0xFFFF_FFFF_DEAD_0000,
+    0x10_0000,
+    .read_write,
+    boot_service,
+) catch |err| {
+    log.err("Failed to map 4KiB page: {?}", .{err});
+    return .Aborted;
+};
+```
+
+実行すると以下のようになります:
+
+```txt
+[DEBUG] (surtr): Kernel ELF information:
+  Entry Point         : 0x10012B0
+  Is 64-bit           : 1
+  # of Program Headers: 4
+  # of Section Headers: 16
+!!!! X64 Exception Type - 0E(#PF - Page-Fault)  CPU Apic ID - 00000000 !!!!
+ExceptionData - 0000000000000003  I:0 R:0 U:0 W:1 P:1 PK:0 SS:0 SGX:0
+RIP  - 000000001E230E20, CS  - 0000000000000038, RFLAGS - 0000000000010206
+RAX  - 000000001FC01FF8, RCX - 000000001E4DA103, RDX - 0007FFFFFFFFFFFF
+RBX  - 0000000000000000, RSP - 000000001FE963B0, RBP - 000000001FE96420
+RSI  - 0000000000000000, RDI - 000000001E284D18
+R8   - 0000000000001000, R9  - 0000000000000000, R10 - 0000000000001000
+R11  - 000000001FE96410, R12 - 0000000000000000, R13 - 000000001ED8D000
+R14  - 0000000000000000, R15 - 000000001FEAFA20
+DS   - 0000000000000030, ES  - 0000000000000030, FS  - 0000000000000030
+GS   - 0000000000000030, SS  - 0000000000000030
+CR0  - 0000000080010033, CR2 - 000000001FC01FF8, CR3 - 000000001FC01000
+```
+
+ページフォルトが発生してしまいました[^7]。
+ページフォルトが発生したアドレスは CR2 に入っており、今回は `0x1FC01FF8` です。
+このアドレスは、CR3 が指すページ、すなわち Lv4 テーブルが入っているページと一致しています。
+オフセットの `0xFF8` は指定した仮想アドレス `0xFFFF_FFFF_DEAD_0000` に対応するテーブル内のエントリのオフセットです。
+[gef](https://github.com/bata24/gef) の `vmmap` コマンドで Lv4 テーブルの様子を見てみます:
+
+```txt
+Virtual address start-end              Physical address start-end             Total size   Page size   Count  Flags
+...
+0x000000001fc00000-0x000000001fe00000  0x000000001fc00000-0x000000001fe00000  0x200000     0x200000    1      [R-X KERN ACCESSED DIRTY]
+...
+```
+
+どうやら **UEFI が提供する Lv4 テーブルは read-only になっている** ようです。
+このままでは Lv4 テーブル内のエントリを書き換えることができないため、
+Lv4 テーブルを書き込み可能にする必要があります。
+
+Lv4 テーブルが存在するページの属性を変更するためには、ページテーブルエントリを修正する必要があります。
+しかし、そのエントリ自体が現在は read-only になっているため、変更を加えることができません。
+よって、Lv4 テーブル自体を書き込み可能にするためには、Lv4 テーブル自体をコピーするしかありません。
+以下のような関数を定義し、Lv4 テーブルを書き込み可能にします:
+
+```zig
+// -- surtr/arch/x86/page.zig --
+
+pub fn setLv4Writable(bs: *BootServices) PageError!void {
+    var new_lv4ptr: [*]Lv4Entry = undefined;
+    const status = bs.allocatePages(.AllocateAnyPages, .BootServicesData, 1, @ptrCast(&new_lv4ptr));
+    if (status != .Success) return PageError.NoMemory;
+
+    const new_lv4tbl = new_lv4ptr[0..num_table_entries];
+    const lv4tbl = getLv4Table(am.readCr3());
+    @memcpy(new_lv4tbl, lv4tbl);
+
+    am.loadCr3(@intFromPtr(new_lv4tbl.ptr));
+}
+```
+
+Boot Services を利用して新たにページテーブルを確保し、現在の Lv4 テーブルをスブテコピーします。
+最後に `loadCr3()` で CR3 を新しく確保した Lv4 テーブルの物理アドレスにセットします。
+CR3 のリロードは全ての TLB をフラッシュするため、以降は新しい Lv4 テーブルが使われるようになります。
+新しく作成したページテーブルには read-only の設定がされていないため、これで Lv4 テーブルを書き込み可能にできます。
+
+`boot.zig` で 4KiB ページをマップする前に Lv4 テーブルを書き込み可能にしてみましょう:
+
+```zig
+// -- surtr/boot.zig --
+
+arch.page.setLv4Writable(boot_service) catch |err| {
+    log.err("Failed to set page table writable: {?}", .{err});
+    return .LoadError;
+};
+log.debug("Set page table writable.", .{});
+```
+
+実行すると今度はページフォルトが起きずに正常に hlt ループまで実行されるはずです。
+この時点でのページテーブルを見ると以下のようになっています:
+
+```txt
+Virtual address start-end              Physical address start-end             Total size   Page size   Count  Flags
+0x0000000000000000-0x0000000000200000  0x0000000000000000-0x0000000000200000  0x200000     0x200000    1      [RWX KERN ACCESSED DIRTY]
+...
+0xffffffffdead0000-0xffffffffdead1000  0x0000000000100000-0x0000000000101000  0x1000       0x1000      1      [RWX KERN ACCESSED GLOBAL]
+```
+
+ちゃんと指定した仮想アドレス `0xFFFFFFFFDEAD0000` が 物理アドレス `0x100000` にマップされていることがわかります。
+
+## アウトロ
+
+本チャプターでは、4-level paging におけるページテーブルエントリの構造体を定義し、4KiB ページをマップする関数を実装しました。
+実際に 4KiB ページをマップする際には、Lv4 テーブルが read-only になっているためページフォルトが発生してしまいます。
+そのため、Lv4 テーブルを書き込み可能にするための関数を実装しました。
+
+これで Ymir カーネルを要求されたアドレスにマップするための準備が整いました。
+次回は、Ymir を実際にカーネルにロードする処理を実装します。
 
 [^1]: 厳密には各エントリのフィールドには異なるものもありますが、本シリーズでは問題がなく簡単のために同じ構造体を使うことにします。
 [^2]: このような構造体を *integer-backed packed struct* と呼びます。
@@ -357,3 +609,6 @@ pub fn map4kTo(virt: Virt, phys: Phys, attr: PageAttribute, bs: *BootServices) P
 [^4]: 結局の所どちらも `u64` であり、Zig では `Phys` を要求する場所で `u64` を渡してもエラーになってくれません。
 `Phys` を要求する場所で `Virt` を渡しても同様にエラーになりません。
 あくまでもコードを見る際のアノテーション的な意味合いで使っています。
+[^5]: x64 では segmentation はほとんど使われないため、図中の *Linear-Address* は仮想アドレスとほぼ同義です。
+[^6]: [Memory Type Usage before ExitBootServices() - UEFI Specification 2.9A](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#memory-type-usage-before-exitbootservices)
+[^7]: この例外ハンドラは UEFI が用意してくれたものです。
