@@ -9,6 +9,6 @@
 - [ログ出力](bootloader/uefi_log.md)
 - [カーネルのパース](bootloader/parse_kernel.md)
 - [簡易ページテーブル](bootloader/simple_pg.md)
-- [カーネルのロード]()
+- [カーネルのロード](bootloader/load_kernel.md)
 
 [ライセンス](license.md)
