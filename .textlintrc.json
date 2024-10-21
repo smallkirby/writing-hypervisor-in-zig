@@ -12,7 +12,8 @@
       "no-mix-dearu-desumasu": false,
       "no-doubled-joshi": false,
       "ja-no-weak-phrase": false,
-      "sentence-length": false
+      "sentence-length": false,
+      "no-exclamation-question-mark": false
     }
   }
 }

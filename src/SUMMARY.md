@@ -10,5 +10,7 @@
 - [カーネルのパース](bootloader/parse_kernel.md)
 - [簡易ページテーブル](bootloader/simple_pg.md)
 - [カーネルのロード](bootloader/load_kernel.md)
+- [メモリマップとお片付け](bootloader/cleanup_memmap.md)
+- [カーネルの起動](bootloader/jump_to_ymir.md)
 
 [ライセンス](license.md)
