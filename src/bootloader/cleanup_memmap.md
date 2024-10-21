@@ -4,7 +4,7 @@
 といきたいところですが、本チャプターでは Ymir の実行まではいきません。
 その前に UEFI にいる間しかできないお片付けをします。
 また、UEFI が提供するメモリマップを取得して観察してみます。
-このメモリマップはのちほど Ymir で使うことになるのですが、それを差し引いても UEFI のメモリマップを理解しておくことは重要です。
+このメモリマップはのちほど Ymir で使うことになるのに加え、Boot Services を終了させるためにも必要となります。
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@ Ymir をロードするために UEFI の Simple File System Protocol を使い�
 使ったものは片付けるのが世の常です。お片付けをしましょう。
 
 ELF ファイルを読み込んだのは (1) ELFヘッダのパースのため (2) Ymir のロードのため の2回です。
-この内、(2)については勿論 Ymir の実行に必要なため、(1)のみを片付けます:
+この内、(2) については Ymir の実行に必要なため残しておいて、(1) のみを片付けます:
 
 ```zig
 // -- surtr/boot.zig --
@@ -334,7 +334,56 @@ while (true) {
 
 ## Exit Boot Services
 
-TODO
+カーネルにジャンプする前の最後のお片付けとして、UEFI Boot Services を終了します。
+これは Boot Services の [ExitBootServices()](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#efi-boot-services-exitbootservices) を呼ぶことで実現できます。
+この関数を呼んだあとは Boot Services の代わりに [Runtime Services](https://uefi.org/specs/UEFI/2.9_A/08_Services_Runtime_Services.html#services-runtime-services) が利用可能になります。
+
+`ExitBootServices()` を呼ぶためには、**UEFI OS loader** (本シリーズの Surtr) が現在のメモリマップを掌握していることを保証する必要があります。
+UEFI に「おれは全部知ってるぞ」と教えるために、この関数には先ほど取得したメモリマップのキーを渡します:
+
+```zig
+// -- surtr/boot.zig --
+
+log.info("Exiting boot services.", .{});
+status = boot_service.exitBootServices(uefi.handle, map.map_key);
+```
+
+しかしながら、メモリマップは `AllocatePages()` や `AllocatePool()` などによって変更される可能性があります。
+取得したメモリマップ(のキー)が最新ではないと UEFI が判断すると、この関数はエラーを返します。
+その場合には、再度メモリマップを取得して自分は最新のメモリマップを知っているんだということを主張してあげる必要があります[^2]:
+
+```zig
+// -- surtr/boot.zig --
+
+if (status != .Success) {
+    map.buffer_size = map_buffer.len;
+    map.map_size = map_buffer.len;
+    status = getMemoryMap(&map, boot_service);
+    if (status != .Success) {
+        log.err("Failed to get memory map after failed to exit boot services.", .{});
+        return status;
+    }
+    status = boot_service.exitBootServices(uefi.handle, map.map_key);
+    if (status != .Success) {
+        log.err("Failed to exit boot services.", .{});
+        return status;
+    }
+}
+```
+
+以上で UEFI Boot Services から脱出することに成功しました。
+あなたはもう大人としてこの薄寒い社会を一人で生きていかなければいけません。
+
+なお、これ以降 Boot Services は利用できません。
+ずっと利用してきたログシステムは、Boot Services の Simple Text Output Protocol を利用していました。
+よって、**ログ出力はもうできなくなります**。
+試しに `log.warn()` かなにかで出力しようとしてみてください。
+きっとエラーが起こるはずです。
+もう喋ることすらもできません。
+言いたいことも言えないこんな世の中じゃ、POISON...[^3]
 
 [^1]: ちゃんと実装したい場合には、少なめのサイズのバッファを用意して `getMemoryMap()` を呼び出し、
 エラーが返ってきた場合にはバッファを拡張して再度呼び出すという方法が考えられます。
+[^2]: 実際には、Surtr においてはメモリマップを取得してからメモリマップが変わるような処理はしていないため、
+この `if` 文に到達することはありません。
+[^3]: [POISON ～言いたい事も言えないこんな世の中は～ - 反町隆史](https://www.uta-net.com/song/10442/)
