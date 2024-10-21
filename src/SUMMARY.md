@@ -13,4 +13,8 @@
 - [メモリマップとお片付け](bootloader/cleanup_memmap.md)
 - [カーネルの起動](bootloader/jump_to_ymir.md)
 
+# Ymir
+
+- [シリアルログ出力](kernel/serial_log.md)
+
 [ライセンス](license.md)
