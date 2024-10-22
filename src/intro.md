@@ -20,6 +20,7 @@ SDM 以外には、以下の情報を参考にしています:
 - [ゼロからの OS 自作入門](https://zero.osdev.jp/)
 - [5 Days to Virtualization: A Series on Hypervisor Development - Reverse Engineering](https://revers.engineering/7-days-to-virtualization-a-series-on-hypervisor-development/)
 - [Hypervisor From Scratch - Rayanfam Blog](https://rayanfam.com/topics/hypervisor-from-scratch-part-1/)
+- [Writing OS in Rust](https://os.phil-opp.com)
 
 その他局所的に参考にした情報については各ページに記載します。
 
