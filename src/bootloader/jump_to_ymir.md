@@ -351,7 +351,7 @@ export fn kernelTrampoline(boot_info: surtr.BootInfo) callconv(.Win64) noreturn 
     unreachable;
 }
 
-fn kernelMain(bs_boot_info: surtr.BootInfo) !void {
+fn kernelMain(bs: boot_info: surtr.BootInfo) !void {
     while (true) asm volatile("hlt");
 }
 ```
@@ -384,7 +384,24 @@ export keyword
 ## `BootInfo` の検証
 
 Surtr の役割は終わり、Ymir が実権を握りました。
-このチャプターの最後として、Surtr が渡してくれた引数 `BootInfo` の sanity check をしておきましょう:
+このチャプターの最後として、Surtr が渡してくれた引数 `BootInfo` の sanity check をしておきましょう。
+
+まず、Ymir が Surtr の定義した情報を参照できるように Surtr モジュールを作成し Ymir に追加します。
+`build.zig` に以下を追加します:
+
+```zig
+// -- build.zig --
+
+// Modules
+const surtr_module = b.createModule(.{
+    .root_source_file = b.path("surtr/defs.zig"),
+});
+...
+ymir.root_module.addImport("surtr", surtr_module);
+```
+
+これで、 `@import("surtr")` によって `surtr/defx.zig` を参照できるようになりました。
+`kernelMain()` で `BootInfo()` の検証をしましょう:
 
 ```zig
 // -- ymir/main.zig --
@@ -402,7 +419,7 @@ fn validateBootInfo(boot_info: surtr.BootInfo) !void {
 }
 ```
 
-`BootInfo` の先頭には、Surtr がマジックナンバーを設定してくれています。
+`BootInfo` の先頭には、Surtr がマジックナンバーを格納してくれているはずです。
 この値が正しく設定されているかを確認することで、Surtr が正しく引数を渡してくれたかを検証します。
 
 仮に `magic` が正しくない場合、`error.InvalidMagic` を返します。
