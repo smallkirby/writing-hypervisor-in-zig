@@ -313,7 +313,9 @@ Program Headers:
 
 ## Stack Trampoline
 
-TODO
+スタックを用意したので、UEFI が用意したスタックからカーネルのスタックへと切り替えます。
+
+Ymir のエントリポイントである `kernelEntry()` を以下のように変更します:
 
 ```zig
 // -- ymir/main.zig --
@@ -330,9 +332,82 @@ export fn kernelEntry() callconv(.Naked) noreturn {
 }
 ```
 
+`__stackguard_lower` は先程リンカスクリプトで定義した `__stackguard_lower` セクションの先頭アドレスに位置しています。
+この変数はアドレスしか使わないので実際には型は不要です。
+インラインアセンブラでは `__stackguard_lower` セクションから 0x10 だけずらしたアドレスをスタックポインタにセットしています。
+これでスタックが用意したカーネルスタックに切り替わります。
+
+`kernelTrampoline()` は Zig の通常の calling convention を持つ関数にジャンプするためのトランポリン関数です:
+
+```zig
+// -- ymir/main.zig --
+
+export fn kernelTrampoline(boot_info: surtr.BootInfo) callconv(.Win64) noreturn {
+    kernelMain(boot_info) catch |err| {
+        log.err("Kernel aborted with error: {}", .{err});
+        @panic("Exiting...");
+    };
+
+    unreachable;
+}
+
+fn kernelMain(bs_boot_info: surtr.BootInfo) !void {
+    while (true) asm volatile("hlt");
+}
+```
+
+`kernelEntry()` は関数のプロローグを持ってはいけません。
+スタックを切り替える前にスタックに何かを push してしまう可能性があるためです。
+よって、`callconv(.Naked)` を指定しています。
+
+Ymir のメイン関数は通常の Zig の calling convention を持ち、返り値としてエラーも返せるようにしたいです。
+そうしないと `try` などの便利キーワードも使えなくなってしまうからです。
+しかし、**`callconv(.Naked)` から Zig のコードで関数呼び出しはできません**。
+Inline assembly を使うしかないです。
+そこで、 `kernelTrampoline()` を間に入れます。
+この関数は引数を適切に受け渡しつつ、calling convention を切り替えます。
+
+`kernelEntry()` の先頭では、Surtr から渡された引数は UEFI calling convention に則って渡されており、
+引数の `BootInfo` は RCX に入っています。
+よって、`kernelTrampoline()` は `callconv(.Win64)` を指定します。
+`callconv(.Win64)` の関数からは他の calling convention を持つ関数を通常通り呼び出すことができるため、
+`kernelMain()` を Zig-way で呼び出せるという算段です。
+
+<div class="warning">
+export keyword
+
+`export` keyword を関数につけることで、その関数は定義したままの名前で参照できるようになります。
+`kernelMain()` や `kernelTrampoline()` はアセンブラから `call` するため、`export` をつけています。
+もしも `export` をつけない場合、関数の名前は `main.kernelTrampoline` のようなファイル名/モジュール名を含んだ名前になってしまいます。
+</div>
+
 ## `BootInfo` の検証
 
-TODO
+Surtr の役割は終わり、Ymir が実権を握りました。
+このチャプターの最後として、Surtr が渡してくれた引数 `BootInfo` の sanity check をしておきましょう:
+
+```zig
+// -- ymir/main.zig --
+
+// Validate the boot info.
+validateBootInfo(bs_boot_info) catch |err| {
+    // 本当はここでログ出力をしたいけど、それはまた次回
+    return error.InvalidBootInfo;
+};
+
+fn validateBootInfo(boot_info: surtr.BootInfo) !void {
+    if (boot_info.magic != surtr.magic) {
+        return error.InvalidMagic;
+    }
+}
+```
+
+`BootInfo` の先頭には、Surtr がマジックナンバーを設定してくれています。
+この値が正しく設定されているかを確認することで、Surtr が正しく引数を渡してくれたかを検証します。
+
+仮に `magic` が正しくない場合、`error.InvalidMagic` を返します。
+本来ならばここでエラー出力をしたいところですが、まだ Ymir ではログシステムを用意していません。
+次のチャプターでは、ログ出力を実装していくことにしましょう。
 
 [^1]: [Detailed Calling Conventions - UEFI Specification 2.9 Errata A](https://uefi.org/specs/UEFI/2.9_A/02_Overview.html#detailed-calling-conventions)
 [^2]: 本当はスタック用に動的にメモリを確保し、その領域に仮想アドレスをマップしてあげるべきですが、
