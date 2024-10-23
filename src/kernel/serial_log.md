@@ -7,6 +7,7 @@
 ログ出力にはシリアルポート[^serial]を使います。
 `build.zig` で設定した起動オプションにより、QEMU はシリアルポートを標準出力にリダイレクトしてくれます。
 このログ出力が実装できれば続く開発が楽になります。
+なお、ログシステムの構築自体は次チャプターで行うこととして、本チャプターではシリアル出力すること自体を目標とします。
 
 ## Table of Contents
 
@@ -178,7 +179,7 @@ const offsets = struct {
 };
 ```
 
-実際には、オフセット・アクセスが read/write のどちらなのか・、その時の **DLAB** の値 の3要素によってアクセスするレジスタが異なります。
+実際には、オフセット・アクセスが read/write のどちらなのか・その時の **DLAB** の値 の3要素によってアクセスするレジスタが異なります。
 どのような場合にどのレジスタにアクセスするのかは、`offsets` 内のコメントまたは参考文献[^serial]を参照してください。
 
 ## 初期化
@@ -186,7 +187,7 @@ const offsets = struct {
 シリアルの初期化を行います。
 
 COM port へのアクセスは、対応する I/O port への `in`/`out` 命令を使っておこないます。
-必要なアセンブリ命令を定義しておきます:
+必要なアセンブリ命令を定義しましょう:
 
 ```zig
 // -- ymir/arch/x86/asm.zig --
@@ -209,7 +210,217 @@ pub inline fn outb(value: u8, port: u16) void {
 }
 ```
 
-TODO
+この関数を利用し、I/O port に読み書きしてシリアルを初期化します。
+以下の表のようにレジスタを設定します[^am]。
+なお、各レジスタは全て 8bit です:
+
+| Register | Description | Value |
+| --- | --- | --- |
+| LC: Line Control | Line Protocol | **8n1** (8 data bit / No parity / 1 stop bits) |
+| IE: Interrupt Enable | 有効化する割り込み | 0 (全ての割り込みを無効化) |
+| FC: FIFO Control | FIFO バッファ | 0 (FIFO を無効化) |
+
+```zig
+// -- ymir/arch/x86/serial.zig --
+
+const am = @import("asm.zig");
+
+pub fn initSerial(port: Ports, baud: u32) void {
+    const p = @intFromEnum(port);
+    am.outb(0b00_000_0_00, p + offsets.lcr); // 8n1: no paritiy, 1 stop bit, 8 data bit
+    am.outb(0, p + offsets.ier); // Disable interrupts
+    am.outb(0, p + offsets.fcr); // Disable FIFO
+    ...
+}
+```
+
+続いて、[Baud Rate](https://en.wikipedia.org/wiki/Baud) を設定します。
+Baud Rate はその信号線に1秒間に送信されるビット数です。
+各文字データの前には **Start Bit** が、後には **Stop Bit** (今回は`1`)が付加されます。
+そのため 8n1 の場合、1文字(8bit)を送信するのに必要なビット数は 10 です。
+送信したデータの 80% がデータとなります。
+安定して送信できる最大の Baud Rate は `115200` らしいので、Ymir でもこの値を使います。
+
+UART は `115200`/sec で動作するクロックを持っています。
+UEFI はこのクロック周波数を、**Divisor** として設定された値で割ることで Baud Rate を計算します:
+
+\\[ \text{Baud Rate} = \frac{115200} { \text{Divisor} } \\]
+
+よって、Baud Rate として \\(\text{B}\\) を設定したい場合には、以下のように Divisor を計算します:
+
+\\[ \text{Divisor} = \frac{115200} { \text{B} } \\]
+
+以下のように Baud Rate を設定します:
+
+```zig
+// -- ymir/arch/x86/serial.zig --
+
+{
+    ...
+    const divisor = 115200 / baud;
+    const c = am.inb(p + offsets.lcr);
+    am.outb(c | 0b1000_0000, p + offsets.lcr); // Enable DLAB
+    am.outb(@truncate(divisor & 0xFF), p + offsets.dll);
+    am.outb(@truncate((divisor >> 8) & 0xFF), p + offsets.dlm);
+    am.outb(c & 0b0111_1111, p + offsets.lcr); // Disable DLAB
+}
+```
+
+LCR 中の *DLAB: Divisor Latch Access Bit* をセットすると、
+*DLL: Divisor Latch Low* と *DLM: Divisor Latch High* にアクセスできるようになります。
+DLAB をセットしたあとで、計算した `divisor` の下位・上位バイトをそれぞれ DLL と DLM に書き込みます。
+`c` は DLAB を設定する前の LCR の値であり、divisor の設定後に LCR を復元するのに使っています。
+
+## 文字の書き込み
+
+続いて、初期化したシリアルになにか文字を書き込んでみます。
+
+シリアルに書き込むためには、*TX-buffer* が空になるのを待つ必要があります。
+TX-buffer が空なのかどうかは、 *LSR: Line Status Register* の *THRE: Transmitter Holding Register Empty* ビットで確認できます。
+もしも空でなかった場合には、空になるまで待ちます:
+
+```zig
+// -- ymir/arch/x86/serial.zig --
+
+const bits = ymir.bits;
+
+pub fn writeByte(byte: u8, port: Ports) void {
+    // Wait until the transmitter holding buffer is empty
+    while (!bits.isset(am.inb(@intFromEnum(port) + offsets.lsr), 5)) {
+        am.relax();
+    }
+
+    // Put char to the transmitter holding buffer
+    am.outb(byte, @intFromEnum(port));
+}
+```
+
+`bits` はビット計算のためのライブラリです。
+[ビット演算とテスト](bit_and_test.md) でまとめて定義します。
+今は `isset(B, N)` で `B` の `N` ビット目がセットされているかどうかを確認できると考えてください。
+LSR の 5-th bit が THRE であるため、これがセットされるまで待ちます。
+`am.relax()` は `rep; nop` をするアセンブリ関数です。
+少しだけCPUを休ませるために使います。
+
+TX-buffer が空になったら、引数で渡された `byte` を COM port に書き込みます。
+オフセット `0` が TX-buffer に対応しているため、`am.outb(byte, @intFromEnum(port))` となります。
+
+実際に書き込めるかどうか確認してみましょう。
+`main.zig` に実権コードを追加します:
+
+```zig
+const ymir = @import("ymir");
+const arch = ymir.arch;
+
+arch.serial.initSerial(.com1, 115200);
+for ("Hello, Ymir!\n") |c|
+    arch.serial.writeByte(c, .com1);
+```
+
+実行してみて、`Hello, Ymir!` が表示されれば成功です。
+
+## `Serial` ラッパークラス
+
+シリアル出力はできるようになったものの、`Hello, Ymir!` という文字列を書き込むためにわざわざ `for` ループするのはめんどうです。
+また、`arch` 以下のファイルを直接呼び出すのも少しアーキ依存が強すぎる気がします。
+というわけで、生のシリアルをラップする `Serial` クラスを作成します[^class]。
+
+`arch` を抽象化するため、ルート直下に `ymir/serial.zig` を作成します:
+
+```zig
+// -- ymir/serial.zig --
+
+const ymir = @import("ymir");
+const arch = ymir.arch;
+
+pub const Serial = struct {
+    const Self = @This();
+    const WriteFn = *const fn (u8) void;
+    const ReadFn = *const fn () ?u8;
+
+    _write_fn: WriteFn = undefined,
+    _read_fn: ReadFn = undefined,
+    ...
+};
+```
+
+`Serial` は、シリアル出力・入力用にそれぞれ `_write_fn` と `_read_fn` という関数ポインタを持ちます[^input]。
+`Serial` は以下のように Baud Rate は `115200` としてインスタンス化します:
+
+```zig
+// -- ymir/serial.zig --
+
+pub fn init() Serial {
+    var serial = Serial{};
+    arch.serial.initSerial(&serial, .com1, 115200);
+    return serial;
+}
+```
+
+空の `Serial` 構造体を作ったあと、`initSerial()` に渡しています。
+先ほど実装した `initSerial()` を第1引数として `*Serial` を受け取れるように変更します:
+
+```zig
+// -- ymir/arch/x86/serial.zig --
+
+pub fn initSerial(serial: *Serial, port: Ports, baud: u32) void {
+    ...
+    serial._write_fn = switch (port) {
+        .com1 => writeByteCom1,
+        .com2 => writeByteCom2,
+        .com3 => writeByteCom3,
+        .com4 => writeByteCom4,
+    };
+}
+```
+
+`_write_fn` にアーキ依存のシリアル出力関数を設定しています。
+`writeByteComN()` は `Port` に対応する COM port に出力するためのヘルパー関数で、実体は `writeByte()` です:
+
+```zig
+// -- ymir/arch/x86/serial.zig --
+
+fn writeByteCom1(byte: u8) void {
+    writeByte(byte, .com1);
+}
+...
+```
+
+これで `Serial` に出力用の関数を設定できました。
+利用者側からは使いやすいように、1文字を出力するための関数と文字列を出力する関数を提供しましょう:
+
+```zig
+// -- ymir/serial.zig --
+
+pub fn write(self: Self, c: u8) void {
+    self._write_fn(c);
+}
+
+pub fn writeString(self: Self, s: []const u8) void {
+    for (s) |c| {
+        self.write(c);
+    }
+}
+```
+
+これで `Serial` は完成です。
+`main.zig` において、以下のように初期化して使ってみます:
+
+```zig
+// -- ymir/main.zig --
+
+const sr = serial.init();
+sr.writeString("Hello, Ymir!\n");
+```
+
+先ほどと同様に `Hello, Ymir!` が表示されれば成功です。
+本チャプターでは、シリアル出力をするための基本的な機能を実装しました。
+これをもとにすると、Surtr で実装したのと同様なログシステムを作ることができます。
+次チャプターではログシステムの実装します。
 
 [^serial]: [Serial Ports - OSDev Wiki](https://wiki.osdev.org/Serial_Ports)
 [^self-dependent]: [ZLS does not work for @import(“root”) when multiple artifacts are installed - Ziggit](https://ziggit.dev/t/zls-does-not-work-for-import-root-when-multiple-artifacts-are-installed/4190)
+[^am]: コード中で `asm.zig` を `am` として import しているのは、`asm` が Zig の[予約語](https://ziglang.org/documentation/master/#Keyword-Reference)であるためです。
+[^class]: Zig にはクラスというものは無く、構造体しかありません。
+しかし、クラスといった方が伝わりやすい気がするため、ここではクラスと呼びます。
+[^input]: なお、シリアル入力はずっと先のチャプターで扱います。

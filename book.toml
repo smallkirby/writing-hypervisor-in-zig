@@ -19,6 +19,7 @@ additional-js = ["theme/pagetoc.js"]
 default-theme = "navy"
 site-url = "/"
 cname = "hv.smallkirby.com"
+mathjax-support = true
 
 [output.html.search]
 enable = true
