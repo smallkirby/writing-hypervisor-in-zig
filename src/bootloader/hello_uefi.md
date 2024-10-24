@@ -89,8 +89,7 @@ zig init
 `src`の代わりに Surtr と Ymir 用のソースディレクトリをそれぞれ用意しています。
 まずは`build.zig`に Surtr 用の設定を記述します:
 
-```zig
-// -- build.zig -- //
+```build.zig
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
@@ -147,8 +146,7 @@ Zig では、関数の引数など値の型が確定している場合には `en
 
 次に、`surtr/boot.zig` にエントリポイントを作成します:
 
-```zig
-// -- surtr/boot.zig -- //
+```surtr/boot.zig
 const std = @import("std");
 const uefi = std.os.uefi;
 
@@ -168,9 +166,7 @@ pub fn main() uefi.Status {
 この UEFI アプリを QEMU 上で実行します。
 `build.zig`に以下の設定を追記します:
 
-```zig
-// -- build.zig -- //
-
+```build.zig
 // EFI directory
 const out_dir_name = "img";
 const install_surtr = b.addInstallFile(
@@ -189,9 +185,7 @@ Zig ではビルド生成物はデフォルトで `zig-out` というディレ�
 
 続いて、QEMUを実行するための設定を追記します:
 
-```zig
-// -- build.zig -- //
-
+```build.zig
 const qemu_args = [_][]const u8{
     "qemu-system-x86_64",
     "-m",

@@ -21,7 +21,9 @@ jobs:
         run: |
           cargo install \
             mdbook@0.4.40 \
-            mdbook-toc@0.14.2
+            mdbook-toc@0.14.2 \
+            mdbook-alerts@0.6.8 \
+            mdbook-codename@0.0.1
 
       - name: Build book
         run: mdbook build

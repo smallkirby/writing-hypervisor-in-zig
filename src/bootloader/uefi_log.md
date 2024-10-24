@@ -18,9 +18,7 @@ UEFI では [EFI System Table](https://uefi.org/specs/UEFI/2.9_A/04_EFI_System_T
 System Table へのポインタは `std.os.uefi.system_table` に入っています。
 ここから Simple Output Protocol へのポインタを取得します:
 
-```zig
-// -- surtr/boot.zig -- //
-
+```surtr/boot.zig
 var status: uefi.Status = undefined;
 
 const con_out = uefi.system_table.con_out orelse return .Aborted;
@@ -82,9 +80,7 @@ Zig では `std.log.info()` のような関数でログを出力できます。
 
 `surtr/log.zig` を作成し、ログ関数を実装してあげます:
 
-```zig
-// -- surtr/log.zig -- //
-
+```surtr/log.zig
 fn log(
     comptime level: stdlog.Level,
     scope: @Type(.EnumLiteral),
@@ -107,9 +103,7 @@ fn log(
 `std.fmt.format()` はフォーマット文字列と引数から文字列を生成し、それを第1引数の`Writer`に書き込む関数です。
 `Writer`型は、以下のように定義します:
 
-```zig
-// -- surtr/log.zig -- //
-
+```surtr/log.zig
 const Writer = std.io.Writer(
     void,
     LogError,
@@ -122,9 +116,7 @@ const LogError = error{};
 第2引数はこの`Writer`が返すエラー型です。エラーは返さないため、空のエラー型`LogError`を定義し、それを指定しておきます。
 最も重要な第3引数では実際に出力をする関数を指定します:
 
-```zig
-// -- surtr/log.zig -- //
-
+```surtr/log.zig
 fn writerFunction(_: void, bytes: []const u8) LogError!usize {
     for (bytes) |b| {
         con_out.outputString(&[_:0]u16{b}).err() catch unreachable;
@@ -140,9 +132,7 @@ fn writerFunction(_: void, bytes: []const u8) LogError!usize {
 これで独自のログ関数を実装できました。
 あとは `std.options.logFn` にこの関数をセットしてオーバーライドしてあげるだけです:
 
-```zig
-// -- surtr/log.zig -- //
-
+```surtr/log.zig
 pub const default_log_options = std.Options{
     .logFn = log,
 };
@@ -152,9 +142,7 @@ pub const default_log_options = std.Options{
 そのため、`default_log_options` 変数を `pub` 指定して `boot.zig` から触れるようにしています。
 `boot.zig` においてこの変数を参照し、 `std_options` 変数をオーバーライドします:
 
-```zig
-// -- surtr/boot.zig -- //
-
+```surtr/boot.zig
 const blog = @import("log.zig");
 pub const std_options = blog.default_log_options;
 ```
@@ -167,9 +155,7 @@ pub const std_options = blog.default_log_options;
 `writerFunction()` で利用している `con_out` 変数を `log.zig` に渡してグローバル変数としてセットしてあげる必要があります。
 ログを出力する関数を用意します:
 
-```zig
-// -- surtr/log.zig -- //
-
+```surtr/log.zig
 const Sto = uefi.protocol.SimpleTextOutput;
 
 var con_out: *Sto = undefined;
@@ -182,9 +168,7 @@ pub fn init(out: *Sto) void {
 
 あとは先程取得した Simple Text Output Protocol のポインタを渡してあげればログが出力されるようになります:
 
-```zig
-// -- surtr/boot.zig -- //
-
+```surtr/boot.zig
 cosnt log = std.log;
 
 blog.init(con_out);
@@ -236,9 +220,7 @@ log.info("Hello, from hoge scope", .{});
 先程実装した `log()` 関数の第2引数ではこのスコープを受け取ることができます。
 スコープを出力してあげるように修正しましょう:
 
-```zig
-// -- surtr/log.zig -- //
-
+```surtr/log.zig
 fn log(
     comptime level: stdlog.Level,
     scope: @Type(.EnumLiteral),
@@ -262,9 +244,7 @@ Zig では配列を `++` 演算子で結合できるため、これを利用し�
 
 `boot.zig` では、スコープを `.surtr` として Surtr からの出力であることがわかりやすいようにします:
 
-```zig
-// -- surtr/boot.zig -- //
-
+```surtr/boot.zig
 const log = std.log.scoped(.surtr);
 log.info("Hello, world!", .{});
 ```
@@ -284,9 +264,7 @@ Zig のログレベルは `std.log.Level` enum として定義されており、
 
 ここでは、分かりやすいようにログレベルも出力してみましょう:
 
-```zig
-// -- surtr/log.zig -- //
-
+```surtr/log.zig
 fn log(
     comptime level: stdlog.Level,
     scope: @Type(.EnumLiteral),
@@ -323,9 +301,7 @@ fn log(
 しかし、わざわざログレベルを変更するためにコードを書き換えるのはめんどうですね。
 ビルドスクリプトを変更し、ビルド時にログレベルを変更できるようにしましょう:
 
-```zig
-// -- build.zig -- //
-
+```build.zig
 // Options
 const s_log_level = b.option(
     []const u8,
@@ -359,9 +335,7 @@ surtr.root_module.addOptions("option", options);
 
 ここで追加したオプションは、コード中で以下のように参照できます:
 
-```zig
-// -- surtr/log.zig -- //
-
+```surtr/log.zig
 const optoin = @import("option"); // build.zig で指定したオプション名
 const log_level = option.log_level;
 ```
@@ -369,9 +343,7 @@ const log_level = option.log_level;
 `log_level` はコンパイル時に決定する値として利用できます。
 この値を `std_options.log_level` にセットしてあげましょう:
 
-```zig
-// -- surtr/log.zig -- //
-
+```surtr/log.zig
 pub const default_log_options = std.Options{
     .log_level = switch (option.log_level) {
         .debug => .debug,

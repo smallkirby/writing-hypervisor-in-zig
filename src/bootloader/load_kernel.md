@@ -35,9 +35,7 @@ Ymir の仮想アドレスレイアウトは以下のようになります:
 
 これらのレイアウトを実現するため、リンカスクリプトを書きます:
 
-```ld
-/* -- ymir/linker.ld -- */
-
+```ymir/linker.ld
 KERNEL_VADDR_BASE = 0xFFFFFFFF80000000;
 KERNEL_VADDR_TEXT = 0xFFFFFFFF80100000;
 
@@ -75,9 +73,7 @@ Ymir のリンカスクリプトとセグメント構成について、詳しく
 
 リンカスクリプトをビルドに含めるには、`build.zig` で以下のように指定します:
 
-```zig
-// -- build.zig --
-
+```build.zig
 ymir.linker_script = b.path("ymir/linker.ld");
 ```
 
@@ -129,9 +125,7 @@ Ymir カーネルのレイアウトが決まったので、今度はカーネル
 カーネルのサイズは ELF ファイルをパースして得られるカーネルのメモリマップから計算します。
 まずは ELF のセグメントヘッダのイテレータを作成します:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 const Addr = elf.Elf64_Addr;
 var kernel_start_virt: Addr = std.math.maxInt(Addr);
 var kernel_start_phys: Addr align(page_size) = std.math.maxInt(Addr);
@@ -144,9 +138,7 @@ var iter = elf_header.program_header_iterator(kernel);
 セグメントヘッダのイテレータは、`std.elf.Header.program_header_iterator()` で作成できます。
 このイテレータを使ってセグメントヘッダを辿り、最小・最大アドレスに配置されるセグメントのアドレスを計算していきます:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 while (true) {
     const phdr = iter.next() catch |err| {
         log.err("Failed to get program header: {?}\n", .{err});
@@ -163,9 +155,7 @@ while (true) {
 
 続いて、必要なメモリサイズを計算します:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 const pages_4kib = (kernel_end_phys - kernel_start_phys + (page_size - 1)) / page_size;
 log.info("Kernel image: 0x{X:0>16} - 0x{X:0>16} (0x{X} pages)", .{ kernel_start_phys, kernel_end_phys, pages_4kib });
 ```
@@ -191,9 +181,7 @@ log.info("Kernel image: 0x{X:0>16} - 0x{X:0>16} (0x{X} pages)", .{ kernel_start_
 
 最後に、計算したページ分だけメモリを確保してあげます。
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 status = boot_service.allocatePages(.AllocateAddress, .LoaderData, pages_4kib, @ptrCast(&kernel_start_phys));
 if (status != .Success) {
     log.err("Failed to allocate memory for kernel image: {?}", .{status});
@@ -212,9 +200,7 @@ log.info("Allocated memory for kernel image @ 0x{X:0>16} ~ 0x{X:0>16}", .{ kerne
 カーネルが要求する物理アドレスにメモリを確保できたため、次は要求する仮想アドレスを確保した物理アドレスにマップします。
 [簡易ページテーブルのチャプター](simple_pg.md) で 4KiB ページをマップする関数を実装したため、それを使ってページをマップします:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 for (0..pages_4kib) |i| {
     arch.page.map4kTo(
         kernel_start_virt + page_size * i,
@@ -253,9 +239,7 @@ Virtual address start-end              Physical address start-end             To
 
 まずは、先ほど必要なメモリサイズを計算したときと同様なセグメントヘッダのイテレータを作成するところから始めます:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 log.info("Loading kernel image...", .{});
 iter = elf_header.program_header_iterator(kernel);
 while (true) {
@@ -272,9 +256,7 @@ while (true) {
 ロードする必要があるのは、やはり `PT_LOAD` セグメントだけです。それ以外の場合にはスキップします。
 続いて、セグメントをファイルからメモリに読み出します:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 status = kernel.setPosition(phdr.p_offset);
 if (status != .Success) {
     log.err("Failed to set position for kernel image.", .{});
@@ -320,9 +302,7 @@ log.info(
 セグメントをロードする際に、`.bss` セクションのサイズだけメモリを確保し、ゼロで初期化します。
 既にメモリは確保してあるため、ここではゼロ初期化を行いましょう:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 const zero_count = phdr.p_memsz - phdr.p_filesz;
 if (zero_count > 0) {
     boot_service.setMem(@ptrFromInt(phdr.p_vaddr + phdr.p_filesz), zero_count, 0);

@@ -34,9 +34,7 @@
 
 `/arch.zig` では以下のようにターゲットとなるアーキテクチャに応じて `arch` 以下のコードを export します:
 
-```zig
-// -- surtr/arch.zig --
-
+```surtr/arch.zig
 const builtin = @import("builtin");
 pub usingnamespace switch (builtin.target.cpu.arch) {
     .x86_64 => @import("arch/x86/arch.zig"),
@@ -85,9 +83,7 @@ someFunction(); // このようなことはできない
 今回はページテーブルを実装したいため、 `arch/x86/page.zig` を作成したあと、
 `arch/x86/arch.zig` から `page.zig` を export します。
 
-```zig
-// -- surtr/arch/x86/arch.zig --
-
+```surtr/arch/x86/arch.zig
 pub const page = @import("page.zig");
 ```
 
@@ -165,9 +161,7 @@ UEFI が用意してくれたページテーブルは仮想アドレスと物理
 上の画像から分かるとおり、4つのエントリはそれも同じような構造を持っています[^1]。
 そこで、以下のように `EntryBase()` という関数を定義し、それを使って4つのエントリを定義します:
 
-```zig
-// -- surtr/arch/x86/page.zig --
-
+```surtr/arch/x86/page.zig
 const TableLevel = enum { lv4, lv3, lv2, lv1 };
 
 fn EntryBase(table_level: TableLevel) type {
@@ -234,9 +228,7 @@ C++ でいうところのテンプレートのインスタンス化のような�
 
 この構造体に、エントリが指し示す1レベル下のページテーブルの物理アドレス、またはページの物理アドレスを取得するための関数を追加します:
 
-```zig
-// -- surtr/arch/x86/page.zig --
-
+```surtr/arch/x86/page.zig
 pub const Phys = u64;
 pub const Virt = u64;
 
@@ -255,9 +247,7 @@ pub inline fn address(self: Self) Phys {
 続いて、ページテーブルエントリを作成する関数を定義します。
 ページをマップするエントリを作成する場合には簡単です:
 
-```zig
-// -- surtr/arch/x86/page.zig --
-
+```surtr/arch/x86/page.zig
 pub fn newMapPage(phys: Phys, present: bool) Self {
     if (level == .lv4) @compileError("Lv4 entry cannot map a page");
     return Self{
@@ -279,9 +269,7 @@ pub fn newMapPage(phys: Phys, present: bool) Self {
 そのためには、「自分よりも1レベル低いエントリの型」を定義してあげる必要があります。
 `BaseType()`が返す構造体に以下の定数を持たせましょう:
 
-```zig
-// -- surtr/arch/x86/page.zig --
-
+```surtr/arch/x86/page.zig
 const LowerType = switch (level) {
     .lv4 => Lv3Entry,
     .lv3 => Lv2Entry,
@@ -294,9 +282,7 @@ const LowerType = switch (level) {
 `Lv1Entry` よりも下のエントリは存在しないため、`Lv1Entry` の場合は空の構造体を返します。
 これを用いると、ページテーブルを参照するエントリを作成する関数は以下のようになります:
 
-```zig
-// -- surtr/arch/x86/page.zig --
-
+```surtr/arch/x86/page.zig
 pub fn newMapTable(table: [*]LowerType, present: bool) Self {
     if (level == .lv1) @compileError("Lv1 entry cannot reference a page table");
     return Self{
@@ -327,9 +313,7 @@ Surtr では、4KiB ページのみをサポートすることにします。
 
 まずは各レベルのページテーブルを取得する関数です:
 
-```zig
-// -- surtr/arch/x86/page.zig --
-
+```surtr/arch/x86/page.zig
 const page_mask_4k = 0xFFF;
 const num_table_entries: usize = 512;
 
@@ -359,9 +343,7 @@ fn getLv1Table(lv1_paddr: Phys) []Lv1Entry {
 続いて、指定された仮想アドレスに対応するページテーブルエントリを取得する関数を実装します。
 この関数は仮想アドレスとページテーブルの物理アドレスを受取ります:
 
-```zig
-// -- surtr/arch/x86/page.zig --
-
+```surtr/arch/x86/page.zig
 fn getEntry(T: type, vaddr: Virt, paddr: Phys) *T {
     const table = getTable(T, paddr);
     const shift = switch (T) {
@@ -395,9 +377,7 @@ fn getLv1Entry(addr: Virt, lv1tbl_paddr: Phys) *Lv1Entry {
 仮想アドレスからページテーブルエントリを取得する準備ができました。
 4KiB ページをマップする関数が以下です:
 
-```zig
-// -- surtr/arch/x86/page.zig --
-
+```surtr/arch/x86/page.zig
 pub const PageAttribute = enum {
     /// RO
     read_only,
@@ -455,9 +435,7 @@ Lv1 にまでたどり着いたら、事前に定義した `newMapPage()` を使
 
 新たにページテーブルを確保する関数は以下のように実装されています:
 
-```zig
-// -- surtr/arch/x86/page.zig --
-
+```surtr/arch/x86/page.zig
 fn allocateNewTable(T: type, entry: *T, bs: *BootServices) PageError!void {
     var ptr: Phys = undefined;
     const status = bs.allocatePages(.AllocateAnyPages, .BootServicesData, 1, @ptrCast(&ptr));
@@ -488,9 +466,7 @@ Boot Services の [AllocatePages()](https://uefi.org/specs/UEFI/2.9_A/07_Service
 
 `boot.zig` で以下のように適当なアドレスをマップします:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 const arch = @import("arch.zig");
 
 arch.page.map4kTo(
@@ -548,9 +524,7 @@ Lv4 テーブルが存在するページの属性を変更するためには、�
 よって、Lv4 テーブル自体を書き込み可能にするためには、Lv4 テーブル自体をコピーするしかありません。
 以下のような関数を定義し、Lv4 テーブルを書き込み可能にします:
 
-```zig
-// -- surtr/arch/x86/page.zig --
-
+```surtr/arch/x86/page.zig
 pub fn setLv4Writable(bs: *BootServices) PageError!void {
     var new_lv4ptr: [*]Lv4Entry = undefined;
     const status = bs.allocatePages(.AllocateAnyPages, .BootServicesData, 1, @ptrCast(&new_lv4ptr));
@@ -571,9 +545,7 @@ CR3 のリロードは全ての TLB をフラッシュするため、以降は�
 
 `boot.zig` で 4KiB ページをマップする前に Lv4 テーブルを書き込み可能にしてみましょう:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 arch.page.setLv4Writable(boot_service) catch |err| {
     log.err("Failed to set page table writable: {?}", .{err});
     return .LoadError;

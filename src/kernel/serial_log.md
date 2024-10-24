@@ -41,9 +41,7 @@ tree ./ymir
 アーキテクチャ依存のコードを `ymir/arch` より上のディレクトリから利用する際には、必ずこのファイルを import して使うことにします。
 `ymir/arch/x86/arch.zig` は以下のようにしておきます:
 
-```zig
-// -- ymir/arch/x86/arch.zig --
-
+```ymir/arch/x86/arch.zig
 pub const serial = @import("serial.zig");
 const am = @import("asm.zig");
 ```
@@ -70,9 +68,7 @@ const am = @import("arch/x86/asm.zig"); // 本来はアクセスさせたくな�
 これを防ぐため、ルートモジュールを作成し、**全てのモジュールはルートモジュールを経由してアクセスさせる** ことにします。
 モジュールの作成は Surtr のときと同様に `build.zig` で定義します:
 
-```zig
-// -- build.zig --
-
+```build.zig
 const ymir_module = b.createModule(.{
     .root_source_file = b.path("ymir/ymir.zig"),
 });
@@ -82,18 +78,14 @@ ymir_module.addImport("surtr", surtr_module);
 
 定義した `ymir` モジュールを `ymir` 実行ファイルに追加します:
 
-```zig
-// -- build.zig --
-
+```build.zig
 ymir.root_module.addImport("ymir", ymir_module);
 ```
 
 これで、`@import("ymir")` のようにモジュール名で Ymir モジュールを import できるようになりました。
 モジュールのルートである `ymir/ymir.zig` は、必要な全ての子モジュールを export します:
 
-```zig
-// -- ymir/ymir.zig --
-
+```ymir/ymir.zig
 pub const arch = @import("arch.zig");
 ```
 
@@ -130,9 +122,7 @@ Zig に馴染みがない人は、`ymir` executable に `ymir` モジュール�
 COM port は I/O port を介してアクセスします。
 COM port と I/O port の対応関係を定義するため、`ymir/arch/x86/serial.zig` を作成します:
 
-```zig
-// -- ymir/arch/x86/serial.zig --
-
+```ymir/arch/x86/serial.zig
 pub const Ports = enum(u16) {
     com1 = 0x3F8,
     com2 = 0x2F8,
@@ -148,9 +138,7 @@ Ymir では COM1 を使います。
 各ポートはそれぞれの data register を持っています。
 Data register へは COM port をベースとしたオフセットでアクセスします:
 
-```zig
-// -- ymir/arch/x86/serial.zig --
-
+```ymir/arch/x86/serial.zig
 const offsets = struct {
     /// Transmitter Holding Buffer: DLAB=0, W
     pub const txr = 0;
@@ -189,9 +177,7 @@ const offsets = struct {
 COM port へのアクセスは、対応する I/O port への `in`/`out` 命令を使っておこないます。
 必要なアセンブリ命令を定義しましょう:
 
-```zig
-// -- ymir/arch/x86/asm.zig --
-
+```ymir/arch/x86/asm.zig
 pub inline fn inb(port: u16) u8 {
     return asm volatile (
         \\inb %[port], %[ret]
@@ -220,9 +206,7 @@ pub inline fn outb(value: u8, port: u16) void {
 | IE: Interrupt Enable | 有効化する割り込み | 0 (全ての割り込みを無効化) |
 | FC: FIFO Control | FIFO バッファ | 0 (FIFO を無効化) |
 
-```zig
-// -- ymir/arch/x86/serial.zig --
-
+```ymir/arch/x86/serial.zig
 const am = @import("asm.zig");
 
 pub fn initSerial(port: Ports, baud: u32) void {
@@ -252,9 +236,7 @@ UEFI はこのクロック周波数を、**Divisor** として設定された値
 
 以下のように Baud Rate を設定します:
 
-```zig
-// -- ymir/arch/x86/serial.zig --
-
+```ymir/arch/x86/serial.zig
 {
     ...
     const divisor = 115200 / baud;
@@ -279,9 +261,7 @@ DLAB をセットしたあとで、計算した `divisor` の下位・上位バ�
 TX-buffer が空なのかどうかは、 *LSR: Line Status Register* の *THRE: Transmitter Holding Register Empty* ビットで確認できます。
 もしも空でなかった場合には、空になるまで待ちます:
 
-```zig
-// -- ymir/arch/x86/serial.zig --
-
+```ymir/arch/x86/serial.zig
 const bits = ymir.bits;
 
 pub fn writeByte(byte: u8, port: Ports) void {
@@ -327,9 +307,7 @@ for ("Hello, Ymir!\n") |c|
 
 `arch` を抽象化するため、ルート直下に `ymir/serial.zig` を作成します:
 
-```zig
-// -- ymir/serial.zig --
-
+```ymir/serial.zig
 const ymir = @import("ymir");
 const arch = ymir.arch;
 
@@ -347,9 +325,7 @@ pub const Serial = struct {
 `Serial` は、シリアル出力・入力用にそれぞれ `_write_fn` と `_read_fn` という関数ポインタを持ちます[^input]。
 `Serial` は以下のように Baud Rate は `115200` としてインスタンス化します:
 
-```zig
-// -- ymir/serial.zig --
-
+```ymir/serial.zig
 pub fn init() Serial {
     var serial = Serial{};
     arch.serial.initSerial(&serial, .com1, 115200);
@@ -360,9 +336,7 @@ pub fn init() Serial {
 空の `Serial` 構造体を作ったあと、`initSerial()` に渡しています。
 先ほど実装した `initSerial()` を第1引数として `*Serial` を受け取れるように変更します:
 
-```zig
-// -- ymir/arch/x86/serial.zig --
-
+```ymir/arch/x86/serial.zig
 pub fn initSerial(serial: *Serial, port: Ports, baud: u32) void {
     ...
     serial._write_fn = switch (port) {
@@ -377,9 +351,7 @@ pub fn initSerial(serial: *Serial, port: Ports, baud: u32) void {
 `_write_fn` にアーキ依存のシリアル出力関数を設定しています。
 `writeByteComN()` は `Port` に対応する COM port に出力するためのヘルパー関数で、実体は `writeByte()` です:
 
-```zig
-// -- ymir/arch/x86/serial.zig --
-
+```ymir/arch/x86/serial.zig
 fn writeByteCom1(byte: u8) void {
     writeByte(byte, .com1);
 }
@@ -389,9 +361,7 @@ fn writeByteCom1(byte: u8) void {
 これで `Serial` に出力用の関数を設定できました。
 利用者側からは使いやすいように、1文字を出力するための関数と文字列を出力する関数を提供しましょう:
 
-```zig
-// -- ymir/serial.zig --
-
+```ymir/serial.zig
 pub fn write(self: Self, c: u8) void {
     self._write_fn(c);
 }
@@ -406,9 +376,7 @@ pub fn writeString(self: Self, s: []const u8) void {
 これで `Serial` は完成です。
 `main.zig` において、以下のように初期化して使ってみます:
 
-```zig
-// -- ymir/main.zig --
-
+```ymir/main.zig
 const sr = serial.init();
 sr.writeString("Hello, Ymir!\n");
 ```

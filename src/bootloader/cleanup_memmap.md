@@ -19,9 +19,7 @@ Ymir をロードするために UEFI の Simple File System Protocol を使い�
 ELF ファイルを読み込んだのは (1) ELFヘッダのパースのため (2) Ymir のロードのため の2回です。
 この内、(2) については Ymir の実行に必要なため残しておいて、(1) のみを片付けます:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 status = boot_service.freePool(header_buffer);
 if (status != .Success) {
     log.err("Failed to free memory for kernel ELF header.", .{});
@@ -64,9 +62,7 @@ Surtr においてカーネル用の領域として `AllocatePages()` や `Alloc
 このファイルは、Ymir と Surtr で共通して利用するデータ構造を定義するのに使います。
 以下のようにメモリマップを定義します:
 
-```zig
-// -- surtr/defs.zig --
-
+```surtr/defs.zig
 pub const MemoryMap = extern struct {
     /// Total buffer size prepared to store the memory map.
     buffer_size: usize,
@@ -92,9 +88,7 @@ pub const MemoryMap = extern struct {
 ELF のセグメントヘッダをイテレートしたように、`MemoryDescriptor` もイテレート簡単にイテレートできると便利そうです。
 `MemoryMap` の情報をもとに `MemoryDescriptor` のイテレートする構造体を定義します:
 
-```zig
-// -- surtr/defs.zig --
-
+```surtr/defs.zig
 pub const MemoryDescriptorIterator = struct {
     const Self = @This();
     const Md = uefi.tables.MemoryDescriptor;
@@ -136,9 +130,7 @@ pub const MemoryDescriptorIterator = struct {
 
 `surtr/boot.zig` にメモリマップを取得する関数を追加します:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 const map_buffer_size = page_size * 4;
 var map_buffer: [map_buffer_size]u8 = undefined;
 var map = defs.MemoryMap{
@@ -178,9 +170,7 @@ UEFI の Runtime Services が提供する、メモリマップを取得するた
 
 最後に、取得したメモリマップを表示します:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 var map_iter = defs.MemoryDescriptorIterator.new(map);
 while (true) {
     if (map_iter.next()) |md| {
@@ -341,9 +331,7 @@ while (true) {
 `ExitBootServices()` を呼ぶためには、**UEFI OS loader** (本シリーズの Surtr) が現在のメモリマップを掌握していることを保証する必要があります。
 UEFI に「おれは全部知ってるぞ」と教えるために、この関数には先ほど取得したメモリマップのキーを渡します:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 log.info("Exiting boot services.", .{});
 status = boot_service.exitBootServices(uefi.handle, map.map_key);
 ```
@@ -352,9 +340,7 @@ status = boot_service.exitBootServices(uefi.handle, map.map_key);
 取得したメモリマップ(のキー)が最新ではないと UEFI が判断すると、この関数はエラーを返します。
 その場合には、再度メモリマップを取得して自分は最新のメモリマップを知っているんだということを主張してあげる必要があります[^2]:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 if (status != .Success) {
     map.buffer_size = map_buffer.len;
     map.map_size = map_buffer.len;

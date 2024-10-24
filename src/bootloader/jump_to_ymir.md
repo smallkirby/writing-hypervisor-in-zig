@@ -17,9 +17,7 @@ Surtr が事前に取得しておいたメモリマップを Ymir に渡しま�
 
 `surtr/defs.zig`  に Surtr/Ymir 間で受け渡しする情報を定義します:
 
-```zig
-// -- surtr/defs.zig --
-
+```surtr/defs.zig
 pub const magic: usize = 0xDEADBEEF_CAFEBABE;
 
 pub const BootInfo = extern struct {
@@ -36,9 +34,7 @@ Ymir はこのマップをもとにして不要な UEFI の領域を解放し、
 
 この `boot.zig` において `BootInfo` を作成します:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 const boot_info = defs.BootInfo{
     .magic = defs.magic,
     .memory_map = map,
@@ -54,9 +50,7 @@ const boot_info = defs.BootInfo{
 カーネルのエントリポイントは、先程の `BootInfo` を受け取る関数です。
 UEFI の calling convention は Windows と同じ[^1]であるため、`callconv(.Win64)` を指定します:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 const KernelEntryType = fn (defs.BootInfo) callconv(.Win64) noreturn;
 const kernel_entry: *KernelEntryType = @ptrFromInt(elf_header.entry);
 ```
@@ -66,9 +60,7 @@ const kernel_entry: *KernelEntryType = @ptrFromInt(elf_header.entry);
 
 残るは、この関数ポインタを呼び出すだけです:
 
-```zig
-// -- surtr/boot.zig --
-
+```surtr/boot.zig
 kernel_entry(boot_info);
 unreachable;
 ```
@@ -133,9 +125,7 @@ UEFI が Surtr を実行する際にはスタックを用意してくれるの�
 ここではもう少しだけ真面目に設定します。
 `ymir/linker.ld` を以下のように書き換えます[^3]:
 
-```ld
-/* -- ymir/linker.ld -- */
-
+```ymir/linker.ld
 STACK_SIZE = 0x5000;
 
 SECTIONS {
@@ -210,9 +200,7 @@ TSS と GDT と IDT を適切に設定することでページフォルトのと
 各セクションの最後に書いてある `:segment` は、そのセクションを `segment` セグメントに配置します。
 セグメントの定義は以下です:
 
-```ld
-/* -- ymir/linker.ld -- */
-
+```ymir/linker.ld
 PHDRS {
     text PT_LOAD;
     rodata PT_LOAD;
@@ -317,9 +305,7 @@ Program Headers:
 
 Ymir のエントリポイントである `kernelEntry()` を以下のように変更します:
 
-```zig
-// -- ymir/main.zig --
-
+```ymir/main.zig
 extern const __stackguard_lower: [*]const u8;
 
 export fn kernelEntry() callconv(.Naked) noreturn {
@@ -339,9 +325,7 @@ export fn kernelEntry() callconv(.Naked) noreturn {
 
 `kernelTrampoline()` は Zig の通常の calling convention を持つ関数にジャンプするためのトランポリン関数です:
 
-```zig
-// -- ymir/main.zig --
-
+```ymir/main.zig
 export fn kernelTrampoline(boot_info: surtr.BootInfo) callconv(.Win64) noreturn {
     kernelMain(boot_info) catch |err| {
         log.err("Kernel aborted with error: {}", .{err});
@@ -389,9 +373,7 @@ Surtr の役割は終わり、Ymir が実権を握りました。
 まず、Ymir が Surtr の定義した情報を参照できるように Surtr モジュールを作成し Ymir に追加します。
 `build.zig` に以下を追加します:
 
-```zig
-// -- build.zig --
-
+```build.zig
 // Modules
 const surtr_module = b.createModule(.{
     .root_source_file = b.path("surtr/defs.zig"),
@@ -403,9 +385,7 @@ ymir.root_module.addImport("surtr", surtr_module);
 これで、 `@import("surtr")` によって `surtr/defx.zig` を参照できるようになりました。
 `kernelMain()` で `BootInfo()` の検証をしましょう:
 
-```zig
-// -- ymir/main.zig --
-
+```ymir/main.zig
 // Validate the boot info.
 validateBootInfo(bs_boot_info) catch |err| {
     // 本当はここでログ出力をしたいけど、それはまた次回

@@ -17,9 +17,7 @@
 
 `ymir` ディレクトリを作成し、`ymir/main.zig` を以下のようにします:
 
-```zig
-// -- ymir/main.zig --
-
+```ymir/main.zig
 export fn kernelEntry() callconv(.Naked) noreturn {
     while (true)
         asm volatile ("hlt");
@@ -38,9 +36,7 @@ Zig では `callconv()` によって関数の [calling convention](https://en.wi
 
 これで Ymir の雛形ができたので、ビルドの設定をします:
 
-```zig
-// -- build.zig --
-
+```build.zig
 const ymir_target = b.resolveTargetQuery(.{
     .cpu_arch = .x86_64,
     .os_tag = .freestanding,
@@ -108,9 +104,7 @@ ELF Header:
 以上で Surtr から読み込むための Ymir の ELF ファイルが生成できました。
 生成した Ymir を EFI ファイルシステムに配置する設定も書いてしまいましょう:
 
-```zig
-// -- build.zig --
-
+```build.zig
 const install_ymir = b.addInstallFile(
     ymir.getEmittedBin(),
     b.fmt("{s}/{s}", .{ out_dir_name, ymir.name }),
@@ -128,9 +122,7 @@ Surtr からファイルシステム上のファイルにアクセスするた�
 Surtr が実行されてから明示的に exit するまでは、 [Boot Services](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html) という UEFI が提供する関数群にアクセスできます。
 Boot Services へのポインタは、前回ログ出力に利用した Simple Text Output Protocol と同様に [EFI System Table](https://uefi.org/specs/UEFI/2.9_A/04_EFI_System_Table.html#efi-system-table-1) から取得できます:
 
-```zig
-// -- src/boot.zig --
-
+```src/boot.zig
 const boot_service: *uefi.tables.BootServices = uefi.system_table.boot_services orelse {
     log.err("Failed to get boot services.", .{});
     return .Aborted;
@@ -140,9 +132,7 @@ log.info("Got boot services.", .{});
 
 取得した Boot Services から、Simple File System Protocol を取得します:
 
-```zig
-// -- src/boot.zig --
-
+```src/boot.zig
 var fs: *uefi.protocol.SimpleFileSystem = undefined;
 status = boot_service.locateProtocol(&uefi.protocol.SimpleFileSystem.guid, null, @ptrCast(&fs));
 if (status != .Success) {
@@ -154,8 +144,7 @@ log.info("Located simple file system protocol.", .{});
 
 続いて、Simple File System Protocol を利用して FS のルートディレクトリを開きます:
 
-```zig
-// -- src/boot.zig --
+```src/boot.zig
 var root_dir: *uefi.protocol.File = undefined;
 status = fs.openVolume(&root_dir);
 if (status != .Success) {
@@ -172,9 +161,7 @@ log.info("Opened filesystem volume.", .{});
 ここで指定するファイル名は、前回のログ出力と同様に [UCS-2](https://e-words.jp/w/UCS-2.html) を使う必要があります。
 Simple File System Protocol を利用してファイルを開く機会は他にもいくつかあるため、UCS-2 への変換をする関数を用意してあげましょう:
 
-```zig
-// -- src/boot.zig --
-
+```src/boot.zig
 inline fn toUcs2(comptime s: [:0]const u8) [s.len * 2:0]u16 {
     var ucs2: [s.len * 2:0]u16 = [_:0]u16{0} ** (s.len * 2);
     for (s, 0..) |c, i| {
@@ -192,9 +179,7 @@ inline fn toUcs2(comptime s: [:0]const u8) [s.len * 2:0]u16 {
 
 この関数を利用して、ファイルを開く関数を作ります:
 
-```zig
-// -- src/boot.zig --
-
+```src/boot.zig
 fn openFile(
     root: *uefi.protocol.File,
     comptime name: [:0]const u8,
@@ -222,9 +207,7 @@ fn openFile(
 
 この関数を使うと、カーネルを以下のようにオープンできます:
 
-```zig
-// -- src/boot.zig --
-
+```src/boot.zig
 const kernel = openFile(root_dir, "ymir.elf") catch return .Aborted;
 log.info("Opened kernel file.", .{});
 ```
@@ -237,9 +220,7 @@ ELF ファイルは必ず [ELF Header](https://refspecs.linuxfoundation.org/elf/
 
 ファイルを読み込むための領域は Boot Services が提供する [Memory Allocation Services](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#memory-allocation-services) の [AllocatePool()](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#id16) 関数を利用します:
 
-```zig
-// -- src/boot.zig --
-
+```src/boot.zig
 var header_size: usize = @sizeOf(elf.Elf64_Ehdr);
 var header_buffer: [*]align(8) u8 = undefined;
 status = boot_service.allocatePool(.LoaderData, header_size, &header_buffer);
@@ -256,9 +237,7 @@ ELF ヘッダのサイズは固定であり、`std.elf.Elf64_Ehdr` 構造体の�
 
 読み込み用メモリを確保したので、実際にファイルを読み込みます:
 
-```zig
-// -- src/boot.zig --
-
+```src/boot.zig
 status = kernel.read(&header_size, header_buffer);
 if (status != .Success) {
     log.err("Failed to read kernel ELF header.", .{});
@@ -276,9 +255,7 @@ ELF ヘッダの構造はとてもシンプルなためパーサを自分で書�
 Zig は先程見たように ELF ヘッダを表現する構造体 `std.elf.Elf64_Ehdr` を提供してます。
 今回はこれを使うことにします[^4]:
 
-```zig
-// -- src/boot.zig --
-
+```src/boot.zig
 const elf_header = elf.Header.parse(header_buffer[0..@sizeOf(elf.Elf64_Ehdr)]) catch |err| {
     log.err("Failed to parse kernel ELF header: {?}", .{err});
     return .Aborted;
