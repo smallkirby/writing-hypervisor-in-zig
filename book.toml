@@ -37,6 +37,6 @@ copy-js = true
 command = "mdbook-toc"
 renderer = ["html"]
 
-[preprocessor.alerts]
+[preprocessor.callouts]
 
 [preprocessor.codename]

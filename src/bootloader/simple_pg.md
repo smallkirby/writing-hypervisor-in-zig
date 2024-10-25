@@ -46,38 +46,35 @@ pub usingnamespace switch (builtin.target.cpu.arch) {
 今回は `x86_64` で固定ですが、他のアーキにも対応するようにした場合ターゲットに応じて変化します。
 コンパイル時に決定する値であるため、この`switch`文もコンパイル時に評価され、対応するアーキのルートファイルが export されます。
 
-<div class="warning">
-usingnamespace
-
-[usingnamespace](https://ziglang.org/documentation/master/#usingnamespace) は、指定した構造体のフィールド全てを現在のスコープに持ってきてくれる機能です。
-今回の場合、単純に `@import("arch/x86/arch.zig")` すると以下のように利用側では一段余計なフィールドを指定する必要があります:
-
-```zig
-// -- surtr/arch.zig --
-pub const impl = @import("arch/x86/arch.zig");
-// -- surtr/boot.zig --
-const arch = @import("arch.zig");
-arch.impl.someFunction();
-```
-
-`usingnamespace` を使うことで、この余計な一段階を省くことができるようになります:
-
-```zig
-// -- surtr/arch.zig --
-pub usingnamespace @import("arch/x86/arch.zig");
-// -- surtr/boot.zig --
-const arch = @import("arch.zig");
-arch.someFunction();
-```
-
-やや黒魔術的な見た目な機能ですが、`usingnamespace` を使って構造体内のフィールドを現在のファイルのトップレベルスコープに import するようなことはできないため安心してください:
-
-```zig
-usingnamespace @import("some.zig"); // someFunction() が定義されているファイル
-someFunction(); // このようなことはできない
-```
-
-</div>
+> [!INFO] usingnamespace
+>
+> [usingnamespace](https://ziglang.org/documentation/master/#usingnamespace) は、指定した構造体のフィールド全てを現在のスコープに持ってきてくれる機能です。
+> 今回の場合、単純に `@import("arch/x86/arch.zig")` すると以下のように利用側では一段余計なフィールドを指定する必要があります:
+>
+> ```zig
+> // -- surtr/arch.zig --
+> pub const impl = @import("arch/x86/arch.zig");
+> // -- surtr/boot.zig --
+> const arch = @import("arch.zig");
+> arch.impl.someFunction();
+> ```
+>
+> `usingnamespace` を使うことで、この余計な一段階を省くことができるようになります:
+>
+> ```zig
+> // -- surtr/arch.zig --
+> pub usingnamespace @import("arch/x86/arch.zig");
+> // -- surtr/boot.zig --
+> const arch = @import("arch.zig");
+> arch.someFunction();
+> ```
+>
+> やや黒魔術的な見た目な機能ですが、`usingnamespace` を使って構造体内のフィールドを現在のファイルのトップレベルスコープに import するようなことはできないため安心してください:
+>
+> ```zig
+> usingnamespace @import("some.zig"); // someFunction() が定義されているファイル
+> someFunction(); // このようなことはできない
+> ```
 
 `arch/x86/arch.zig` はアーキ依存のコードに置いて `arch` 以外から利用したいファイルを定義します。
 今回はページテーブルを実装したいため、 `arch/x86/page.zig` を作成したあと、

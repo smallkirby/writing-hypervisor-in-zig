@@ -46,29 +46,26 @@ Zig において、文字列リテラルは `[N:0]const u8` という [Sentinel-
 `outputString()`の引数の型は `[*:0]const u16` であるため、`u8`型を`u16`型に変換する必要があります。
 `for`ループの中身の `&[_:0]u16{ b }` では `u8` 型の `b` を `u16` 型に変換しています。
 
-<div class="warning">
-Zig における配列
-
-Zig において、配列の初期化は以下のように行います:
-
-```zig
-const array = [3]u8 { 0, 1, 2 };
-```
-
-ただし、配列のサイズが明らかである場合にはサイズを `_` で省略できます:
-
-```zig
-const array = [_]u8 { 0, 1, 2 };
-```
-
-また、NULL終端された配列は以下のように初期化できます:
-
-```zig
-const array = [_:0]u8 { 0, 1, 2 };
-```
-
-この場合、`array.len == 4` ではありますが `array[4]` にアクセスでき、その値は `0` になります。
-</div>
+> [!INFO] Zig における配列
+> Zig において、配列の初期化は以下のように行います:
+>
+> ```zig
+> const array = [3]u8 { 0, 1, 2 };
+> ```
+>
+> ただし、配列のサイズが明らかである場合にはサイズを `_` で省略できます:
+>
+> ```zig
+> const array = [_]u8 { 0, 1, 2 };
+> ```
+>
+> また、NULL終端された配列は以下のように初期化できます:
+>
+> ```zig
+> const array = [_:0]u8 { 0, 1, 2 };
+> ```
+>
+> この場合、`array.len == 4` ではありますが `array[4]` にアクセスでき、その値は `0` になります。
 
 ## ログ実装のオーバーライド
 
@@ -177,32 +174,29 @@ log.info("Initialized bootloader log.", .{});
 
 QEMU を動かしてログが出力されるかどうかを確認してください。
 
-<div class="warning">
-unreachable
-
-Zig において関数は [Error Union Type](https://ziglang.org/documentation/master/#Error-Union-Type) を返します。
-この型は、エラー型と成功時の型の両方を合わせた `LogError!u32` のようなかたちをしています。
-エラーとして任意の方を許容する場合には `!u32` のように書くこともできます。
-逆にエラーを一切返さない場合には `u32` と書けます。
-
-関数を呼び出したとき、その関数がエラーを返す可能性がある場合には `catch` で受けることでエラーを処理できます:
-
-```zig
-const value = SomeFunction() catch |err| {
-    log.error("SomeFunction failed: {?}", .{err});
-    @panic();
-}
-```
-
-エラーが返されなかった場合、`catch` ブロックは実行されず、`value` には関数の返り値が代入されます。
-先程の `writerFunction()` では `outputString()` がエラーを返す可能性があるため、`catch unreachable` でエラーを処理しています。
-
-ここで、`unreachable`の意味は**ビルドの最適化レベルによって変化します**。
-`Debug` と `ReleaseSafe` レベルの場合、`unreachable` は `@panic()` を引き起こします。
-それ以外の場合には、`unreachable`は「到達することがない」というアノテーションとして働くため、
-実際にその箇所に到達してしまった場合の挙動は未定義です。
-実行される可能性がある箇所に `unreachable` を置かないように気をつけましょう。
-</div>
+> [!INFO] unreachable
+> Zig において関数は [Error Union Type](https://ziglang.org/documentation/master/#Error-Union-Type) を返します。
+> この型は、エラー型と成功時の型の両方を合わせた `LogError!u32` のようなかたちをしています。
+> エラーとして任意の方を許容する場合には `!u32` のように書くこともできます。
+> 逆にエラーを一切返さない場合には `u32` と書けます。
+>
+> 関数を呼び出したとき、その関数がエラーを返す可能性がある場合には `catch` で受けることでエラーを処理できます:
+>
+> ```zig
+> const value = SomeFunction() catch |err| {
+>     log.error("SomeFunction failed: {?}", .{err});
+>     @panic();
+> }
+> ```
+>
+> エラーが返されなかった場合、`catch` ブロックは実行されず、`value` には関数の返り値が代入されます。
+> 先程の `writerFunction()` では `outputString()` がエラーを返す可能性があるため、`catch unreachable` でエラーを処理しています。
+>
+> ここで、`unreachable`の意味は**ビルドの最適化レベルによって変化します**。
+> `Debug` と `ReleaseSafe` レベルの場合、`unreachable` は `@panic()` を引き起こします。
+> それ以外の場合には、`unreachable`は「到達することがない」というアノテーションとして働くため、
+> 実際にその箇所に到達してしまった場合の挙動は未定義です。
+> 実行される可能性がある箇所に `unreachable` を置かないように気をつけましょう。
 
 ## ログのスコープ
 

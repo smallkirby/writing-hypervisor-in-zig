@@ -105,12 +105,9 @@ arch.someFunction();
 `std` と同じノリで `ymir` モジュールにアクセスできますね。
 これ以降は意図しない import を防ぐため、**同一ディレクトリ以外のファイルを相対パスを使って直接 import することは原則禁止**とします。
 
-<div class="warning">
-ymir への ymir の追加
-
-Zig に馴染みがない人は、`ymir` executable に `ymir` モジュールを追加するというのは気持ち悪いかもしれません。
-筆者も当初は違和感を感じたため [Ziggit](https://ziggit.dev/) で聞いてみたところ、このような書き方は合法なのは勿論、自然であるとのことでした[^self-dependent]。
-</div>
+> [!TIP] ymir への ymir の追加
+> Zig に馴染みがない人は、`ymir` executable に `ymir` モジュールを追加するというのは気持ち悪いかもしれません。
+> 筆者も当初は違和感を感じたため [Ziggit](https://ziggit.dev/) で聞いてみたところ、このような書き方は合法なのは勿論、自然であるとのことでした[^self-dependent]。
 
 ## シリアルの基本の定義
 
