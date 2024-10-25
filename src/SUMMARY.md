@@ -17,5 +17,6 @@
 
 - [シリアル出力](kernel/serial_output.md)
 - [ビット演算とテスト](kernel/bit_and_test.md)
+- [シリアルログシステム](kernel/serial_logsystem.md)
 
 [ライセンス](license.md)
