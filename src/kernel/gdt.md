@@ -25,13 +25,13 @@ graph TD
 **MMU: Memory Management Unit** がページテーブルによる変換をしたアドレスです。
 
 ページテーブルについては [Surtr の簡易ページテーブル](../bootloader/simple_pg.md) で既に実装済みです。
-本チャプターでは Logical to Linear の変換を行う GDT の設定をします。
+本チャプターでは Logical to Linear の変換をする GDT の設定をします。
 
 ## Linear Address と Segment Selector
 
 Linear Address は 32bit のアドレス (`0` - `0xFFFFFFFF`) です[^phys-space]。
 Logical to Linear 変換には GDT というテーブルと **Segment Selector** が使われます。
-GDT と Segment Selector の2つから、そのセグメントの *Base* / *Limit* / *Access Right* などを取得することができます。
+GDT と Segment Selector の2つから、そのセグメントの *Base* / *Limit* / *Access Right* などを取得できます。
 
 ![Logical Address to Linear Address Translation](../assets/sdm/logi2lin.png)
 *Logical Address to Linear Address Translation. SDM Vol.3A 3.4*
@@ -107,13 +107,13 @@ Logical to Linear 変換の際には、*CPL* が変換に利用するセグメ�
 よって、Logical to Linear 変換では実際にはアドレスの変換は行われず、フラットで巨大な1つのセグメントが使われているものとして扱われます[^virt]。
 
 例外は *FS* と *GS* セグメントです。
-この2つに対しては依然としてセグメンテーションをすることができ、どのように利用するかはソフトウェア依存です。
+この2つに対しては依然としてセグメントが設定ができ、どのように利用するかはソフトウェア依存です。
 [glibc](https://www.gnu.org/software/libc/) においては FS は **TLS: Thread Local Storage** を表現するのに使われます。
-Linux Kernel においては、GS は per-CPU データを表現するのに使われます。
+Linux Kernel においては、GS は per-CPU データを表現するのに使われます[^linux-fsgs]。
 
 なお、FS/GS を使う場合にも実際に利用されるのは *Base* 部分のみです[^limit]。
 それも FS/GS の Segment Selector (Segment Register) に書き込む方法に加え、
-**FSBASE** / **GSBASE** という MSR に *Base* を書き込むことで設定することもできます。
+**FSBASE** / **GSBASE** という MSR に *Base* を書き込むことで設定する方法も可能です。
 FS/GS の Hidden Part の一部は *FSBASE* / *GSBASE* にマップされています。
 ちなみに、MSR への書き込み ([WRMSR](https://www.felixcloutier.com/x86/wrmsr)) は特権命令であるため context switch を伴います。
 そのため Ivy Bridge からは [FSGSBASE](https://www.intel.com/content/www/us/en/developer/articles/technical/software-security-guidance/best-practices/guidance-enabling-fsgsbase.html) という拡張機能が実装され、ユーザランドから直接 *FSBASE* にアクセスできるようになりました ([RDFSBASE / RDGSBASE](https://www.felixcloutier.com/x86/rdfsbase:rdgsbase))。
@@ -134,7 +134,7 @@ Linux と異なり、GS も現在は使う予定がありません。
 
 ### 基本構造の定義
 
-TODO
+Figure 3-8 で示される GDT エントリを定義します:
 
 ```ymir/arch/x86/gdt.zig
 pub const SegmentDescriptor = packed struct(u64) {
@@ -181,9 +181,259 @@ pub const Granularity = enum(u1) {
 };
 ```
 
-### Null Descriptor
+上記で説明していなかったフィールドについては以下のようになります:
 
-TODO
+| Field | Description |
+| --- | --- |
+| `accessed`, `rw`, `dc`, `executable` | Type field. セグメントに対するアクセスの設定[^type]。 `dc` は Code / Data Segment 種別。 |
+| `desc_type` | Application Descriptor / System Descriptor[^sys] の区別 |
+| `present` | セグメントがスワップアウトされていれば `false` |
+| `avl` | 自由に使っていいビット |
+| `db` | Type field によって意味が異なる。何らかデフォルトのサイズを決める。 |
+| `long` | Code Segment が 64bit かどうか |
+
+### NULL Descriptor
+
+GDT の 0 番目のエントリは **NULL Descriptor** として使われます。
+*NULL descriptor* は CPU が実際に利用することはありません。
+*NULL descriptor* を指す Segment Selector は **NULL segment selector** と呼ばれます。
+CS/SS を除く使わない Segment Selector には *NULL segment selector* を入れることができます。
+ただし、NULL segment selector を使ってメモリアクセスをしようとすると *#GP* になります。
+
+### エントリの作成
+
+それではコードセグメント・データセグメントを初期化していきます:
+
+```ymir/arch/x86/gdt.zig
+const max_num_gdt = 0x10;
+
+var gdt: [max_num_gdt]SegmentDescriptor align(16) = [_]SegmentDescriptor{
+    SegmentDescriptor.newNull(),
+} ** max_num_gdt;
+```
+
+GDT のエントリ数は可変であり自由に決めることができる[^num_gdt]ので、適当に 10 にしています。
+この個数分だけ GDT エントリの配列を用意します。
+`newNull()` は空のエントリを作成する関数です:
+
+```ymir/arch/x86/gdt.zig
+pub fn newNull() SegmentDescriptor {
+    return @bitCast(@as(u64, 0));
+}
+
+pub fn new(
+    rw: bool,
+    dc: bool,
+    executable: bool,
+    base: u32,
+    limit: u20,
+    dpl: u2,
+    granularity: Granularity,
+) SegmentDescriptor {
+    return SegmentDescriptor{
+        .limit_low = @truncate(limit),
+        .base_low = @truncate(base),
+        .rw = rw,
+        .dc = dc,
+        .executable = executable,
+        .desc_type = .code_data,
+        .dpl = dpl,
+        .present = true,
+        .limit_high = @truncate(limit >> 16),
+        .avl = 0,
+        .long = executable,
+        .db = @intFromBool(!executable),
+        .granularity = granularity,
+        .base_high = @truncate(base >> 24),
+    };
+}
+```
+
+Segment Descriptor エントリはフィールド数も多くて初期化がめんどうなので、 `new()` ヘルパー関数もついでに定義しています。
+
+必要なエントリを初期化しましょう。
+今回はコード・データセグメント用の2つを作成し、CS は前者を、DS/ES/FS/GS は後者を指すようにします:
+
+```ymir/arch/x86/gdt.zig
+pub const kernel_ds_index: u16 = 0x01;
+pub const kernel_cs_index: u16 = 0x02;
+
+pub fn init() void {
+    gdt[kernel_cs_index] = SegmentDescriptor.new(
+        true,
+        false,
+        true,
+        0,
+        std.math.maxInt(u20),
+        0,
+        .kbyte,
+    );
+    gdt[kernel_ds_index] = SegmentDescriptor.new(
+        true,
+        false,
+        false,
+        0,
+        std.math.maxInt(u20),
+        0,
+        .kbyte,
+    );
+    ...
+}
+```
+
+両者の違いは `executable` かどうかだけです。
+`.rw` はデータセグメントでは `writable`、コードセグメントでは `readable` という意味になります。
+
+GDT 自体の初期化が終わったため、GDT Register に GDT のアドレスを設定します:
+
+```ymir/arch/x86/gdt.zig
+const GdtRegister = packed struct {
+    limit: u16,
+    base: *[max_num_gdt]SegmentDescriptor,
+};
+
+var gdtr = GdtRegister{
+    .limit = @sizeOf(@TypeOf(gdt)) - 1,
+    .base = undefined,
+};
+
+pub fn init() void {
+    ...
+    gdtr.base = &gdt;
+    am.lgdt(@intFromPtr(&gdtr));
+    ...
+}
+```
+
+GDTR は GDT のアドレスとサイズのみを持ちます。
+アドレスは本来であれば物理アドレスをしていするべきですが、Ymir はまだ UEFI が提供してくれたストレートマップを利用しており、
+仮想アドレスと物理アドレスが等しいです。
+そのため、`&gdt` をそのまま物理アドレスとして使っています。
+
+> [!WARN] Zig の static initialization バグ
+> 本当は `gdtr` について宣言時に `.base = &gdt` として初期化したかったのですが、
+> 現在 Zig or LLVM にバグ[^zig-bug]がありエラーになってしまいます。
+> そのため、仕方なく `init()` の中で `&gdt` を代入しています。
+
+`am.lgdt()` は [LGDT](https://www.felixcloutier.com/x86/lgdt:lidt) 命令をするだけのアセンブリ関数です:
+
+```ymir/arch/x86/asm.zig
+pub inline fn lgdt(gdtr: u64) void {
+    asm volatile (
+        \\lgdt (%[gdtr])
+        :
+        : [gdtr] "r" (gdtr),
+    );
+}
+```
+
+### Segment Register のフラッシュ
+
+GDT の初期化は終わりましたが、まだ新しいセグメントの設定は反映されません。
+なぜならば、**セグメントの *Base* は Segment Register の Hidden Part にキャッシュされているから**です。
+Segment Register の selector 部に新しく GDT のインデックスを設定して初めて新しいセグメント設定が使われるようになります:
+
+```ymir/arch/x86/gdt.zig
+fn loadKernelDs() void {
+    asm volatile (
+        \\mov %[kernel_ds], %di
+        \\mov %%di, %%ds
+        \\mov %%di, %%es
+        \\mov %%di, %%fs
+        \\mov %%di, %%gs
+        \\mov %%di, %%ss
+        :
+        : [kernel_ds] "n" (@as(u16, @bitCast(SegmentSelector{
+            .rpl = 0,
+            .index = kernel_ds_index,
+          }))),
+        : "di",
+    );
+}
+```
+
+Segment Register には [MOV](https://www.felixcloutier.com/x86/mov) 命令を使って直接代入できます。
+*DI* レジスタを使って代入しているため、*DI* レジスタを [clobber](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#Clobbers-and-Scratch-Registers) しています。
+
+ただし、*CS* レジスタに関しては直接 *MOV* はできません。
+そのため、[long return](https://docs.oracle.com/cd/E19620-01/805-4693/instructionset-68/index.html) することで CS を設定します:
+
+```ymir/arch/x86/gdt.zig
+fn loadKernelCs() void {
+    asm volatile (
+        \\
+        // Push CS
+        \\mov %[kernel_cs], %%rax
+        \\push %%rax
+        // Push RIP
+        \\leaq next(%%rip), %%rax
+        \\pushq %%rax
+        \\lretq
+        \\next:
+        \\
+        :
+        : [kernel_cs] "n" (@as(u16, @bitCast(SegmentSelector{
+            .rpl = 0,
+            .index = kernel_cs_index,
+          }))),
+    );
+}
+```
+
+`lret` はスタックに積んだ CS/RI を POP して設定してくれます。
+RIP は変更させたくないため直後の `lret` の次の命令を PUSH することで、CS を設定する効果だけを得ています。
+
+以上で GDT の更新が反映されるように成ります。
+`init()` から呼び出すようにしておきましょう:
+
+```ymir/arch/x86/gdt.zig
+pub fn init() void {
+    ...
+    loadKernelDs();
+    loadKernelCs();
+}
+```
+
+## 確認
+
+実装した GDT の初期化関数を `kernelMain()` から呼び出すようにします:
+
+```ymir/main.zig
+arch.gdt.init();
+log.info("Initialized GDT.", .{});
+```
+
+実行すると、一見すると何も変わらずループまで到達すると思います。
+そこで QEMU monitor を立ち上げ、レジスタをチェックしてみましょう:
+
+```txt
+QEMU 8.2.2 monitor - type 'help' for more information
+(qemu) info registers
+
+CPU#0
+RAX=deadbeefcafebabe RBX=000000001fe91f78 RCX=00cf93000000ffff RDX=ffffffff801003f8
+RSI=0000000000000030 RDI=000000000000000a RBP=000000001fe908a0 RSP=ffffffff80106f10
+R8 =000000001fe8ff8c R9 =000000001f9ec018 R10=000000001fae6880 R11=0000000089f90beb
+R12=000000001feaff40 R13=000000001fe93720 R14=ffffffff801003c0 R15=00000000ff000000
+RIP=ffffffff80100331 RFL=00000046 [---Z-P-] CPL=0 II=0 A20=1 SMM=0 HLT=1
+ES =0008 0000000000000000 ffffffff 00c09300 DPL=0 DS   [-WA]
+CS =0010 0000000000000000 ffffffff 00a09b00 DPL=0 CS64 [-RA]
+SS =0008 0000000000000000 ffffffff 00c09300 DPL=0 DS   [-WA]
+DS =0008 0000000000000000 ffffffff 00c09300 DPL=0 DS   [-WA]
+FS =0008 0000000000000000 ffffffff 00c09300 DPL=0 DS   [-WA]
+GS =0008 0000000000000000 ffffffff 00c09300 DPL=0 DS   [-WA]
+LDT=0000 0000000000000000 0000ffff 00008200 DPL=0 LDT
+TR =0000 0000000000000000 0000ffff 00008b00 DPL=0 TSS64-busy
+GDT=     ffffffff80108010 0000007f
+IDT=     000000001f537018 00000fff
+CR0=80010033 CR2=0000000000000000 CR3=000000001e4d6000 CR4=00000668
+```
+
+セグメントレジスタの一番左の数字が Segment Selector です。
+Selector のうち下位 3bit は *RPL*/*TI* であり、それ以降が GDT index になっています。
+CS では selector が `0x10`、つまり index が `0x02` になっています。
+DS/ES/FS/GS は selector が `0x08`、つまり index が `0x01` になっています。
+それぞれ `kernel_ds_index` / `kernel_cs_index` に設定した値になっていることが確認できます。
 
 [^ldt]: 同様にセグメントを設定する構造に **LDT: Local Descriptor Table** がありますが、Ymir では GDT のみを使います。
 [^phys-space]: x64 (Intel64) における物理アドレス空間のサイズは実装依存です。
@@ -191,3 +441,9 @@ CPUID `0x80000008` で実際のサイズを取得できます。
 最近の CPU だと 46bit の場合が多いと思います。
 [^hidden-cache]: Page Table を使ったアドレス変換における、**TLB: Translation Lookaside Buffer** と似たような感じですね。
 [^virt]: Logical to Linear 変換が行われないため、本シリーズでは Logical/Linear Address のことをまとめて仮想アドレスと呼びます。
+[^linux-fsgs]: [A possible end to the FSGSBASE saga - LWN.net](https://lwn.net/Articles/821723/)
+[^type]: この 4bit 分のフィールドは、*Descriptor Type* が *application (code / data)* か *system* かによって変わります。
+本シリーズでは *system* セグメントを扱わないため、*application* 用のフィールドのみを定義します。
+[^sys]: System Descriptor には、*LDT* / *TSS* / Call-gate / Interrupt-gate / Trap-gate / Task-gate descriptor があります。
+[^num_gdt]: ただし、上限は IA-32e mode で \\(2^{13} = 8192\\) 個です。
+[^zig-bug]: [error: LLVM ERROR: Unsupported expression in static initializer #17856](https://github.com/ziglang/zig/issues/17856)
