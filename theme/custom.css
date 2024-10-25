@@ -35,10 +35,15 @@ table {
 
 .mdbook-callouts-title {
     margin-bottom: 1.0rem;
-    text-transform: none !important;
+    text-transform: uppercase !important;
     font-size: 1.05em;
 }
 
 span.mdbook-callouts-icon {
     margin-right: 10px;
+}
+
+pre.mermaid {
+    display: flex;
+    justify-content: center;
 }

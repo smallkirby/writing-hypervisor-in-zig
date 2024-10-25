@@ -15,7 +15,7 @@ use-default-preprocessors = true
 [output.html]
 git-repository-url = "https://github.com/smallkirby/writing-hypervisor-in-zig"
 additional-css = ["theme/pagetoc.css", "theme/custom.css"]
-additional-js = ["theme/pagetoc.js"]
+additional-js = ["theme/pagetoc.js", "theme/mermaid.min.js", "theme/mermaid-init.js"]
 default-theme = "navy"
 site-url = "/"
 cname = "hv.smallkirby.com"
@@ -40,3 +40,6 @@ renderer = ["html"]
 [preprocessor.callouts]
 
 [preprocessor.codename]
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"

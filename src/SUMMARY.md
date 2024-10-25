@@ -18,5 +18,8 @@
 - [シリアル出力](kernel/serial_output.md)
 - [ビット演算とテスト](kernel/bit_and_test.md)
 - [シリアルログシステム](kernel/serial_logsystem.md)
+- [GDT](kernel/gdt.md)
+- [割り込みと例外](kernel/interrupt.md)
+- [パニック](kernel/panic.md)
 
 [ライセンス](license.md)
