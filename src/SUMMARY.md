@@ -15,7 +15,7 @@
 
 # Ymir
 
-- [シリアルログ出力](kernel/serial_log.md)
+- [シリアル出力](kernel/serial_output.md)
 - [ビット演算とテスト](kernel/bit_and_test.md)
 
 [ライセンス](license.md)
