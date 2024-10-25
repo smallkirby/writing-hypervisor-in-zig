@@ -23,7 +23,8 @@ jobs:
             mdbook@0.4.40 \
             mdbook-toc@0.14.2 \
             mdbook-callouts@0.2.1 \
-            mdbook-codename@0.0.1
+            mdbook-codename@0.0.1 \
+            mdbook-mermaid@0.14.0
 
       - name: Build book
         run: mdbook build
