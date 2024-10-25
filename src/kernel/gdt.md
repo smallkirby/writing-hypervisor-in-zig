@@ -111,7 +111,7 @@ Logical to Linear 変換の際には、*CPL* が変換に利用するセグメ�
 [glibc](https://www.gnu.org/software/libc/) においては FS は **TLS: Thread Local Storage** を表現するのに使われます。
 Linux Kernel においては、GS は per-CPU データを表現するのに使われます[^linux-fsgs]。
 
-なお、FS/GS を使う場合にも実際に利用されるのは *Base* 部分のみです[^limit]。
+なお、FS/GS を使う場合にも実際に利用されるのは *Base* 部分のみです。
 それも FS/GS の Segment Selector (Segment Register) に書き込む方法に加え、
 **FSBASE** / **GSBASE** という MSR に *Base* を書き込むことで設定する方法も可能です。
 FS/GS の Hidden Part の一部は *FSBASE* / *GSBASE* にマップされています。
