@@ -111,8 +111,6 @@ if (elements.length > 1) {
     var pagetoc = getPagetoc();
     var elements = getHeaders();
     forEach(elements, function (el) {
-      if (el.parentElement.tagName !== "H2") return;
-
       var link = document.createElement("a");
       link.appendChild(document.createTextNode(el.text));
       link.href = el.hash;
