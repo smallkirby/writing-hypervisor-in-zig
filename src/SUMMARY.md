@@ -20,6 +20,7 @@
 - [シリアルログシステム](kernel/serial_logsystem.md)
 - [GDT](kernel/gdt.md)
 - [割り込みと例外](kernel/interrupt.md)
+- [Page Allocator](kernel/page_allocator.md)
 - [パニック](kernel/panic.md)
 
 [ライセンス](license.md)
