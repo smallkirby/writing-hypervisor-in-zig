@@ -21,6 +21,7 @@
 - [GDT](kernel/gdt.md)
 - [割り込みと例外](kernel/interrupt.md)
 - [Page Allocator](kernel/page_allocator.md)
+- [ページング](kernel/paging.md)
 - [パニック](kernel/panic.md)
 
 [ライセンス](license.md)
