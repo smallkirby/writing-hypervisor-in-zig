@@ -47,3 +47,7 @@ pre.mermaid {
     display: flex;
     justify-content: center;
 }
+
+img {
+    width: 100%;
+}
