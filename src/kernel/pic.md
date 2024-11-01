@@ -245,7 +245,7 @@ pub fn relax() void {
 
 `issue()` は `Icw` か `Ocw` のみを受け付けることを保証します。
 `union` に対する `switch` は、active なフィールドに応じて処理を変更させることができます。
-今回はどのフィールドに対しても同様に `@bitCast()` して [OUTB](https://www.felixcloutier.com/x86/out) 命令を実行したいです。
+今回はどのフィールドに対しても同様に `@bitCast()` して [OUTB](https://www.felixcloutier.com/x86/out) を実行したいです。
 そのため、`inline else` によって無条件に `union` の中身のフィールドを取り出しています。
 
 この関数を使うと、PIC の初期化関数は簡単に書けます:
@@ -311,7 +311,7 @@ Ymir では、Primary PIC と Secondary PIC に対してそれぞれ `32` と `4
 ### EOI
 
 **EOI: End of Interrupt** は PIC に対してさらなる割り込みの送信を許可するための通知です。
-EOI には以下の2つのモードがあり、ICW4 で設定することができます:
+EOI には以下の2つのモードがあり、ICW4 で設定できます:
 
 - **Automatic EOI**: PIC が CPU に対して割り込みを通知し、CPU から最後の \\( \overline{INTA} \\) 信号を受け取ると自動的に EOI を受理したものとします。
 - **Normal EOI**: CPU が明示的に EOI コマンドを送信します。
@@ -419,7 +419,7 @@ pub fn notifyEoi(irq: IrqLine) void {
 前述したように Secondary に対する EOI は Primary/Secondary の両方に送信する必要があります。
 よって、先ほど用意した `isPrimary()` を使って分岐しています。
 
-## アウトロ
+## 割り込みのアンマスク
 
 `kernelMain()` から PIC の初期化を実行しましょう (`arch.zig` において `pic.zig` を export するのを忘れずに):
 
@@ -429,11 +429,119 @@ log.info("Initialized PIC.", .{});
 ```
 
 これで PIC の初期化が完了しました。
-まぁ、実行したところで前回までと何も変わりません。
-なにせ、まだ全ての IRQ は IMR でマスクされています。
-どんな IRQ も割り込みを発生させません。
-今はまだ割り込みハンドラを用意していないため、これでOKです。
-このままだと PIC が正しく設定されているかどうかもわからないため、次のチャプターではタイマー割り込みを有効化してみましょう。
+ただし、実行したところで前回までと何も変わりません。
+なにせまだ全ての IRQ は IMR でマスクされてるため、どんな IRQ も割り込みを発生させません。
+本チャプターの締めくくりとして、シリアルの割り込みを有効化してみます。
+
+まず、シリアル用の割り込みハンドラを定義します。
+とはいっても、Ymir 自体は入力を受け付けて処理するような機能は実装しません。
+そのため、とりあえずログだけ出力したあと EOI を送信するだけの割り込みハンドラを用意します:
+
+```ymir/main.zig
+fn blobIrqHandler(ctx: *arch.intr.Context) void {
+    const vector: u16 = @intCast(ctx.vector - 0x20);
+    log.debug("IRQ: {d}", .{vector});
+    arch.pic.notifyEoi(@enumFromInt(vector));
+}
+```
+
+[割り込みと例外](./interrupt.md) で実装したように、割り込みハンドラは `Context`  というコンテキスト情報を受けとります。
+この中には割り込みベクタも入っています。
+IRQ の番号を取得するには、割り込みベクタから ICW2 で設定したオフセットを引くだけです。
+算出した IRQ の番号を出力したあと、`notifyEoi()` で EOI を送信します。
+
+続いて、この割り込みハンドラを登録します。
+そういえば割り込みハンドラを登録する関数を実装していなかったため、ここで実装しておきます:
+
+```ymir/arch/x86/interrupt.zig
+pub fn registerHandler(comptime vector: u8, handler: Handler) void {
+    handlers[vector] = handler;
+    idt.setGate(
+        vector,
+        .Interrupt64,
+        isr.generateIsr(vector),
+    );
+}
+```
+
+`kernelMain()` で割り込みハンドラを登録し、PIC にシリアルの割り込みマスクを外すように指示します:
+
+```ymir/main.zig
+arch.intr.registerHandler(idefs.pic_serial1, blobIrqHandler);
+arch.pic.unsetMask(.serial1);
+```
+
+これで準備万端と思いきや、これでもまだ割り込みは発生しません。
+シリアル自体に割り込みを発生させるように設定してあげる必要があります。
+シリアルの **IER: Interrupt Enable Register** に対して `0b01` という値を書き込むことで、Rx-available な状態になった時に割り込みを発生させることができます。
+Rx-available は、シリアル入力がバッファから読み取り可能な状態になった場合に発生します。
+
+```ymir/arch/x86/serial.zig
+pub fn enableInterrupt(port: Ports) void {
+    var ie = am.inb(@intFromEnum(port) + offsets.ier);
+    ie |= @as(u8, 0b0000_0001); // Rx-available
+    ie &= @as(u8, 0b0000_0010); // Tx-empty
+    am.outb(ie, @intFromEnum(port) + offsets.ier);
+}
+```
+
+なお、IER の 1-th bit をクリアしているのは無限割り込みを防ぐためです。
+Tx-empty は、シリアル出力しようとしたデータが実際に送信され、出力バッファに他のデータを書き込める状態になった時に発生します。
+しかし、割り込みハンドラの中でさらにシリアルログ出力をしており、これがまた Tx-empty を発生させます。
+永遠に TX-empty → シリアルログ出力 → TX-empty → ... というループが発生してしまうため、この割り込みは無効化しておきます。
+
+これでシリアルの割り込みが有効化されました。
+実際に実行してみましょう:
+
+```txt
+[INFO ] main    | Booting Ymir...
+[INFO ] main    | Initialized GDT.
+[INFO ] main    | Initialized IDT.
+[INFO ] main    | Initialized page allocator.
+[INFO ] main    | Reconstructing memory mapping...
+[INFO ] main    | Initialized general allocator.
+[INFO ] main    | Initialized PIC.
+[DEBUG] main    | IRQ: 4
+```
+
+`Initialized PIC` という表示の後に適当なキーを押すと、`IRQ: 4` という表示が出力されました。
+しっかりとシリアルの割り込みが発生していることがわかります。
+PIC の設定がちゃんとできていることの証拠ですね。
+
+ここで `enableInterrupt()` で設定した IER ですが、Tx-empty の無効化はコードから消して、逆に有効化するようにしておいてください。
+本シリーズでは Ymir が CPU を仮想化する際、シリアルへの操作はすべて仮想化します。
+その際、IER は固定で Tx-empty と Rx-available だけを有効化しておくように仮想化し、ゲストには触らせないようにする予定です。
+そのため、IER はあらかじめホストである Ymir が設定しておく必要があるというわけです:
+
+```ymir/arch/x86/serial.zig
+    ie |= @as(u8, 0b0000_0011); // Tx-empty, Rx-available
+```
+
+また、ついでに [PIT](https://wiki.osdev.org/Programmable_Interval_Timer) もマスクだけ外しておきましょう:
+
+```ymir/main.zig
+arch.intr.registerHandler(idefs.pic_timer, blobIrqHandler);
+arch.pic.unsetMask(.timer);
+log.info("Enabled PIT.", .{});
+```
+
+PIT の設定はしていませんが、デフォルトの状態で(または UEFI が設定したおかげで)タイマーは動いているようです。
+このまま実行すると `IRQ: 0` という表示が一定間隔で出力され続けるはずです。
+
+最後に、タイマーもシリアルも割り込みハンドラで出力をすると非常に鬱陶しいため `log.debug()` は削除しておきましょう。
+
+## アウトロ
+
+本チャプターでは Intel 8259A PIC の初期化と割込みの有効化をしました。
+タイマーとシリアルの割り込みマスクを外し、実際に割り込みハンドラが呼ばれることを確認しました。
+Ymir では直接 IRQ をハンドルすることはありませんが、ゲストに対して PIC の一部を仮想化する上でもホスト側での PIC の設定は必要です。
+
+そして！
+本チャプターで Ymir のカーネル部分(非hypervisor部分)の実装は完了になります！
+Writing Hypervisor というタイトルなのにも関わらず、hypervisor にあまり関係ない部分が多くなってしまいました。
+しかし、ベアメタルな hypervisor を書くということは、まずはベアメタルな OS を書くことから始まります。
+今回までで OS という下地を作ることができたので、次回からはいよいよ hypervisor の章に入っていこうと思います。
+今日は温かくして早めに寝てください。
 
 ## References
 
