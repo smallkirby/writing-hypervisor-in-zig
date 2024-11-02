@@ -13,7 +13,21 @@
       "no-doubled-joshi": false,
       "ja-no-weak-phrase": false,
       "sentence-length": false,
-      "no-exclamation-question-mark": false
+      "no-exclamation-question-mark": false,
+      "max-kanji-continuous-len": false,
+      "ja-no-redundant-expression": {
+        "dictOptions": {
+          "dict2": {
+            "disabled": true
+          },
+          "dict6": {
+            "allows": [
+              "/^命令を実行/",
+              "/^テストを実行/"
+            ]
+          }
+        }
+      }
     }
   }
 }

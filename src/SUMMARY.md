@@ -13,7 +13,7 @@
 - [メモリマップとお片付け](bootloader/cleanup_memmap.md)
 - [カーネルの起動](bootloader/jump_to_ymir.md)
 
-# Ymir
+# Ymir Kernel
 
 - [シリアル出力](kernel/serial_output.md)
 - [ビット演算とテスト](kernel/bit_and_test.md)
@@ -24,5 +24,9 @@
 - [ページング](kernel/paging.md)
 - [General Allocator](kernel/general_allocator.md)
 - [PIC](kernel/pic.md)
+
+# Ymir VMM
+
+- [VMX Root Operation](vmm/vmx_root.md)
 
 [ライセンス](license.md)
