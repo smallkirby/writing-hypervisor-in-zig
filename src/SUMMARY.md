@@ -28,5 +28,6 @@
 # Ymir VMM
 
 - [VMX Root Operation](vmm/vmx_root.md)
+- [VMCS](vmm/vmcs.md)
 
 [ライセンス](license.md)
