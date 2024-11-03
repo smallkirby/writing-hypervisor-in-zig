@@ -365,8 +365,240 @@ pub const Vm = struct {
 ## VMX Operation への遷移
 
 VMX がサポートされていることが確認できたため、VMX Operation へ遷移しましょう。
+VMX Operation に移行するためには、CR レジスタの設定と VMXON 命令の実行が必要になります。
 
-TODO
+### CR レジスタの設定
+
+VMX Operation に入るためには CR0, CR4 レジスタの設定を適切に指定する必要があります。
+また、一度 VMX Operation に入ると CR0, CR4 の一部の値は固定化され、値を変更しようとすると `#GP` になります。
+
+CR0 の値は `IA32_VMX_CR0_FIXED0` と `IA32_VMX_CR0_FIXED1` の2つの MSR で指定されます。
+前者の N-th bit が `1` の場合、`CR0[N]` は `1` である必要があります。
+後者の N-th bit が `0` の場合、`CR0[N]` は `0` である必要があります。
+CR4 も同様で `IA32_VMX_CR4_FIXED0` と `IA32_VMX_CR4_FIXED1` の2つの MSR をもとに値を指定します。
+各 MSR のアドレスは以下のとおりです:
+
+| MSR | Address |
+| --- | ------- |
+| IA32_VMX_CR0_FIXED0 | 0x486 |
+| IA32_VMX_CR0_FIXED1 | 0x487 |
+| IA32_VMX_CR4_FIXED0 | 0x488 |
+| IA32_VMX_CR4_FIXED1 | 0x489 |
+
+なお、各レジスタは下位 32bit のみが有効です。上位 32bit は無視します:
+
+```ymir/arch/x86/vmx/vcpu.zig
+fn adjustControlRegisters() void {
+    const vmx_cr0_fixed0: u32 = @truncate(am.readMsr(.vmx_cr0_fixed0));
+    const vmx_cr0_fixed1: u32 = @truncate(am.readMsr(.vmx_cr0_fixed1));
+    const vmx_cr4_fixed0: u32 = @truncate(am.readMsr(.vmx_cr4_fixed0));
+    const vmx_cr4_fixed1: u32 = @truncate(am.readMsr(.vmx_cr4_fixed1));
+
+    var cr0: u64 = @bitCast(am.readCr0());
+    cr0 |= vmx_cr0_fixed0; // Mandatory 1
+    cr0 &= vmx_cr0_fixed1; // Mandatory 0
+    var cr4: u64 = @bitCast(am.readCr4());
+    cr4 |= vmx_cr4_fixed0; // Mandatory 1
+    cr4 &= vmx_cr4_fixed1; // Mandatory 0;
+
+    am.loadCr0(cr0);
+    am.loadCr4(cr4);
+}
+```
+
+一応どのビットが強制的に 0/1 になるかを検証してみたところ、以下のようになりました:
+
+| MSR | Bits | Description |
+| --- | ---- | ----------- |
+| IA32_VMX_CR0_FIXED0 | `10000000000000000000000000100001` | PE, NE, PG |
+| IA32_VMX_CR0_FIXED1 | `11111111111111111111111111111111` | (None) |
+| IA32_VMX_CR4_FIXED0 | `00000000000000000010000000000000` | VMX |
+| IA32_VMX_CR4_FIXED1 | `00000000011101110010111111111111` | LA57, SMXE, Reserved, PKS |
+
+強制的に有効化されるのはページング関係 + VMX だけでした。
+強制的に無効化されるのは SMX や PKS など Ymir では使わない拡張機能だけでした。
+よって、このマスクを適用すること問題はありません。
+
+### VMXON
+
+VMX Operation に遷移するには [VMXON](https://www.felixcloutier.com/x86/vmxon) 命令を使います。
+この命令は引数に **VMXON Region** と呼ばれる領域の物理アドレスをとります。
+VMXON Region は CPU が VMX Operation 中に使う(かもしれない)領域です。
+一部を除いた内部構造やその使われ方は実装依存であり、システム開発者が気にする必要はありません。
+もしかしたら使われてすらいないのかもしれませんが、それすら気にする必要はありません。
+
+VMXON Region はページアラインされている必要があります。
+必要なサイズは実装依存であり、`IA32_VMX_BASIC` MSR (`0x0480`) を調べることで取得できます:
+
+```ymir/arch/x86/asm.zig
+pub fn readMsrVmxBasic() MsrVmxBasic {
+    const val = readMsr(.vmx_basic);
+    return @bitCast(val);
+}
+
+pub const MsrVmxBasic = packed struct(u64) {
+    vmcs_revision_id: u31,
+    _zero: u1 = 0,
+    vmxon_region_size: u16,
+    _reserved1: u7,
+    true_control: bool,
+    _reserved2: u8,
+};
+```
+
+VMXON Region を確保する際には取得したサイズを用いてページアラインされた領域を確保します。
+この領域は 4KiB アラインされていることが要求されます:
+
+```ymir/arch/x86/vmx/vcpu.zig
+const VmxonRegion = packed struct {
+    vmcs_revision_id: u31,
+    zero: u1 = 0,
+
+    pub fn new(page_allocator: Allocator) VmxError!*align(mem.page_size) VmxonRegion {
+        const size = am.readMsrVmxBasic().vmxon_region_size;
+        const page = page_allocator.alloc(u8, size) catch return VmxError.OutOfMemory;
+        if (@intFromPtr(page.ptr) % mem.page_size != 0) {
+            return error.OutOfMemory;
+        }
+        @memset(page, 0);
+        return @alignCast(@ptrCast(page.ptr));
+    }
+};
+```
+
+VMXON Region で唯一設定する必要のあるフィールドが **VMCS Revision Identifier** です。
+**VMCS** というのは VM/VMM の状態を設定する構造であり VMX における最も重要なものではありますが、
+ここで説明するには紙面が足りなさすぎるのでのちのチャプターに回します。
+ここでは、VMCS という構造体のバージョン番号を VMXON Region にも設定する必要があると考えれば十分です。
+この ID は、VMXON Region のサイズと同様に `IA32_VMX_BASIC` から取得します[^vmx_basic]:
+
+```ymir/arch/x86/vmx/vcpu.zig
+inline fn getVmcsRevisionId() u31 {
+    return am.readMsrVmxBasic().vmcs_revision_id;
+}
+```
+
+それでは VMXON を実行する関数を定義します。
+VMXON Region を確保したあと、VMCS Revision ID を取得しセットします。
+VMXON 命令に渡すのは物理アドレスであるため、VMXON Region の仮想アドレスを変換してから `am.vmxon()` に渡します:
+
+```ymir/arch/x86/vmx/vcpu.zig
+fn vmxon(allocator: Allocator) VmxError!*VmxonRegion {
+    const vmxon_region = try VmxonRegion.new(allocator);
+    vmxon_region.vmcs_revision_id = getVmcsRevisionId();
+    const vmxon_phys = mem.virt2phys(vmxon_region);
+
+    try am.vmxon(vmxon_phys);
+
+    return vmxon_region;
+}
+```
+
+`am.vmxon()` はアセンブリ関数です:
+
+```ymir/arch/x86/asm.zig
+const vmx = @import("vmx/common.zig");
+const vmxerr = vmx.vmxtry;
+
+pub inline fn vmxon(vmxon_region: mem.Phys) VmxError!void {
+    var rflags: u64 = undefined;
+    asm volatile (
+        \\vmxon (%[vmxon_phys])
+        \\pushf
+        \\popq %[rflags]
+        : [rflags] "=r" (rflags),
+        : [vmxon_phys] "r" (&vmxon_region),
+        : "cc", "memory"
+    );
+    try vmxerr(rflags);
+}
+```
+
+### VMX Instruction Error
+
+VMXON を含む VMX 拡張命令は、特殊な calling convention を持っています。
+返り値は RFLAGS レジスタに格納されます。
+`CF` と `ZF` がどちらも `0` であるとき、VMX 拡張命令の成功を表します。
+失敗した場合には、エラー番号が利用可能かどうかに応じて `CF` か `ZF` がセットされます。
+
+エラー番号が有効な場合の失敗は **VMfailValid** と呼ばれ、`ZF` が `1` になります。
+エラー番号の一覧については *SDM Vol.3C 31.4 VM INSTRUCTION ERROR NUMBERS* を参照してください。
+VMfailValid は、現在の論理コアが有効な VMCS を持っている場合にしか発生しません。
+現在はまだ VMCS を設定していないため、このエラーは発生しません。
+
+エラー番号が利用不可能な失敗は **VMfailInvalid** と呼ばれ、`CF` が `1` になります。
+有効な VMCS を設定する前にエラーが発生した場合にはこちらのエラーが発生します。
+
+VMX 拡張命令のエラーを処理するための関数を定義します:
+
+```ymir/arch/x86/vmx/common.zig
+pub const VmxError = error{
+    VmxStatusUnavailable,
+    VmxStatusAvailable,
+    OutOfMemory,
+};
+
+pub fn vmxtry(rflags: u64) VmxError!void {
+    const flags: arch.am.FlagsRegister = @bitCast(rflags);
+    return
+        if (flags.cf) VmxError.VmxStatusUnavailable
+        else if (flags.zf) VmxError.VmxStatusAvailable;
+}
+```
+
+この関数を使うと先ほどの `am.vmxon()` のように、VMX 拡張命令を呼び出す関数の末尾で `try vmxtry()` とすることでエラー処理ができます。
+
+## VMX Root Operation に遷移できたことの確認
+
+最後に、VMX 自体を有効化します。
+VMX の有効化は `CR4[13]` に `1` をセットすることで行います。
+VMX を有効化したら、VMXON で VMX Root Operation に遷移します:
+
+```ymir/arch/x86/vmx/vcpu.zig
+pub fn virtualize(self: *Self, allocator: Allocator) VmxError!void {
+    // Adjust control registers.
+    adjustControlRegisters();
+
+    // Set VMXE bit in CR4.
+    var cr4 = am.readCr4();
+    cr4.vmxe = true;
+    am.loadCr4(cr4);
+
+    // Enter VMX root operation.
+    self.vmxon_region = try vmxon(allocator);
+}
+```
+
+`Vm` からこの関数を呼び出します:
+
+```ymir/vmx.zig
+pub fn init(self: *Self, allocator: Allocator) Error!void {
+    try self.vcpu.virtualize(allocator);
+    log.info("vCPU #{X} is created.", .{self.vcpu.id});
+}
+```
+
+実行して最後まで処理が確認できたことを確認してみてください。
+とはいっても、VMX Root Operation に遷移したということを直接的に確認する方法はありません。
+とりわけ、VMX Non-root Operation にいる間に自身が VMX Operation にいるということを知る方法はありまえん。
+これはセキュリティ的にゲストが自分が仮想化されていることを知ることがよろしくないためです。
+
+しかしながら、VMX Root Operation にいる間は間接的に確認する方法があります。
+VMX 拡張命令の一部には、VMX Operation にいるときにしか実行できないものがあります。
+VMX Non-root Operation に遷移するための [VMLAUNCH](https://www.felixcloutier.com/x86/vmlaunch:vmresume) がその一例です。
+VMX Root Operation 以外で VMLAUNCH を実行すると `#UD: Invalid Opcode` 例外が発生します。
+よって、この命令を実行して例外が発生しなければ VMX Root Operation に遷移できているということがわかります[^vmlaunch]:
+
+```ymir/main.zig
+asm volatile("vmlaunch");
+```
+
+実行して、例外が発生しないことを確認してください。
+また、`vm.init()` を呼び出す前にこの命令を実行して例外が発生することも確認してください。
+
+以上で VMX Root Operation に遷移することができました。
+今のところ、変わったことといえば VMX 拡張命令が使えるようになったことくらいです。
+次回は、VMX の最も重要な設定項目であり、VMX の全てであると言っても過言ではない **VMCS** を扱います。
 
 [^condition]: VM Exit が発生する要因についてはのちのチャプターで詳しく扱います。
 例として、例外の発生・特定のメモリへのアクセス・あらかじめ VMM が設定した時間の経過等があります。
@@ -374,3 +606,7 @@ TODO
 製造ミスでしょうか？
 [^msr]: Ring-0 以外でアクセスした場合には `#GP(0)` が発生します。
 [^core]: 本シリーズでは仮想コアを **vCPU**、通常のCPUコアを **論理コア** または単純にCPUコアと呼びます。
+[^vmx_basic]: `IA32_VMX_BASIC` に入っている値は VMXON Region のサイズというよりも、VMCS のサイズです。
+[^vmlaunch]: VMLAUNCH 命令自体は VMXON に成功した今の段階でも実は失敗しています。
+しかしながら、例外を投げるのではなく前述した VMX Instruction Error という形でエラーを返しています。
+今回は VMLAUNCH に対するエラーハンドリングをしていないため、例外さえ投げられなければ最後まで処理が実行されます。
