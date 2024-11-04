@@ -22,6 +22,7 @@
 - [割り込みと例外](kernel/interrupt.md)
 - [Page Allocator](kernel/page_allocator.md)
 - [ページング](kernel/paging.md)
+- [パニック](kernel/panic.md)
 - [General Allocator](kernel/general_allocator.md)
 - [PIC](kernel/pic.md)
 
