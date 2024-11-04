@@ -576,7 +576,7 @@ VMREAD の初めての出番ですね。かわいい。
 ```ymir/arch/x86/vmx/vcpu.tmp.zig
 vmx.vmxtry(rflags) catch |err| {
     log.err("VMLAUNCH: {?}", .{err});
-    log.err("VM-instruction error number: {?}", .{@tagName(try vmx.InstructionError.load())});
+    log.err("VM-instruction error number: {s}", .{@tagName(try vmx.InstructionError.load())});
 };
 ```
 
