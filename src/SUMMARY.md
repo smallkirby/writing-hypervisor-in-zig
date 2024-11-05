@@ -33,4 +33,5 @@
 - [VMLAUNCH](vmm/vmlaunch.md)
 - [VM-Entry / VM-Exit](vmm/vmentry_vmexit.md)
 
+[謝辞](acknowledgement.md)
 [ライセンス](license.md)
