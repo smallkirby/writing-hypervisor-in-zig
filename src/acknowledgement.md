@@ -5,4 +5,4 @@
 
 - 乾パン
 
-![乾パン](./assets/kanpan.jpg)
+![乾パン](./assets/smallkirby/kanpan.jpg)
