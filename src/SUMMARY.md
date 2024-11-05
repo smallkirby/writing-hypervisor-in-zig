@@ -31,5 +31,6 @@
 - [VMX Root Operation](vmm/vmx_root.md)
 - [VMCSの基礎](vmm/vmcs.md)
 - [VMLAUNCH](vmm/vmlaunch.md)
+- [VM-Entry / VM-Exit](vmm/vmentry_vmexit.md)
 
 [ライセンス](license.md)
