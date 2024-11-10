@@ -7,7 +7,8 @@
 
 以下のコンテンツは例外として CC0 1.0 Universal が適用されません:
 
-- SDM の画像: © Intel Corporation. All rights reserved.
+- `/assets/sdm` 以下で配布される画像: © Intel Corporation. All rights reserved.
+- `/assets/linux` 以下で配布される画像: © Copyright The kernel development community.
 - `/assets/smallkirby` 以下で配布される画像: [smallkirby](https://github.com/smallkirby). All rights reserved.
 
 <br>
