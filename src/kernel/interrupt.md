@@ -451,7 +451,7 @@ export fn intrZigEntry(ctx: *Context) callconv(.C) void {
 引数の `Context` は ISR が呼び出された直後のレジスタの状態です。
 **`intrZigEntry()` を呼び出す直前のスタックが、そのまま `Context` の中身になります**。
 先ほど `intrZigEntry()` に RSP の値を引数と渡していたのは、このためです。
-vector 固有のハンドラ内では、これらの `Context` の情報を使って処理を行うことができます。
+vector 固有のハンドラ内では、これらの `Context` の情報を使うことができます。
 
 `callconv(.C)` とすることで、第1引数が必ず RDI (今回は RSP の値) になるようにします。
 これをしないと、Zig が最適化のためにどのレジスタ(またはスタック)を使って引数を渡すのかを変える可能性があります。

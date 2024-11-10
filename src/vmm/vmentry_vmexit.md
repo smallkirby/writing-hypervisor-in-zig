@@ -2,7 +2,7 @@
 
 前チャプターでは VMCS を設定し VMLAUNCH でゲストを実行することに成功しました。
 しかし、VM Entry 前や VM Exit 後の状態の保存・復元処理はほとんどしていませんでした。
-本チャプターでは、VM Entry と VM Exit の処理を実装し、適切に状態の保存・復元と VM Exit のハンドリングを行います。
+本チャプターでは、VM Entry と VM Exit の処理を実装し、適切に状態の保存・復元と VM Exit のハンドリングをします。
 
 ## Table of Contents
 

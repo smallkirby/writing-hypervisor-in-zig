@@ -32,6 +32,8 @@
 - [VMCSの基礎](vmm/vmcs.md)
 - [VMLAUNCH](vmm/vmlaunch.md)
 - [VM-Entry / VM-Exit](vmm/vmentry_vmexit.md)
+- [EPT](vmm/ept.md)
+- [Linux Boot Protocol](vmm/linux_boot.md)
 
 [謝辞](acknowledgement.md)
 [ライセンス](license.md)

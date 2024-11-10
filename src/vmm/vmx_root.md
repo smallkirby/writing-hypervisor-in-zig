@@ -34,7 +34,7 @@ VMX Operation に遷移した CPU は新たに拡張命令を利用できるよ�
 ゲスト(VMX Non-Root Operation) に遷移したあとは、基本的には通常通り CPU 上で直接ゲストの命令が実行できます。
 ソフトウェアによる命令のエミュレーションが必要ないため、VT-x によるハードウェアレベルでの仮想化はソフトウェア仮想化よりも高速になります。
 ゲストが特権命令を実行したり特定の条件を満たした場合[^condition]には VM Exit が発生し、Root Operation への遷移が発生します。
-VMM は VM Exit の発生原因をもとにして適切な処理を行い、再度 VM Entry でゲストに制御を戻します。
+VMM は VM Exit の発生原因をもとにして適切な処理をし、再度 VM Entry でゲストに制御を戻します。
 
 なお、VMX Operation は Ring とは別の概念です。
 ゲストが Ring-0 で動作している場合でも VMX Non-root Operation で動作している限りは VMM による支配を受けることになります。
