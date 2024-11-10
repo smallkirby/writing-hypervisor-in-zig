@@ -83,7 +83,7 @@ pub const Vm = struct {
 VMX 関連の操作に入る前に、まずは [CPUID](https://www.felixcloutier.com/x86/cpuid) をする関数を実装します。
 CPUID はプロセッサの機能を取得するための命令であり、ベンダや世代やモデルに固有な情報を得るために使用します。
 
-EAX 取得したい情報を指定します。一部の場合は追加で ECX も使って取得する情報を指定します。
+EAX で取得したい情報を指定します。一部の場合は追加で ECX も使って取得する情報を指定します。
 このとき、EAX のことを **Leaf**, ECX のことを **Subleaf** と呼びます。
 本シリーズでは、Leaf が `N` で Subleaf が `M` の CPUID を `CPUID[N:M]` と表記します。
 返り値には EAX, EBX, ECX, EDX の4つのレジスタが使われます。
