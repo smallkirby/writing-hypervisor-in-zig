@@ -471,7 +471,7 @@ Ymir では Subleaf 0 のみ呼び出しを許可(実際には未実装)し、�
     },
 ```
 
-### 0x8000_0000: Extended Function CPUID Information
+### 0x8000_0000: Extended Function Maximum Input
 
 ![Information Returned by CPUID Instruction: Leaf 0x8000_0000](../assets/sdm/cpuid_80000000.png)
 *Information Returned by CPUID Instruction: Leaf 0x8000_0000. SDM Vol.2A Table 3-17.*

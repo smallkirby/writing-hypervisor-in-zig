@@ -342,7 +342,7 @@ Setup Headers は `bzImage` の先頭から `0x1F1` バイトのオフセット�
 
 `getProtectedCodeOffset()` はカーネルの Protected Mode Code が配置されているオフセットを返します。
 カーネルの Realmode Code はブートセクタ (1セクタ) と Setup Code (`setup_sects` セクタ) から成ります。
-Protected Mode のコードは Realmode Code の直後に配置されるため、`bzImage` の先頭から `1 + setup_sects` セクタの位置に Realmode Code が配置されていることになります。
+Protected Mode のコードは Realmode Code の直後に配置されるため、`bzImage` の先頭から `1 + setup_sects` セクタの位置に配置されていることになります。
 このオフセットは後でカーネルをロードする際に使います。
 
 ### E820 Map

@@ -35,6 +35,7 @@
 - [EPT](vmm/ept.md)
 - [Linux Boot Protocol](vmm/linux_boot.md)
 - [CPUID](vmm/cpuid.md)
+- [MSR](vmm/msr.md)
 
 [謝辞](acknowledgement.md)
 [ライセンス](license.md)
