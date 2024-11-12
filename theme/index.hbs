@@ -176,11 +176,6 @@
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
-                        {{#if search_enabled}}
-                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
-                            <i class="fa fa-search"></i>
-                        </button>
-                        {{/if}}
                     </div>
 
                     <h1 class="menu-title">
@@ -188,6 +183,11 @@
                     </h1>
 
                     <div class="right-buttons">
+                        {{#if search_enabled}}
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                        {{/if}}
                         {{#if print_enable}}
                         <a href="{{ path_to_root }}print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
@@ -274,16 +274,20 @@
 
         <div id="license-page-block">
             <p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/">
-            <a property="dct:title" rel="cc:attributionURL" href="https://hv.smallkirby.com">
-            Writing Hypervisor in Zig</a>
-            by
-            <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://github.com/smallkirby">smallkirby</a>
-            is marked with
-            <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">
-            CC0 1.0
-            <img class="cc" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="">
-            <img class="cc" src="https://mirrors.creativecommons.org/presskit/icons/zero.svg" alt="">
-            </a>
+                <a property="dct:title" rel="cc:attributionURL" href="https://hv.smallkirby.com">
+                Writing Hypervisor in Zig</a>
+                by
+                <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://github.com/smallkirby">smallkirby</a>
+                is marked with
+                <a href="https://creativecommons.org/publicdomain/zero/1.0/" target="_blank" rel="license noopener noreferrer" id="cc0-note">
+                    <span>
+                        CC0 1.0
+                    </span>
+                    <span>
+                        <img class="cc" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="">
+                        <img class="cc" src="https://mirrors.creativecommons.org/presskit/icons/zero.svg" alt="">
+                    </span>
+                </a>
             </p>
         </div>
 

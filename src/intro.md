@@ -1,7 +1,7 @@
-# Writing Hypervisor in Zig
+<h1 id="h1-index">Writing Hypervisor in Zig</h1>
 
-![Ymir](assets/ymir.png)
-*Ymir, the Type-1 Baremetal Hypervisor*
+<img src="assets/ymir.png" alt="Ymir" id="ymir-img"/>
+<em>Ymir, the Type-1 Baremetal Hypervisor</em>
 
 ## References
 

@@ -338,7 +338,7 @@ Ymir では Guest/Host Masks が全てセットされているため、CR から
 
 CR0/4 の更新にはもう1つ気をつけることがあります。
 それは **IA-32e Mode** の有効状態です。
-IA-32e モードは **Long Mode** (64bit mode) と **Compatible Mode** (32bit mode) の2つの状態を持ちます[^arm]。
+IA-32e モードは **Long Mode** (64bit mode) と **Compatible Mode** (32bit mode) の2つの状態を持ちます。
 IA-32e モードは、VMX Operation "ではないとき" 以下の条件を全て満たす場合に有効になります
 (実際にはこれらを順におこなう必要があります)[^ia32e]:
 
@@ -665,7 +665,6 @@ EPT のチャプターで扱いましたが、Ymir では EPT Violation が発�
 これは、I/O の仮想化をしていないためです。
 というわけで、次回は I/O の仮想化をしていきましょう。
 
-[^arm]: ARM における ARM モードと Thumb モードみたいなものでしょうか？
 [^ia32e]: *SDM Vol.3C 10.8.5. Initializing IA-32e Mode*
 [^cr3sdm]: *SDM Vol.3A 4.10.4.1. Operations that Invalidate TLBs and Paging-Structure Caches*
 [^global]: Global Page はフラッシュしません。

@@ -62,11 +62,69 @@ img.cc {
 #license-page-block {
     display: flex;
     justify-content: center;
+    align-items: center;
     padding: 0.5em;
     text-align: center;
     font-size: 1.3rem;
 
     a {
         text-decoration: none;
+    }
+}
+
+#index-title {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+}
+
+@media (max-width: 1080px) {
+    .menu-title {
+        font-size: 1.1em;
+        margin: 0;
+        padding: 0;
+    }
+}
+
+#cc0-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.5em;
+}
+
+#h1-index {
+    @media (max-width: 1080px) {
+        font-size: 1.6em;
+    }
+}
+
+#ymir-img {
+    position: relative;
+    border-radius: 0.5em;
+    opacity: 0.9;
+    filter: grayscale(20%);
+    filter: sepia(20%);
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+    padding: 0;
+    animation: 1.5s ease-in-out 0s 1 fadeIn;
+
+    box-shadow: 0 10px 10px 0 rgba(0, 0, 0, 0.2);
+    width: 95%;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 0.9;
+    }
+}
+
+.nav-wide-wrapper {
+    @media (min-width: 1080px) {
+        display: none;
     }
 }

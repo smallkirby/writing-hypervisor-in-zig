@@ -33,6 +33,9 @@ expand = true
 heading-split-level = 3
 copy-js = true
 
+[output.html.print]
+enable = false
+
 [preprocessor.toc]
 command = "mdbook-toc"
 renderer = ["html"]

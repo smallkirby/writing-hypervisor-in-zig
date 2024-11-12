@@ -105,28 +105,31 @@ var updateFunction = function (elem = undefined) {
 
 let elements = getHeaders();
 
-if (elements.length > 1) {
-  // Populate sidebar on load
-  window.addEventListener("load", function () {
-    var pagetoc = getPagetoc();
-    var elements = getHeaders();
-    forEach(elements, function (el) {
-      var link = document.createElement("a");
-      link.appendChild(document.createTextNode(el.text));
-      link.href = el.hash;
-      link.classList.add("pagetoc-" + el.parentElement.tagName);
-      pagetoc.appendChild(link);
-      link.onclick = function () {
-        updateFunction(link);
-      };
+const is_toppage = location.pathname.endsWith("intro.html");
+if (!is_toppage) {
+  if (elements.length > 1) {
+    // Populate sidebar on load
+    window.addEventListener("load", function () {
+      var pagetoc = getPagetoc();
+      var elements = getHeaders();
+      forEach(elements, function (el) {
+        var link = document.createElement("a");
+        link.appendChild(document.createTextNode(el.text));
+        link.href = el.hash;
+        link.classList.add("pagetoc-" + el.parentElement.tagName);
+        pagetoc.appendChild(link);
+        link.onclick = function () {
+          updateFunction(link);
+        };
+      });
+      updateFunction();
     });
-    updateFunction();
-  });
 
-  // Handle active elements on scroll
-  window.addEventListener("scroll", function () {
-    updateFunction();
-  });
-} else {
-  document.getElementsByClassName("sidetoc")[0].remove();
+    // Handle active elements on scroll
+    window.addEventListener("scroll", function () {
+      updateFunction();
+    });
+  } else {
+    document.getElementsByClassName("sidetoc")[0].remove();
+  }
 }

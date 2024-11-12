@@ -2,10 +2,6 @@
 
 本チャプターでは、hypervisor の開発に必要な環境の構築について説明します。
 
-## Table of Contents
-
-<!-- toc -->
-
 ## 想定する環境
 
 以下の環境における開発を想定しています:
@@ -38,7 +34,7 @@ cat /proc/cpuinfo | grep vmx
 本シリーズでは、[Zig](https://ziglang.org/download/) 0.13.0 を使用します。
 Zig には公式のバージョンマネージャが存在しないため、以下のいずれかの方法でインストールしてください。
 
-### サードパーティのバージョンマネージャを使う
+### バージョンマネージャ
 
 サードパーティ製の Zig バージョンマネージャのひとつに [tristanisham/zvm](https://github.com/tristanisham/zvm) があります。
 GitHub の README から環境に合った方法で zvm をインストールした後、以下のコマンドで 0.13.0 をインストールします:
@@ -50,11 +46,11 @@ zvm use 0.13.0
 
 zvm にこだわる必要はないため、お好みのバージョンマネージャ[^1] を使ってください。
 
-### 公式ページからバイナリをダウンロード
+### 公式バイナリ
 
 Zig の[リリースページ](https://ziglang.org/download/)から 0.13.0 のバイナリをダウンロードし、パスが通っているディレクトリに配置してください。
 
-## ZLS
+## Language Server
 
 Zig の language server である [ZLS](https://github.com/zigtools/zls) を使用します。
 様々なエディタで利用可能な拡張が存在するため、[Zigのツールガイド](https://ziglang.org/learn/tools/)に従って環境をセットアップしてください。
