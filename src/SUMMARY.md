@@ -36,6 +36,7 @@
 - [Linux Boot Protocol](vmm/linux_boot.md)
 - [CPUID](vmm/cpuid.md)
 - [MSR](vmm/msr.md)
+- [Control Registers](vmm/cr.md)
 
 [謝辞](acknowledgement.md)
 [ライセンス](license.md)
