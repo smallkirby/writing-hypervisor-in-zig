@@ -3,6 +3,23 @@
 <img src="assets/ymir.png" alt="Ymir" id="ymir-img"/>
 <em>Ymir, the Type-1 Baremetal Hypervisor</em>
 
+## 記法について
+
+TODO
+
+- ビット記法: `SOME[3:0]`
+- コードブロック(ファイル名)
+
+## オリジナル Ymir との違い
+
+TODO
+
+- 一部機能を省略
+
+## Improve and Request Contents
+
+TODO
+
 ## References
 
 本シリーズにおける主な参考文献は [Intel® 64 and IA-32 Architectures Software Developer Manuals](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html) です。
