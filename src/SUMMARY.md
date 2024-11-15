@@ -39,7 +39,7 @@
 - [Control Registers](vmm/cr.md)
 - [I/O](vmm/io.md)
 - [割り込みの注入](vmm/intr_injection.md)
-- [initrd](vmm/initrd.md)
+- [initramfs](vmm/initramfs.md)
 - [VMCALL](vmm/vmcall.md)
 
 [謝辞](acknowledgement.md)

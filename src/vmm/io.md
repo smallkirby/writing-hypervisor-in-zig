@@ -12,7 +12,7 @@ I/O Access を起因とする VM Exit は、CR Access と同様に **Exit Qualif
 ![Exit Qualification for I/O Instructions](../assets/sdm/qual_io.png)
 *Exit Qualification for I/O Instructions. SDM Vol.3C Table 28-5.*
 
-Qualification には、アクセス帳・アクセス方向・ポート番号等の情報が格納されています。
+Qualification には、アクセス長・アクセス方向・ポート番号等の情報が格納されています。
 I/O 用の Exit Qualification を表す構造体を定義します:
 
 ```ymir/arch/x86/vmx/common.zig
@@ -112,7 +112,7 @@ VM Exit ハンドラである `Vcpu.handleExit()` では、Exit Reason が `.io`
     }
 ```
 
-I/O Access が VM Exit を発生させるようにするためには、VMCS Execution Controls カテゴリの Primary Processor-Based VM-Execution Controls にある `.unconditional_io` というフィールドを設定する必要があります:
+I/O Access が VM Exit を発生させるようにするためには、VMCS Execution Controls カテゴリの Pin-Based VM-Execution Controls にある `.unconditional_io` というフィールドを設定する必要があります:
 
 ```ymir/arch/x86/vmx/vmcs.zig
 fn setupExecCtrls(vcpu: *Vcpu, _: Allocator) VmxError!void {
