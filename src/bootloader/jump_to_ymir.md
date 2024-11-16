@@ -1,8 +1,8 @@
 # カーネルの起動
 
-UEFI にいる状態でするべきお片付けも終わったため、いよいよカーネルを起動する準備ができました。
+UEFI にいる状態でする必要のあるお片付けも終わったため、いよいよカーネルを起動する準備ができました。
 本チャプターでは、カーネルに渡す引数を準備して Ymir カーネルへジャンプします。
-ジャンプした先でスタックのピボットをして用意しておいたカーネルスタックに切り替えたあと、カーネルのメイン関数に制御を移します。
+ジャンプした先でスタックのピボットをしてカーネル用スタックに切り替えたあと、カーネルのメイン関数に制御を移します。
 
 ## Table of Contents
 
@@ -30,9 +30,9 @@ pub const BootInfo = extern struct {
 
 `magic` は、正しく引数を Ymir に渡せたことを確認するためのマジックナンバーです。
 `memory_map` は Boot Services から取得した現在のメモリマップです。
-Ymir はこのマップをもとにして不要な UEFI の領域を解放し、独自のメモリアロケータを構築します。
+Ymir はこのマップをもとにして不要な UEFI の領域を解放し、[独自のメモリアロケータ](../kernel/page_allocator.md) を構築します。
 
-この `boot.zig` において `BootInfo` を作成します:
+`boot.zig` において全てのお片付けを終えた後、 `BootInfo` を作成します:
 
 ```surtr/boot.zig
 const boot_info = defs.BootInfo{
@@ -56,7 +56,7 @@ const kernel_entry: *KernelEntryType = @ptrFromInt(elf_header.entry);
 ```
 
 エントリポイントのアドレスは、ELF ヘッダにある `entry` フィールドに書いてあります。
-この値を `@ptrFromInt()` を使って `*KernelEntryType` という関数ポインタにキャストします。
+この値を `@ptrFromInt()` を使って `*KernelEntryType` という関数ポインタにキャストしています。
 
 残るは、この関数ポインタを呼び出すだけです:
 
@@ -66,6 +66,7 @@ unreachable;
 ```
 
 Ymir に処理が移ったあとは Surtr に戻ることはありません。
+そのため、`unreachable` を指定してコンパイラにここまで到達しないことを伝えています。
 
 さて、実際に動かして Ymir が実行されていることを確認しましょう。
 現在 Ymir のエントリポイントである `kernelEntry()` は無限 halt するだけの関数です。
@@ -111,8 +112,8 @@ RCX が指す先には、`BootInfo` の先頭フィールドである `magic` �
 
 ## リンカスクリプトとスタック
 
-カーネルが起動したものの、依然としていろいろなものを UEFI が用意してくれたまま使っています。
-IDT や GDT などもそうですが、最初に重要なのがスタックです。
+カーネルが起動したものの、**依然としていろいろなものを UEFI が用意してくれたまま使っています**。
+ページテーブル・IDT・GDT などもそうですが、最初に重要なのがスタックです。
 
 UEFI が Surtr を実行する際にはスタックを用意してくれるのですが、このスタック領域は `BootServiceData` と呼ばれるブート用の領域に確保されています。
 この領域はのちほど Ymir が自身のメモリアロケータを初期化する際に解放することになります。
@@ -142,11 +143,13 @@ SECTIONS {
 
     .data ALIGN(4K) : AT (ADDR(.data) - KERNEL_VADDR_BASE) {
         *(.data)
+        *(.ldata)
     } :data
 
     .bss ALIGN(4K) : AT (ADDR(.bss) - KERNEL_VADDR_BASE) {
         *(COMMON)
         *(.bss)
+        *(.lbss)
     } :bss
 
     __stackguard_upper ALIGN(4K) (NOLOAD) : AT (ADDR(__stackguard_upper) - KERNEL_VADDR_BASE) {
@@ -186,14 +189,13 @@ SECTIONS {
 > スタックがオーバーフローしてガードページへの書き込みが発生すると、ページフォルトが発生します。
 > フォルトハンドラがガードページをスタックとして利用しようとすることで再度フォルトが発生してしまいます。
 > これは double fault を引き起こし、その中で同様にしてフォルトが起こります。
-> 最終的には **triple fault を引き起こし、CPU がリセットされてこの世の終わりが訪れます...**。
+> 最終的には **Triple Fault を引き起こし、CPU がリセットされてこの世の終わりが訪れます...**。
 >
 > これを防ぐためには、ページフォルトハンドラでスタックを独自のものに切り替える必要があります。
-> 割り込みハンドラ用のスタックは [TSS](https://wiki.osdev.org/Task_State_Segment) という領域に保存できます。
+> 割り込みハンドラ用のスタックは [TSS](https://wiki.osdev.org/Task_State_Segment) という領域を使って指定することができます。
 > TSS と GDT と IDT を適切に設定することでページフォルトのときのみ独自のスタックに切り替えることができます[^5]。
->
 > 本シリーズでは TSS は使わず、割り込みが発生した瞬間のスタックをそのまま使います。
-> スタックオーバーフローはすぐに triple fault になってしまうので、嫌な人は TSS を使って独自スタックを実装してみてください。
+> スタックオーバーフローはすぐに Triple Fault になってしまうので、嫌な人は TSS を使って独自スタックを実装してみてください。
 
 各セクションの最後に書いてある `:segment` は、そのセクションを `segment` セグメントに配置します。
 セグメントの定義は以下です:
@@ -211,7 +213,7 @@ PHDRS {
 }
 ```
 
-各セグメントに指定している `PT_LOAD` は、そのセグメントをメモリにロードすることを示します。
+各セグメントに指定している `PT_LOAD` は、そのセグメントをメモリにロードすることを意味します。
 セクションに指定した `NOLOAD` はセクションに対する指定であり、`PT_LOAD` はセグメントに対する指定です。
 `FLAGS` にはセグメントの属性を指定します。
 RWX の左から 4, 2, 1 の値を持ちます。
@@ -282,7 +284,7 @@ Program Headers:
   - `Offset` (ELFファイル内におけるセクションの開始アドレス) が同じ `0x2000` になっている。
 これは、**セクション自体がサイズを持たず ELF バイナリ内に含まれない**ことを示している。
 - `__stack` やガードページのセグメントは:
-  - `FileSize` が `0` になっている。これもELF内にデータが含まれないことを示す。
+  - `FileSize` が `0` になっている。これも ELF 内にデータが含まれないことを示す。
   - `MemSize` が指定したページサイズになっている。
   - `VirtAddr` と `PhysAddr` が指定した仮想アドレス・物理アドレスになっている。
 - スタックは read-write になっている。
@@ -316,7 +318,7 @@ export fn kernelEntry() callconv(.Naked) noreturn {
 
 `__stackguard_lower` は先程リンカスクリプトで定義した `__stackguard_lower` セクションの先頭アドレスに位置しています。
 この変数はアドレスしか使わないので実際には型は不要です。
-インラインアセンブラでは `__stackguard_lower` セクションから 0x10 だけずらしたアドレスをスタックポインタにセットしています。
+インラインアセンブラでは `__stackguard_lower` セクションから `0x10` だけずらしたアドレスをスタックポインタにセットしています。
 これでスタックが用意したカーネルスタックに切り替わります。
 
 `kernelTrampoline()` は Zig の通常の calling convention を持つ関数にジャンプするためのトランポリン関数です:
@@ -337,17 +339,17 @@ fn kernelMain(bs: boot_info: surtr.BootInfo) !void {
 ```
 
 `kernelEntry()` は関数のプロローグを持ってはいけません。
-スタックを切り替える前にスタックに何かを push してしまう可能性があるためです。
+スタックをカーネルのものに切り替える前に、プロローグがスタックに何かを push してしまう可能性があるためです。
 よって、`callconv(.Naked)` を指定しています。
 
 Ymir のメイン関数は通常の Zig の calling convention を持ち、返り値としてエラーも返せるようにしたいです。
 そうしないと `try` などの便利キーワードも使えなくなってしまうからです。
-しかし、**`callconv(.Naked)` から Zig のコードで関数呼び出しはできません**。
+しかし、**`callconv(.Naked)` を持つ関数内では Zig レベルでの関数呼び出しはできません**。
 Inline assembly を使うしかないです。
 そこで、 `kernelTrampoline()` を間に入れます。
 この関数は引数を適切に受け渡しつつ、calling convention を切り替えます。
 
-`kernelEntry()` の先頭では、Surtr から渡された引数は UEFI calling convention に則って渡されており、
+`kernelEntry()` の先頭では、Surtr から渡された引数が UEFI calling convention に則って渡されており、
 引数の `BootInfo` は RCX に入っています。
 よって、`kernelTrampoline()` は `callconv(.Win64)` を指定します。
 `callconv(.Win64)` の関数からは他の calling convention を持つ関数を通常通り呼び出すことができるため、
@@ -396,8 +398,16 @@ fn validateBootInfo(boot_info: surtr.BootInfo) !void {
 この値が正しく設定されているかを確認することで、Surtr が正しく引数を渡してくれたかを検証します。
 
 仮に `magic` が正しくない場合、`error.InvalidMagic` を返します。
-本来ならばここでエラー出力をしたいところですが、まだ Ymir ではログシステムを用意していません。
-次のチャプターでは、ログ出力を実装していくことにしましょう。
+本来ならばここでエラー出力をしたいところですが、まだ Ymir ではログシステムを用意していないため一旦無言でエラーを返しておきます。
+
+## まとめ
+
+本チャプターでは Surtr から Ymir に渡す引数の準備をし、カーネルのエントリポイントにジャンプしました。
+カーネルのエントリポイントではスタックをカーネル用のスタックに切り替え、Calling Convention も切り替えつつカーネルのメイン関数に制御を移しました。
+
+本チャプターで Surtr のおおよその実装は終わりです。
+またのちほどゲスト Linux をロードするために機能を追加する必要がありますが、そのときにはぜひ可愛がってあげてください。
+次のチャプターでは Ymir Kernel に最初にやるべきこととして、ログ出力を実装していくことにしましょう。
 
 [^1]: [Detailed Calling Conventions - UEFI Specification 2.9 Errata A](https://uefi.org/specs/UEFI/2.9_A/02_Overview.html#detailed-calling-conventions)
 [^2]: 本当はスタック用に動的にメモリを確保し、その領域に仮想アドレスをマップしてあげるべきですが、
