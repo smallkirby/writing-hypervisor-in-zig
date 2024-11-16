@@ -6,6 +6,9 @@
 
 ## initramfs の作成
 
+> [!TIP] ショートカット
+> 自分で initramfs を生成するのがめんどうな人用に、以下の手順で生成した FS イメージを [こちら](https://r2.hv.smallkirby.com/rootfs.cpio.gz) からダウンロードすることができます。
+
 **initramfs** はメモリ上に展開される RAM FS の一種です。
 ディレクトリとファイルが単純に [cpio](https://en.wikipedia.org/wiki/Cpio) 圧縮 (+ gzib) された簡単な構造をしています。
 Linux はカーネル自体が initramfs を操作するための機能を持っており、他の FS をマウントしていない間の一時的な FS として利用することができます。

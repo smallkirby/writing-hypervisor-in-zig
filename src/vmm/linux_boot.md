@@ -56,6 +56,9 @@ x64 の場合にはエントリポイントは [startup_32()](https://github.com
 
 ## Linux Kernel のビルド
 
+> [!TIP] ショートカット
+> 自分でカーネルをビルドするのがめんどうな人用に、以下の手順でビルドしたカーネルイメージを [こちら](https://r2.hv.smallkirby.com/bzImage) からダウンロードすることができます。
+
 Linux をロード・ブートするにはカーネルイメージがないと話になりません。
 まずは Linux カーネルをビルドしましょう。
 Linux のソースコードは [git://git.kernel.org](git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git) からクローンすることができます。
