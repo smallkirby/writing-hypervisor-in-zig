@@ -114,6 +114,18 @@ img.cc {
     width: 95%;
 }
 
+#ymir-gif {
+    width: 70%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 0.5em;
+
+    @media (max-width: 1080px) {
+        width: 95%;
+    }
+}
+
 @keyframes fadeIn {
     0% {
         opacity: 0;
