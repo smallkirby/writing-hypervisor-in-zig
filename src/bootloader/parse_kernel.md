@@ -1,10 +1,10 @@
 # カーネルのELFをパースする
 
-本チャプターでは、ホストOSである Ymir を UEFI のファイルシステムから読み込み、
-その ELF ファイルをパースして必要とされるメモリレイアウトを取得します。
+本チャプターでは、ホストOSである Ymir を UEFI のファイルシステムから読み込みます。
+その ELF ファイルをパースし、Ymir が要求するメモリレイアウトを取得します。
 本来であればそのままメモリに Ymir をロードして処理を移したいところですが、
 そのためには ELF が要求する仮想アドレスに物理ページをマップするためのページテーブルを作成する必要があります。
-ページテーブルは次チャプターであとまわしにして、今回は ELF のパースまでを行います。
+ページテーブルの操作は次チャプターで実装することにして、今回は Ymir Kernel の ELF のパースまでを行います。
 
 ## Table of Contents
 
@@ -24,10 +24,10 @@ export fn kernelEntry() callconv(.Naked) noreturn {
 }
 ```
 
-`kernelEntry()` は Surtr から処理が移される Ymir のエントリポイントとします。
-この関数からは抜け出すことがないため、返り値の型は `noreturn` とします。
+`kernelEntry()` は Surtr から制御が移される Ymir のエントリポイントとします。
+この関数からは抜け出すことがないため、返り値の型は [`noreturn`](https://ziglang.org/documentation/master/#noreturn) とします。
 
-Zig では `callconv()` によって関数の [calling convention](https://en.wikipedia.org/wiki/Calling_convention) を指定できます。
+Zig では `callconv()` によって関数の [Calling Convention](https://en.wikipedia.org/wiki/Calling_convention) を指定できます。
 [UEFI の calling convention](https://uefi.org/specs/UEFI/2.9_A/02_Overview.html#calling-conventions) は Windows と同じであるため本来は `.Win64` を指定するべきです。
 しかし、後々この関数はスタックをカーネル用に切り替えて実際のメイン関数を呼び出すためのトランポリン関数にする予定のため、
 ここでは一旦 `.Naked` を指定しておきます。
@@ -114,12 +114,12 @@ b.getInstallStep().dependOn(&install_ymir.step);
 ```
 
 [Surtr をインストールする設定](hello_uefi.md)とほとんど同じです。
-これにより、Ymir は `zig-out/img/ymir.elf` に配置されることになります。
+これにより、Ymir は `zig-out/img/ymir.elf` にコピーされることになります。
 
 ## カーネルヘッダの読み込み
 
 Surtr からファイルシステム上のファイルにアクセスするためには [Simple File System Protocol](https://uefi.org/specs/UEFI/2.10/13_Protocols_Media_Access.html#simple-file-system-protocol) を使います。
-Surtr が実行されてから明示的に exit するまでは、 [Boot Services](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html) という UEFI が提供する関数群にアクセスできます。
+UEFI アプリである Surtr が実行されてから明示的に exit するまでは、 [Boot Services](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html) という UEFI が提供する関数群にアクセスできます。
 Boot Services へのポインタは、前回ログ出力に利用した Simple Text Output Protocol と同様に [EFI System Table](https://uefi.org/specs/UEFI/2.9_A/04_EFI_System_Table.html#efi-system-table-1) から取得できます:
 
 ```src/boot.zig
@@ -154,12 +154,19 @@ if (status != .Success) {
 log.info("Opened filesystem volume.", .{});
 ```
 
+> [!INFO] undefined
+> Zig では C のように変数の宣言だけをすることができません。
+> 必ず宣言と同時に値を初期化する必要があります。
+> 未初期化な値を代入するためには [`undefined`](https://ziglang.org/documentation/master/#undefined) を利用できます。
+> `undefined` で初期化された変数の値は、Debug モードでは `0xAA` で埋められ、それ以外のモードでは未定義です。
+> また、`undefined` で初期化されたかどうかを判断する方法はありません。
+
 ### ファイルのオープン
 
 続いて、Ymir の ELF ファイルを開きます。
 ファイルを開くのには [open()](https://uefi.org/specs/UEFI/2.10/13_Protocols_Media_Access.html#id25) 関数を使います。
 ここで指定するファイル名は、前回のログ出力と同様に [UCS-2](https://e-words.jp/w/UCS-2.html) を使う必要があります。
-Simple File System Protocol を利用してファイルを開く機会は他にもいくつかあるため、UCS-2 への変換をする関数を用意してあげましょう:
+Simple File System Protocol を利用してファイルを開く機会は他にもいくつかあるため、UCS-2 への変換をするヘルパー関数を用意してあげましょう:
 
 ```src/boot.zig
 inline fn toUcs2(comptime s: [:0]const u8) [s.len * 2:0]u16 {
@@ -174,7 +181,7 @@ inline fn toUcs2(comptime s: [:0]const u8) [s.len * 2:0]u16 {
 
 開くファイル名はコンパイル時に決まっているため、引数は `comptime s` としています。
 このようにすると、返り値の型として `s.len` のような情報が使えるようになります。
-今回は UCS-2 に変換するとバイト長が2倍になるため、返り値の方は `[s.len * 2:0]u16` です。
+今回は UCS-2 に変換するとバイト長が2倍になるため、返り値の型は `[s.len * 2:0]u16` です。
 関数内でやっていることは前回と同様に ASCII 文字列の各バイトの後に `\0` を加えているだけです。
 
 この関数を利用して、ファイルを開く関数を作ります:
@@ -201,7 +208,7 @@ fn openFile(
 ```
 
 `root.open()` で実際にファイルをオープンします。
-第3引数にはファイルのモードを選択します。書き込む必要がないため RO で十分です。
+第3引数にはファイルのモードを選択します。書き込む必要がないため Read-Only で十分です。
 第4引数はファイル作成時に作成するファイルの attribute を指定しますが、今回はオープンしかしないため使いません。
 適当に `0` を指定しておきます。
 
@@ -214,11 +221,11 @@ log.info("Opened kernel file.", .{});
 
 ### ファイルの読み込み
 
-Ymir の ELF がオープンできたため実際にファイルをリードします。
+Ymir の ELF がオープンできたため実際にファイルを FS からメモリに読み込みます。
 ELF ファイルは必ず [ELF Header](https://refspecs.linuxfoundation.org/elf/gabi4+/ch4.eheader.html) というヘッダから始まります。
-まずはこのヘッダだけを読み込んでパースしていきます。
+まずはこのヘッダだけを読み込んでパースしていきましょう。
 
-ファイルを読み込むための領域は Boot Services が提供する [Memory Allocation Services](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#memory-allocation-services) の [AllocatePool()](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#id16) 関数を利用します:
+ファイルを読み込むための領域の確保には Boot Services が提供する [Memory Allocation Services](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#memory-allocation-services) の [AllocatePool()](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#id16) 関数を利用します:
 
 ```src/boot.zig
 var header_size: usize = @sizeOf(elf.Elf64_Ehdr);
@@ -234,6 +241,7 @@ if (status != .Success) {
 今回は `LoaderData` という UEFI アプリのデータ用のメモリ[^3]を取得します。
 ELF ヘッダのサイズは固定であり、`std.elf.Elf64_Ehdr` 構造体のサイズと同一です。
 このサイズ分だけメモリを確保しています。
+ただし、`header_size` は後ほど読み込みをする際に実際に読み込まれた値を格納するのにも使うため、`var` として定義しています。
 
 読み込み用メモリを確保したので、実際にファイルを読み込みます:
 
@@ -246,6 +254,7 @@ if (status != .Success) {
 ```
 
 ここまでで Ymir カーネルの ELF ヘッダを読み込むことができました。
+読み込まれたファイルのサイズは `header_size` に格納されています。
 実際にQEMU上で実行して正常に動作していることを確認してみてください。
 
 ## ELF ヘッダのパース
@@ -299,14 +308,18 @@ log.debug(
   # of Section Headers: 16
 ```
 
-これらの値が正しいのかどうかは、 `zig-out/bin/ymir.elf` のヘッダを `readelf -h`で見た結果と比較することで確認できます。
+これらの値が正しいかどうかは、 `zig-out/bin/ymir.elf` のヘッダを `readelf -h`で見た結果と比較することで確認できます。
 
-ここまでで Ymir のヘッダをパースできました。
+## まとめ
+
+本チャプターでは Ymir Kernel の雛形を作成し、生成された ELF ファイルを UEFI のファイルシステムからメモリ上に読み込みました。
+また、Zig が提供する機能を使って Ymir の ELF ヘッダをパースしました。
 このあとは ELF のプログラムヘッダをパースし、各セグメントを ELF が要求する仮想アドレスにロードしてあげる必要があります。
 しかし、要求された仮想アドレスを物理アドレスにマップするにはページテーブルを設定する必要があります。
-次チャプターでは、ページテーブルの設定をします。
+次チャプターでは、ページテーブルの操作を実装していきましょう。
 
 [^1]: [Understanding the x64 code models - Eli Bendersky's website](https://eli.thegreenplace.net/2012/01/03/understanding-the-x64-code-models)
 [^2]: [Memory Type Usage before ExitBootServices() - UEFI Specification 2.9A](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#memory-type-usage-before-exitbootservices)
 [^3]: `LoaderData` は UEFI アプリのデフォルトのメモリタイプでもあります。
-[^4]: Surtr/Ymir は外部依存パッケージを一切持ちません。しかし、Zig が提供するものは使っています。それすらも使いたくない場合には、ぜひ自分で ELF パーサも書いてみてください。結構勉強になると思います。
+[^4]: Surtr/Ymir は外部依存パッケージを一切持ちません。しかし、Zig が提供するものは躊躇せず使っています。
+それすらも使いたくない場合には、ぜひ自分で ELF パーサも書いてみてください。結構勉強になると思います。
