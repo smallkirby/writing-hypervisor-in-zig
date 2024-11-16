@@ -364,7 +364,7 @@ fn injectExtIntr(self: *Self) VmxError!bool {
 
 ## 割り込みの受け入れ
 
-最後に、割り込みによる VM Exit のためのハンドラを定義し、そこから `injectExtIntr()` を呼び出します。
+最割り込みによる VM Exit のためのハンドラを定義し、そこから `injectExtIntr()` を呼び出します。
 ここで大事なこととして、**ゲストを起動する直前から Ymir は原則として割り込み禁止モードで動作します**。
 これはゲストの実行中に VM Exit が発生してホストに処理が戻ってきても、このままではホストは割り込みに気がつくことができないということを意味します。
 割り込みに気が付かないため当然 Subscriber が呼び出されることもありません。
@@ -394,6 +394,57 @@ fn injectExtIntr(self: *Self) VmxError!bool {
 これにより、NOP の実行から次の STI の実行までの間に割り込みを受け入れることができる期間が確保されます。
 この間にもし溜まっている割り込みがあれば CPU は割り込みハンドラを呼び出し、Subscriber が `.pending_irq` をセットします。
 割り込みを受け入れたら [CLI](https://www.felixcloutier.com/x86/cli) で再び割り込みを禁止します。
+
+## HLT
+
+おまけで HLT 命令に対する VM Exit を実装します。
+[HLT](https://www.felixcloutier.com/x86/hlt) は割り込みが発生するまで CPU を停止します。
+ゲストが HLT を実行した際に VM Exit が発生するかどうかは VMCS の **Primary Processor-Based VM-Execution Controls** によって制御されます。
+現在は設定していないため、HLT による VM Exit は発生しません。
+しかし、これでは不都合が発生する可能性があります。
+`.pending_irq` に割り込みが積まれている状態でゲストが HLT を実行し割り込みが来るのを期待していると仮定します。
+このとき、期待されている割り込みは実際には発生したあとであり、ホストが注入するタイミングを伺っている最中です。
+現在は割り込みによる VM Exit の場合にしか割り込みを注入しないため、割り込みが発生しない限りは HLT 後に VM Exit が発生することがなく、割り込みを注入することができません。
+
+対策としてはいろいろな方法が考えられます。
+1つ目は **VMX-Preemption Timer**[^preemp-timer] を設定するという方法です。
+この値を VMCS にセットすると VMX Non-root Operation にいる間セットした値のカウントダウンがされます。
+カウントが 0 になると VM Exit が発生します。
+これによって割り込みなどの有無によらず定期的に VM Exit を発生させることができます。
+2つ目は、`.pending_irq` に IRQ が積まれている間は 1 命令ごとに VM Exit を発生させるという方法です。
+**Monitor Trap Flag**[^mtf] をセットすることで、(基本的に)1命令ごとに VM Exit が発生するようになります。
+ステップ実行のような感じです。
+
+Ymir では他の方法として、HLT 命令の際に `.pending_irq` に IRQ が積まれていれば割り込みを注入するという方針にします。
+HLT が実行されたらホスト側で代わりに HLT をします。
+その際、STI をして割り込み許可モードにしてから HLT を実行し、Subscribers によって `.pending_irq` がセットされるまで待ちます:
+
+```ymir/arch/x86/vmx/vcpu.zig
+    .hlt => {
+        // Wait until the external interrupt is generated.
+        while (!try self.injectExtIntr()) {
+            asm volatile (
+                \\sti
+                \\hlt
+                \\cli
+            );
+        }
+
+        try vmwrite(vmcs.guest.activity_state, 0);
+        try vmwrite(vmcs.guest.interruptibility_state, 0);
+        try self.stepNextInst();
+    },
+```
+
+最後に Primary Processor-Based VM-Execution Controls を設定して HLT による VM Exit を有効化します:
+
+```ymir/arch/x86/vmx/vcpu.zig
+fn setupExecCtrls(vcpu: *Vcpu, _: Allocator) VmxError!void {
+    ...
+    ppb_exec_ctrl.hlt = true;
+    ...
+}
+```
 
 ## まとめ
 
@@ -447,3 +498,6 @@ fn injectExtIntr(self: *Self) VmxError!bool {
 あとは initramfs をメモリに読み込んで、FS 内のプログラムを起動して PID 1 のプロセスを起動するだけです。
 いよいよ終わりが近づいてきました。
 次回は initramfs のロードを実装します。
+
+[^preemp-timer]: *SDM Vol.3C 26.5.1 VMX-Preemption Timer*
+[^mtf]: *SDM Vol.3C 26.5.2 Monitor Trap Flag*
