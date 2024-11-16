@@ -1,6 +1,6 @@
 # UEFI のメモリマップとお片付け
 
-前回で Ymir カーネルをメモリにロードできたため、早速 Ymir を実行...!
+前チャプターで Ymir Kernel をメモリにロードできたため、早速 Ymir に制御を渡して...
 といきたいところですが、本チャプターでは Ymir の実行まではいきません。
 その前に UEFI にいる間しかできないお片付けをします。
 また、UEFI が提供するメモリマップを取得して観察してみます。
@@ -10,14 +10,20 @@
 
 <!-- toc -->
 
-## ファイルシステムのお片付け
+## ファイルのお片付け
 
 Ymir をロードするために UEFI の Simple File System Protocol を使いました。
 ルートファイルを開き、Ymir の ELF ファイルを開き、ヘッダをメモリに読み込んだことを覚えているでしょうか。
 使ったものは片付けるのが世の常です。お片付けをしましょう。
 
-ELF ファイルを読み込んだのは (1) ELFヘッダのパースのため (2) Ymir のロードのため の2回です。
-この内、(2) については Ymir の実行に必要なため残しておいて、(1) のみを片付けます:
+ELF ファイルを読み込んだのは:
+
+1. ELF ヘッダのパースのため
+2. カーネルのセグメントのロードのため
+
+の2回です。
+この内、2については Ymir の実行に必要なため残しておいて、1のみを片付けます。
+ヘッダ用の領域は [AllocatePool()](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#id16) で確保したため、対応する [FreePool()](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#efi-boot-services-freepool) で解放します:
 
 ```surtr/boot.zig
 status = boot_service.freePool(header_buffer);
@@ -27,9 +33,7 @@ if (status != .Success) {
 }
 ```
 
-ヘッダ用の領域は [AllocatePool()](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#id16) で確保したため、対応する [FreePool()](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#efi-boot-services-freepool) で解放します。
-
-続いて、開いていた Ymir のELFファイルを閉じます。
+続いて、開いていた Ymir の ELF ファイルを閉じます:
 
 ```zig
 status = kernel.close();
@@ -51,12 +55,15 @@ if (status != .Success) {
 
 ## メモリマップの取得
 
-お片付けとは少し違いますが、UEFI が提供するメモリマップを取得します。
+お片付けとは少し違いますが、UEFI が提供する [メモリマップ](https://uefi.org/htmlspecs/ACPI_Spec_6_4_html/15_System_Address_Map_Interfaces/uefi-getmemorymap-boot-services-function.html) を取得します。
 このメモリマップは、現在利用されている全てのメモリに関する情報を提供します。
 Surtr においてカーネル用の領域として `AllocatePages()` や `AllocatePool()` で確保した領域も含まれます。
-取得したマップは、のちほど Ymir に渡し、Ymir はアロケータを構築するために利用します。
+取得したマップは、のちほど Ymir に渡し、Ymir は [アロケータを構築](../kernel/page_allocator.md) するために利用します。
 
 ### メモリマップの定義
+
+UEFI が提供するメモリマップ自体はただのバイナリデータであり、パースにはその他諸々の情報が必要です。
+これらの情報をまとめた構造体を定義します。
 
 `surtr/defs.zig` を新しく作成します。
 このファイルは、Ymir と Surtr で共通して利用するデータ構造を定義するのに使います。
@@ -85,8 +92,8 @@ pub const MemoryMap = extern struct {
 
 ### `MemoryDescriptor` のイテレータ
 
-ELF のセグメントヘッダをイテレートしたように、`MemoryDescriptor` もイテレート簡単にイテレートできると便利そうです。
-`MemoryMap` の情報をもとに `MemoryDescriptor` のイテレートする構造体を定義します:
+ELF のセグメントヘッダをイテレートしたように、`MemoryDescriptor` も簡単にイテレートできると便利そうです。
+`MemoryMap` の情報をもとに `MemoryDescriptor` をイテレートする構造体を定義します:
 
 ```surtr/defs.zig
 pub const MemoryDescriptorIterator = struct {
@@ -119,7 +126,7 @@ pub const MemoryDescriptorIterator = struct {
 ```
 
 `new()`では、イテレートに必要な3つの要素 `descriptors`, `descriptor_size`, `total_size` を記憶します。
-また、現在の `MemoryDescriptor` を指すポインタ `current` を先頭に初期化します。
+また、現在の `MemoryDescriptor` を指すポインタ `current` を先頭にセットします。
 
 `next()` は、現在指している `MemoryDescriptor` を返し、イテレータを次の `MemoryDescriptor` に進めます。
 先述したように、`MemoryDescriptor`は連続した配列であり、1つの要素のサイズは `descriptor_size` であるため、
@@ -128,7 +135,7 @@ pub const MemoryDescriptorIterator = struct {
 
 ### メモリマップの取得と表示
 
-`surtr/boot.zig` にメモリマップを取得する関数を追加します:
+`surtr/boot.zig` にメモリマップを取得するヘルパー関数を追加します:
 
 ```surtr/boot.zig
 const map_buffer_size = page_size * 4;
@@ -321,15 +328,17 @@ while (true) {
 
 以上でメモリマップの取得は完了です。
 しばしお茶でもしばきながら、表示されたメモリマップを眺めて、`AllocatePages()`で確保した領域はなんというメモリタイプになっているかなどを確認してみてください。
+あとはこれまでの人生を振り返ってみるのとかも良いかもしれませんね。
 
 ## Exit Boot Services
 
 カーネルにジャンプする前の最後のお片付けとして、UEFI Boot Services を終了します。
 これは Boot Services の [ExitBootServices()](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#efi-boot-services-exitbootservices) を呼ぶことで実現できます。
-この関数を呼んだあとは Boot Services の代わりに [Runtime Services](https://uefi.org/specs/UEFI/2.9_A/08_Services_Runtime_Services.html#services-runtime-services) が利用可能になります。
+この関数を呼んだあとは Boot Services が使えなくなる代わりに [Runtime Services](https://uefi.org/specs/UEFI/2.9_A/08_Services_Runtime_Services.html#services-runtime-services) が利用可能になります。
 
-`ExitBootServices()` を呼ぶためには、**UEFI OS loader** (本シリーズの Surtr) が現在のメモリマップを掌握していることを保証する必要があります。
-UEFI に「おれは全部知ってるぞ」と教えるために、この関数には先ほど取得したメモリマップのキーを渡します:
+`ExitBootServices()` を呼ぶためには、**UEFI OS loader** (本シリーズでいうところの Surtr) が現在のメモリマップを掌握していることを保証する必要があります。
+UEFI に「おれは全部知ってるぞ」と教える必要があるということですね。
+そのために、この関数には先ほど取得したメモリマップのキーを渡します:
 
 ```surtr/boot.zig
 log.info("Exiting boot services.", .{});
