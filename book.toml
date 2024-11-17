@@ -1,7 +1,7 @@
 [book]
 title = "Writing Hypervisor in Zig"
 authors = ["smallkirby"]
-description = "Write a baremetal hypervisor in Zig that runs on Intel x64 CPUs."
+description = "Writing a baremetal hypervisor from scratch in Zig that can boot Linux"
 language = "ja"
 text-direction = "ltr"
 multilingual = false
