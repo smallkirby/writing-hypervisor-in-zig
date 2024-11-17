@@ -12,7 +12,7 @@
 
 ゲストが [RDMSR](https://www.felixcloutier.com/x86/rdmsr) / [WRMSR](https://www.felixcloutier.com/x86/wrmsr) 命令を実行しようとすると VM Exit が発生する場合があります。
 VM Exit が発生するかどうかは VMCS Execution Control カテゴリの **MSR Bitmaps** によって制御されます。
-MSR Bitmaps は MSR のアドレスにマップされるビットマップであり、値が `1` の MSR に対して RDMSR/WRMSR が実行されると VM Exit が発生します。
+MSR Bitmaps は MSR のアドレスにマップされるビットマップであり、値が `1` の MSR に対して RDMSR / WRMSR が実行されると VM Exit が発生します。
 値が `0` の MSR に対する操作では VM Exit が発生しません。
 また、**MSR Bitmaps を無効化すると全ての MSR に対する RDMSR/WRMSR が VM Exit を発生させる** ようになります。
 
@@ -48,7 +48,7 @@ fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
 
 ## MSR の保存・復帰
 
-MSR アクセスに対する VM Exit ハンドラの実装の前に、MSR の保存・復帰をするようにしましょう。
+MSR アクセスに対する VM Exit ハンドラの実装の前に、VM Entry / VM Exit において MSR の保存・復帰をするようにしましょう。
 現在は、一部の MSR を除いて全ての MSR はゲスト・ホスト間で共有されてしまっています。
 
 ### 自動的に保存・復帰される MSR
@@ -107,11 +107,11 @@ MSR アクセスに対する VM Exit ハンドラの実装の前に、MSR の保
 | `IA32_PKRS` | VMCS VM-Exit Control の `load PKRS` が有効 | Host-State |
 | `IA32_PERF_GLOBAL_CTRL` | VMCS VM-Exit Control の `save IA32_PERF_GLOBAL_CTRL` が有効 | Host-State |
 
-これらの MSR は VM Entry / VM Exit 時に自動的にロードされます。
-ロードする値も VMCS に保存されているため、ホスト・ゲスト間で共有される心配がありません。
+これらの MSR は VM Entry / VM Exit 時に自動的にセーブ・ロードされます。
+ロードする値は VMCS に保存されているため、ホスト・ゲスト間で共有される心配がありません。
 いくつかの MSR は VM-Exit/-Entry Controls において設定を有効化する必要があります。
 Ymir では以下の MSR についてロードを有効化します。
-上記の MSR の内それ以外の MSR は Ymir では使わないため、仮想化する必要がありません (ホストにいる間もゲストの MSR が見えることになります):
+上記の MSR の内、下記の MSR 以外は Ymir では使わないため、仮想化する必要がありません (ホストにいる間もゲストの MSR が見えることになります):
 
 - `IA32_PAT`
 - `IA32_EFER`
@@ -303,6 +303,7 @@ fn updateMsrs(vcpu: *Vcpu) VmxError!void {
 このあと扱いますが、ゲストが MSR Area に登録されていない MSR に対して WRMSR をしてきた場合にはアボートするようにします。
 よって、実際は MSR counts を更新する必要はありません。
 今後 MSR Area に動的に MSR を追加で登録できるようにしたい場合に備えて、このような実装にしています。
+
 以上で MSR Area に登録した MSR 及び自動的に保存・復帰される MSR の設定が完了しました。
 残すはゲストの RDMSR / WRMSR に応じて MSR Area に登録された MSR の値を読み書きする処理を実装することです。
 
@@ -505,6 +506,7 @@ ffffffff8102e0bc:       0f ba e9 07             bts    ecx,0x7
 
 この `MOV to CR4` は、`CR4.VMXE` ビットをアンセットしてしまいます。
 **VM Exit を引き起こさないような `MOV to CR4` が `IA32_VMX_CR4_FIXED0` または `IA32_VMX_CR4_FIXED1` で規定される CR4 のルールに従っていない場合、ゲスト側で `#GP` が発生します** (VM Exit ではありません)。[^cr4-gp]。
+ゲストにはまだ割り込みハンドラがないため、`#GP` が発生するとそのまま Triple Faults になってしまうようです。
 ということで、次回はゲストによる CR アクセスを適切にハンドリングするようにしましょう。
 
 [^log]: まだシリアルコンソールの仮想化はしていないため、ゲストは直接シリアルを触りにいっています。今はまだ許してあげることにしましょう。
