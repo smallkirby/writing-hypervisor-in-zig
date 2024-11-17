@@ -1,5 +1,9 @@
 # Control Registers の仮想化
 
+本チャプターでは Control Registers へのアクセスを仮想化します。
+Control Registers は CPU の挙動を制御するための重要なレジスタであり、ゲストを動かす上で適切に扱う必要があります。
+本チャプターでは CR からの読み込みと CR への書き込みの両方を仮想化し、他の VMCS フィールドとの整合性を保ちながらハンドリングしていきます。
+
 ## Table of Contents
 
 <!-- toc -->
@@ -7,18 +11,17 @@
 ## CR Read Shadows / Masks
 
 CR0 と CR4 に対するアクセスが VM Exit を発生させるかどうかは VMCS VM-Execution Controls の設定に依存します。
-CR の特定のビットがゲストとホストのどちらの支配下にあるかどうかは **Guest/Host Masks** が決定します。
+CR の特定のビットがゲストとホストのどちらの支配下にあるかどうかを決定するのが **Guest/Host Masks** です。
 Guest/Host Masks は CR レジスタのサイズと同じサイズを持つビットフィールドであり、
-Intel64 アーキテクチャでは 64bit です。
-Guest/Host Masks のあるビットが `1` であるとき、CR の対応するビットはホストが所有します。
-逆に Masks のビットが `0` であるとき、CR の対応するビットはゲストが所有します。
+Intel 64 アーキテクチャでは 64bit です。
+Guest/Host Masks のあるビットが `1` であるとき、CR の対応するビットは **"ホストが所有"** します。
+逆に Masks のビットが `0` であるとき、CR の対応するビットは **"ゲストが所有"** します。
 
 ゲストが CR から read をするとき、そのビットがゲストが所有する場合には CR の値が直接 read されます。
 同様に、ゲストが CR に write をするとき、そのビットがゲストが所有する場合には CR に直接値が書き込まれます。
 
-ホストが所有するビットは、**Guest/Host Read Shadows** によって制御されます。
-これも Intel64 では 64bit のビットフィールドであり、CR の各ビットに対応します。
-
+ホストが所有するビットへのアクセスは、**Guest/Host Read Shadows** によって制御されます。
+これも Intel 64 では 64bit のビットフィールドであり、CR の各ビットに対応します。
 ゲストが CR から read をするとき、そのビットがホストが所有する場合には、Read Shadows の対応するビットが read されます。
 ゲストが CR に write をするとき、**ホストが所有するビットに対して Read Shadows の対応するビットと異なる値を書き込もうとすると VM Exit が発生** します。
 
@@ -27,7 +30,7 @@ Guest/Host Masks のあるビットが `1` であるとき、CR の対応する�
 title: Read/Write CR's N-th bit
 ---
 flowchart TD
-    A(CR Read) --> B{Masked by Guest/Host Masks}
+    A(CR Read) --> B{Masked by Guest/Host Masks?}
     B -- Yes --> C(N-th bit of Read Shadows)
     B -- No --> D(N-th bit of CR)
 
@@ -39,7 +42,7 @@ flowchart TD
 ```
 
 Ymir では Guest/Host Masks のビットを全てセットします。
-これにより、CR0 と CR4 へのアクセスは全て VM Exit するようになります:
+CR0 と CR4 のビットは全てホストが所有するということです:。
 
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(vcpu: *Vcpu, allocator: Allocator) VmxError!void {
@@ -52,7 +55,8 @@ fn setupExecCtrls(vcpu: *Vcpu, allocator: Allocator) VmxError!void {
 
 先ほどの図から分かるとおり、Masks がセットされているビットに対する read は Read Shadows の値が返されます。
 今回は Masks の全てのビットをセットしているため、CR からの read は常に Read Shadows の値を返します。
-よって、**Read Shadows は CR の実際の値に追従するようにする必要があります**:
+よって、**Read Shadows は CR の実際の値に追従するようにする必要があります**。
+追従するロジックはのちほど VM Exit ハンドラで書くとして、とりあえず初期状態には CR0 / CR4 の値をそのまま代入しておきます:
 
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupGuestState(vcpu: *Vcpu) VmxError!void {
@@ -68,7 +72,7 @@ fn setupGuestState(vcpu: *Vcpu) VmxError!void {
 Host/Guest Masks が全てセットされているため、ゲストが Read Shadows と異なる値を CR0/CR4 に書き込もうとすると VM Exit が発生します。
 この際、どのレジスタに対してどのような値を書き込もうとしたのかという追加情報が VMCS **Exit Qualification** に格納されます。
 Exit Qualification は全ての VM Exit に対して提供されるわけではなく、CR Access を含む一部の VM Exit に対してのみ提供されます。
-他には I/O Access や EPT Violation などがあります。
+Qualification が提供される他の Exit Reasonには、I/O Access や EPT Violation などがあります。
 
 Exit Qualification は 64bit のデータであり、その意味は Exit Reason によって異なります。
 CR Access に対する Exit Qualification は以下のフォーマットを持ちます:
@@ -434,7 +438,7 @@ switch (qual.access_type) {
 
 #### Combined Mappings
 
-[EPT を導入した際](./ept.md#キャッシュされる情報) に、VMX Operation で TLB にキャッシュされる情報を2つ挙げたことを覚えているでしょうか？
+[EPT を導入した際](./ept.md#キャッシュされる情報) に、VMX Operation で TLB にキャッシュされる情報を3つ挙げたことを覚えているでしょうか？
 念の為以下に EPT を有効化した場合に TLB にキャッシュされる情報を再掲します:
 
 - **Linear Mappings**: GVA to GPA(=HPA) の変換結果。およびそれらの変換に利用されるページテーブルエントリ。
@@ -450,7 +454,7 @@ switch (qual.access_type) {
 しかしながら、**Guest-Physical Mappings と Combined Mappings はフラッシュされません**。
 この2つはどちらも HPA へと変換するために利用される Mappings であり、ゲストの MOV to CR3 では無効化されないという論理なのでしょうか？
 筆者も理由はよく分かりませんが、まぁフラッシュされないものは仕方がありません。
-このまま放っておくと TLB にキャッシュされた古い Combined Mappingsを使って GVA/GPA to GVA 変換が行われてしまいます。
+このまま放っておくと TLB にキャッシュされた古い Combined Mappingsを使って GVA/GPA to HPA 変換が行われてしまいます。
 GVA to GPA 変換の結果が MOV to CR3 によって変わってしまったため、**GVA to HPA 変換に使われる Combined Mappings も無効化してあげる必要があります**[^guest-phys]。
 
 この Mappings を無効化するにはいくつかの方法があります。
@@ -582,9 +586,9 @@ Linux がブートし始めています！
 この時点でカーネルは正式な割り込みハンドラを用意していないため、単にパニックしてしまうのだと考えられます。
 表示された RIP は `addr2line` で確認すると、[__invpcid()](https://github.com/torvalds/linux/blob/2d5404caa8c7bb5c4e0435f94b28834ae5456623/arch/x86/include/asm/invpcid.h#L16) だということが分かります。
 
-さて、VM Execution Controls カテゴリの Secondary Processor-Based Execution Controls には、
+さて、VM Execution Controls カテゴリの **Secondary Processor-Based Execution Controls** には、
 ゲストによる INVPCID 命令を許可するかどうかを決めるフィールドがあります。
-無効化されている場合には、`#UD` が発生します。
+無効化されている場合には、ゲストが INVPCID を実行すると `#UD: Invalid Opcode` が発生します。
 このフィールドを有効化するのを、うっかり忘れていました。
 `setupExecCtrls()` でこのフィールドを有効化してあげることで、この例外は発生しなくなります:
 
@@ -656,7 +660,7 @@ INVPCID を有効化する前よりもさらにブートが進むはずです。
 ...
 ```
 
-めちゃくちゃ進みました。
+**めちゃくちゃ進みました**。
 まだ仮想化していないシリアルまで勝手に触って初期化しています。勝手な野郎です。
 
 最終的には EPT Violation で VM Exit しています。
