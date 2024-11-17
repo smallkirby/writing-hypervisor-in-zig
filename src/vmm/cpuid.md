@@ -9,8 +9,8 @@
 
 ## VM Exit ハンドラ
 
-ゲストが [CPUID](https://www.felixcloutier.com/x86/cpuid) 命令を実行しようとすると、VM Exit が発生します。
-この際、VMCS Basic VM-Exit Information カテゴリの Basic Reason フィールドに `0x0A`(`.cpuid`) が設定されます。
+ゲストが [CPUID](https://www.felixcloutier.com/x86/cpuid) 命令を実行しようとすると、無条件で VM Exit が発生します。
+この際、VMCS **Basic VM-Exit Information** カテゴリの **Basic Reason** フィールドに `0x0A`(`.cpuid`) が設定されます。
 VM Exit ハンドラである `handleExit()` において、CPUID を原因とする VM Exit に対してハンドラを呼び出すようにします:
 
 ```ymir/arch/x86/vmx/vcpu.zig
@@ -33,7 +33,7 @@ fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
 `Vcpu.stepNextInst()` はゲストの RIP をインクリメントし、次の命令を指すようにします。
 x64 は [CISC](https://en.wikipedia.org/wiki/Complex_instruction_set_computer) であり、命令の長さが固定ではなく可変になっています。
 そのため、RIP をインクリメントするには現在 RIP が指している命令の長さを知る必要があります。
-幸いなことに、VMCS VM-Exit Information には Exit Instruction Length フィールドが存在し、
+幸いなことに、VMCS VM-Exit Information には **Exit Instruction Length** フィールドが存在し、
 VM Exit を発生させた命令の長さを取得することができます。
 わざわざ自分で x64 命令セットのデコーダを書く必要がないのは非常に助かります。
 `stepNextInst()` ではこのフィールドの値を読み取って、RIP に加算することで次の命令を指すようにします:
@@ -72,7 +72,7 @@ CPUID の Leaf の数は非常に多いです。
 また、CPU 世代によってサポートされる Leaf が異なり、今後も増えていきます。
 よって、この `switch` で全ての Leaf をサポートすることはできません。
 Ymir では、明示的にサポートする CPUID Leaf 以外は未サポートとということにします。
-未サポートの Leaf に対する CPUID 命令は、RAX/RBX/RCX/RDX レジスタの全てに `0` をセットすることになっています:
+未サポートの Leaf に対する CPUID 命令は、RAX/RBX/RCX/RDX レジスタの全てに `0` をセットするという仕様になっています:
 
 ```ymir/arch/x86/vmx/cpuid.zig
 fn invalid(vcpu: *Vcpu) void {
@@ -306,7 +306,7 @@ pub const FeatureInfoEdx = packed struct(u32) {
 
 </details>
 
-x64 は [`verify_cpu()` において必須の機能がサポートされているかどうかを確認](https://github.com/torvalds/linux/blob/de2f378f2b771b39594c04695feee86476743a69/arch/x86/include/asm/required-features.h#L76)し、
+x64 は [`verify_cpu()` において必須の機能がサポートされているかどうかを確認](https://github.com/torvalds/linux/blob/de2f378f2b771b39594c04695feee86476743a69/arch/x86/include/asm/required-features.h#L76) し、
 サポートされていない場合には初期化処理を中止してしまいます:
 
 ```required-features.h
@@ -370,7 +370,7 @@ Leaf `0x7` も Feature Information と同様に CPU の機能に関する情報�
 サポートされる Subleaf の個数は、Subleaf 0 で RAX によって返される値によって決まります。
 Ymir では Subleaf 0 のみをサポートしたかったのですが、サポートする Subleaf の最大値を `0` として指定した場合でも
 Linux は Subleaf 1 以降の情報を取得しようとします。
-そのため、Subleaf 1/2 に関しては呼び出しを許容するものの、 `invalid()` を呼び出すことにします。
+そのため、Subleaf 1,2 に関しては呼び出しを許容するものの、 `invalid()` を返すことにします。
 Subleaf 3 以降の呼び出しはエラーにします:
 
 ```ymir/arch/x86/vmx/cpuid.zig
@@ -456,8 +456,8 @@ const ext_feature0_ebx = cpuid.ExtFeatureEbx0{
 
 Leaf `0xD` は CPU の拡張機能に関する情報を返します。
 この Leaf も Subleaf を持っています。
-Subleaf 0 は XSAVE/XRSTOR のサポートに関する情報を返します。
-Ymir では Subleaf 0 のみ呼び出しを許可(実際には未実装)し、それ以外の呼び出しはエラーとします:
+Subleaf 1 は [XSAVE](https://www.felixcloutier.com/x86/xsave) / [XRSTOR](https://www.felixcloutier.com/x86/xrstor) のサポートに関する情報を返します。
+Ymir では Subleaf 1 のみ呼び出しを許可(実際には未実装)し、それ以外の呼び出しはエラーとします:
 
 ```ymir/arch/x86/vmx/cpuid.zig
     .ext_enumeration => {
@@ -477,7 +477,7 @@ Ymir では Subleaf 0 のみ呼び出しを許可(実際には未実装)し、�
 *Information Returned by CPUID Instruction: Leaf 0x8000_0000. SDM Vol.2A Table 3-17.*
 
 Leaf `0x8000_0000` は CPU がサポートする最大の Extended Function Leaf 番号を返します。
-Linux は [`verify_cpu()` においてこの値を取得し `0x8000_0001` 以上であることを要求する](https://github.com/torvalds/linux/blob/de2f378f2b771b39594c04695feee86476743a69/arch/x86/kernel/verify_cpu.S#L109)ため、
+Linux は [`verify_cpu()` においてこの値を取得し `0x8000_0001` 以上であることを要求する](https://github.com/torvalds/linux/blob/de2f378f2b771b39594c04695feee86476743a69/arch/x86/kernel/verify_cpu.S#L109) ため、
 Ymir でもそこまでをサポートするようにします:
 
 ```ymir/arch/x86/vmx/cpuid.zig
@@ -491,7 +491,7 @@ Ymir でもそこまでをサポートするようにします:
 
 ### 0x8000_0001: Extended Function
 
-Leaf `0x8000_0001` は syscall や Intel64 などの拡張機能に関する情報を返します。
+Leaf `0x8000_0001` は syscall や Intel 64 などの拡張機能に関する情報を返します。
 Ymir ではこの Leaf はホストの値をパススルーします:
 
 ```ymir/arch/x86/vmx/cpuid.zig
@@ -526,7 +526,7 @@ Ymir ではこの Leaf はホストの値をパススルーします:
 
 前回と違って CPUID による VM Exit ではなくなりました。
 代わりに [RDMSR](https://www.felixcloutier.com/x86/rdmsr) による VM Exit が発生しています。
-次チャプターでは RDMSR/WRMSR に対応するためのハンドラを実装します。
+次チャプターでは RDMSR / WRMSR に対応するためのハンドラを実装します。
 加えて、ゲストとホストの MSR を適切に保存・退避するように VMCS の設定をしていきます。
 
 [^non-exhaustive]: Exhaustive Enum では `_` を使うことができない代わりに、明示的に捕捉したフィールド以外の全てのフィールドを `else` で捕捉することができます。
