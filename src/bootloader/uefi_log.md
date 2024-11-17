@@ -4,6 +4,9 @@ Surtr の雛形ができたので、次にやりたいことはログ出力で�
 ログ出力はデバッグをする上でも非常に重要なので先にやってしまいましょう。
 今回は UEFI の [Simple Text Output](https://uefi.org/specs/UEFI/2.9_A/12_Protocols_Console_Support.html) というプロトコルを利用してログを出力していきます。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-surtr-uefi_log`](https://github.com/smallkirby/ymir/tree/whiz-surtr-uefi_log) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

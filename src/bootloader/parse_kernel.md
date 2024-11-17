@@ -6,6 +6,9 @@
 そのためには ELF が要求する仮想アドレスに物理ページをマップするためのページテーブルを作成する必要があります。
 ページテーブルの操作は次チャプターで実装することにして、今回は Ymir Kernel の ELF のパースまでを行います。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-surtr-parse_kernel`](https://github.com/smallkirby/ymir/tree/whiz-surtr-parse_kernel) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

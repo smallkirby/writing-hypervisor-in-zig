@@ -9,6 +9,9 @@
 このログ出力が実装できれば続く開発が楽になります。
 なお、ログシステムの構築自体は次チャプターで行うこととして、本チャプターではシリアル出力すること自体を目標とします。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-ymir-serial_output`](https://github.com/smallkirby/ymir/tree/whiz-ymir-serial_output) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

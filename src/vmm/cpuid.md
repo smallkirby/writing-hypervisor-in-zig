@@ -3,6 +3,9 @@
 前チャプターではゲスト Linux の起動処理を開始することに成功し、CPUID が原因で VM Exit するところまで確認しました。
 本チャプターでは、ゲストの CPUID 命令に対して適切な値を見せることで CPUID を仮想化します。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-vmm-cpuid`](https://github.com/smallkirby/ymir/tree/whiz-vmm-cpuid) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

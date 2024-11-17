@@ -6,6 +6,9 @@
 また、UEFI が提供するメモリマップを取得して観察してみます。
 このメモリマップはのちほど Ymir で使うことになるのに加え、Boot Services を終了させるためにも必要となります。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-surtr-cleanup_memmap`](https://github.com/smallkirby/ymir/tree/whiz-surtr-cleanup_memmap) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

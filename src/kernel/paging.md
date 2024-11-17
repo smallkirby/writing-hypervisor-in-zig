@@ -6,6 +6,9 @@ UEFI が用意したページテーブルは仮想アドレスをそのまま物
 Ymir が新しく用意するマッピングもダイレクトマップではありますが、仮想アドレスと物理アドレスが異なるようにオフセットを加算します。
 本チャプターを終えると、UEFI が提供したものを全て破棄できる状態になります。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-ymir-paging`](https://github.com/smallkirby/ymir/tree/whiz-ymir-paging) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

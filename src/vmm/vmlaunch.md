@@ -4,6 +4,9 @@
 本チャプターでは VMCS を適切に設定して VMLAUNCH を実行します。
 それにより VMX Non-root Operation でゲストが実行できることを目標とします。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-vmm-vmlaunch`](https://github.com/smallkirby/ymir/tree/whiz-vmm-vmlaunch) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

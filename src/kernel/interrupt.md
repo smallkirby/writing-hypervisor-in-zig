@@ -9,6 +9,9 @@ Ymir ではこれを置き換えて、割り込みの適切な処理や例外時
 なお、本チャプターは *SDM Vol.3A Chapter 6 INTERRUPT AND EXCEPTION HANDLING* に基づいています。
 より詳細を知りたい人はあわせて参照してください。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-ymir-interrupt`](https://github.com/smallkirby/ymir/tree/whiz-ymir-interrupt) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

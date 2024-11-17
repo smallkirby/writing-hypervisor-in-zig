@@ -5,6 +5,9 @@
 これは、ゲストとホストがレジスタなどの状態を共有してしまっていることを意味します。
 本チャプターでは VM Entry と VM Exit の処理を実装し、適切に状態の保存・復元と VM Exit のハンドリングをするようにします。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-vmm-vmentry_vmexit`](https://github.com/smallkirby/ymir/tree/whiz-vmm-vmentry_vmexit) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

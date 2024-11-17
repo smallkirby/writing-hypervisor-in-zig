@@ -4,6 +4,9 @@
 この置き換え作業は Ymir がメモリアロケータを実装するに当たり、UEFI の領域を解放するために必要なステップです。
 その第1弾が GDT です。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-ymir-gdt`](https://github.com/smallkirby/ymir/tree/whiz-ymir-gdt) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

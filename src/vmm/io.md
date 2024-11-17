@@ -6,6 +6,9 @@
 本チャプターでは、ゲストによる I/O Access を仮想化していきます。
 Linux をブートさせるために仮想化するデバイスはそれほど多くなく、その他のデバイスは単純にパススルーするか無効化することにします。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-vmm-io`](https://github.com/smallkirby/ymir/tree/whiz-vmm-io) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

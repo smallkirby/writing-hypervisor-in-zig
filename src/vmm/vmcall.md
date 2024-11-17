@@ -7,6 +7,9 @@
 VMCALL Service を活用することで、ゲストがホストに対して何らかの要求をしたり、逆にホストがゲストの情報を取得することができるようになります。
 本チャプターではそれらを実装するための基盤を作ります。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-vmm-vmcall`](https://github.com/smallkirby/ymir/tree/whiz-vmm-vmcall) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

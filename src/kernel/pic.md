@@ -5,6 +5,9 @@
 本チャプターでは **PIC: Programmable Interrupt Controller** の初期化・設定をおこないます。
 これにより、タイマーやキーボード等の外部デバイスから割り込みを受け取ることができるようになります。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-ymir-pic`](https://github.com/smallkirby/ymir/tree/whiz-ymir-pic) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

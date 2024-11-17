@@ -5,6 +5,9 @@
 Zig においてビット演算はそこまで便利なシンタックスや標準ライブラリが用意されているわけではないため、自前で実装してしまいます。
 また、ライブラリに対してテストを書くことで Zig におけるテストの書き方を導入します。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-ymir-bit_and_test`](https://github.com/smallkirby/ymir/tree/whiz-ymir-bit_and_test) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

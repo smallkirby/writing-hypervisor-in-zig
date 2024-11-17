@@ -6,6 +6,9 @@
 先にネタバレしてしまうと、このチャプターを終えることでゲスト Linux が完全に起動するようになります。
 ネタバレしてごめんね。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-vmm-initramfs`](https://github.com/smallkirby/ymir/tree/whiz-vmm-initramfs) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

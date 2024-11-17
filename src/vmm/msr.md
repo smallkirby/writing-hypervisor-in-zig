@@ -4,6 +4,9 @@
 ゲストに対して見せる MSR の値を任意に設定し、逆にゲストが MSR に書き込もうとした値をホストが変更することもできます。
 また、VM Entry と VM Exit の際に MSR の値を適切に保存・復元するようにします。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-vmm-msr`](https://github.com/smallkirby/ymir/tree/whiz-vmm-msr) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

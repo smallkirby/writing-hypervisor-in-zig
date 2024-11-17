@@ -3,6 +3,9 @@
 長かった Ymir Kernel の実装も一段落し、いよいよ VMM 部分の実装に入っていきます。
 本チャプターは VT-x の基礎的な概念の説明から始まり、VMX Root Operation という VMM 用のモードに遷移するところまでを目的にします。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-vmm-vmx_root`](https://github.com/smallkirby/ymir/tree/whiz-vmm-vmx_root) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

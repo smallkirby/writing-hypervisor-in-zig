@@ -4,6 +4,9 @@
 なお、VMCS が制御する項目は膨大であるため、本チャプターおよび本シリーズではすべての項目を扱うわけではありません。
 Ymir が Linux をブートするために必要な項目についてのみ触れることとします。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-vmm-vmcs`](https://github.com/smallkirby/ymir/tree/whiz-vmm-vmcs) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

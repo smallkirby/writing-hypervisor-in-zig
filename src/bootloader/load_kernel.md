@@ -4,6 +4,9 @@
 ページ操作をできるようにしたもともとの理由は、Ymir Kernel をロードする際に Ymir が要求するレイアウトに合わせて仮想アドレスをマップするためです。
 本チャプターでは Ymir Kernel のELF ファイルをパースし、要求する仮想アドレスにカーネルをロードしていきます。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-surtr-load_kernel`](https://github.com/smallkirby/ymir/tree/whiz-surtr-load_kernel) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

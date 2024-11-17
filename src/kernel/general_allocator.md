@@ -7,6 +7,9 @@
 本チャプターでは、より効率的に小さなサイズのメモリを確保できる汎用的なアロケータを実装します。
 これにより、ページアロケータよりも遥かに小さなメモリオーバヘッドでメモリを確保できるようになります。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-ymir-general_allocator`](https://github.com/smallkirby/ymir/tree/whiz-ymir-general_allocator) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

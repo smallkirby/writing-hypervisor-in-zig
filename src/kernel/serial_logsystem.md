@@ -5,6 +5,9 @@
 基本的には [Surtr のログ出力](../bootloader/uefi_log.md) でやったことと同じになります。
 そのため、本チャプターは一瞬で終わります。やったね、今日は早く寝てください。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-ymir-serial_logsystem`](https://github.com/smallkirby/ymir/tree/whiz-ymir-serial_logsystem) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

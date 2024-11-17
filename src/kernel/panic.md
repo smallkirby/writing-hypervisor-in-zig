@@ -7,6 +7,9 @@
 > [!NOTE] スキップ可能
 > 本チャプターはまるごとスキップして次のチャプターに進んでも問題ありません。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-ymir-panic`](https://github.com/smallkirby/ymir/tree/whiz-ymir-panic) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

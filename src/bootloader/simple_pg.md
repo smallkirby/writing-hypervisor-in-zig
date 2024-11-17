@@ -6,6 +6,9 @@
 ブートローダである Surtr がページテーブルを操作する必要があるのはカーネルのロード時だけであるため、
 本チャプターでは必要最低限なページテーブルの操作を実装していきます。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-surtr-simple_pg`](https://github.com/smallkirby/ymir/tree/whiz-surtr-simple_pg) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

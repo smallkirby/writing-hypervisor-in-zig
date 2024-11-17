@@ -4,6 +4,9 @@
 本チャプターでは、ゲストとホストの間で適切に役割分担をして割り込みを共有する仕組みを構築します。
 その過程で、ホストはゲストに対して VM Entry 時に割り込みを注入することになります。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-vmm-intr_injection`](https://github.com/smallkirby/ymir/tree/whiz-vmm-intr_injection) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

@@ -4,6 +4,9 @@
 Control Registers は CPU の挙動を制御するための重要なレジスタであり、ゲストを動かす上で適切に扱う必要があります。
 本チャプターでは CR からの読み込みと CR への書き込みの両方を仮想化し、他の VMCS フィールドとの整合性を保ちながらハンドリングしていきます。
 
+> [!IMPORTANT]
+> 本チャプターの最終コードは [`whiz-vmm-cr`](https://github.com/smallkirby/ymir/tree/whiz-vmm-cr) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->
