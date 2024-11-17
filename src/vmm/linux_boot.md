@@ -124,7 +124,7 @@ const guest_info: *const uefi.FileInfo = @alignCast(@ptrCast(&guest_info_buffer)
 [Page Allocator](../kernel/page_allocator.md) で実装したように、Ymir のページアロケータは UEFI から渡されたメモリマップの内、
 `.ConventionalMemory` / `.BootServiceCode` タイプのメモリを Ymir が利用可能なメモリとして扱います。
 今読み込もうとしているファイルデータは、ページアロケータの初期化後もゲストメモリにロードするまでは破棄したくないため、
-ページアロケータが利用しない `.LoaderDAta` に配置することにします:
+ページアロケータが利用しない `.LoaderData` に配置することにします:
 
 ```surtr/boot.zig
 var guest_start: u64 align(page_size) = undefined;
@@ -228,7 +228,7 @@ pub const BootParams = extern struct {
 ```
 
 重要なフィールドは Setup Headers である `.hdr` と E820 マップである `.e820_map` です。
-E820 マップについては[のちほど扱います](#e820-マップ)。
+E820 マップについては [のちほど扱います](#e820-map)。
 `BootParams` は `bzImage` の先頭に圧縮されていない状態で配置されています。
 `from()` メソッドは `bzImage` のバイナリデータから `BootParams` を取り出します。
 
@@ -336,9 +336,10 @@ pub const SetupHeader = extern struct {
 ```
 
 これまたたくさんフィールドがありますが、Ymir で使うのはごく一部です。
-全てのフィールドの意味については[ドキュメント](https://www.kernel.org/doc/html/v5.6/x86/boot.html#the-real-mode-kernel-header)を参照してください。
+全てのフィールドの意味については [ドキュメント](https://www.kernel.org/doc/html/v5.6/x86/boot.html#the-real-mode-kernel-header) を参照してください。
 `from()` は `bzImage` のバイナリイメージから `SetupHeader` を取り出します。
 Setup Headers は `bzImage` の先頭から `0x1F1` バイトのオフセットに固定で配置されています。
+
 `.setup_sects` は Setup Code のサイズを 512byte セクタ単位で表しています。
 この値が例えば `4` であれば、Setup Code のサイズは \\( 4 \times 512 = 2048 \\) byte となります。
 なお、この値が `0` の場合には実際の値が `4` であるものとして扱うという仕様になっています。
@@ -512,7 +513,7 @@ fn loadImage(memory: []u8, image: []u8, addr: usize) !void {
 
 最後にカーネルをロードします。
 `bzImage` におけるカーネルコードのオフセットは、先ほど実装した `SetupHeader.getProtectedCodeOffset()` で取得できます。
-ロードするコードのサイズは `bzImage` 全体のサイズから Protected-Mode Code のオフセットを引いたものです:
+ロードするコードのサイズは `bzImage` 全体のサイズから Real-Mode Code のオフセットを引いたものです:
 
 ```ymir/vmx.zig
     const code_offset = bp.hdr.getProtectedCodeOffset();
@@ -623,7 +624,7 @@ CPUID が原因で VM Exit すれば成功です。
 これは `startup_32()` から呼ばれる [verify_cpu()](https://github.com/torvalds/linux/blob/de2f378f2b771b39594c04695feee86476743a69/arch/x86/kernel/verify_cpu.S#L34) で [CPUID](https://www.felixcloutier.com/x86/cpuid) が実行されるためです。
 まだ CPUID のための Exit ハンドラを書いていないため、このエラーが出ています。
 なにはともあれカーネルに処理が渡り、CPUID が実行されるまではゲストが実行されたことが分かります。
-ゲストとして Linux を動かし始めることができました。
+**ゲストとして Linux を動かし始めることができました**。
 
 なお、GDB でゲストが動いていることを確認することもできます。
 Ymir の起動後ゲストが起動するまでに、GDB から `target remote :1234` で接続してください。
