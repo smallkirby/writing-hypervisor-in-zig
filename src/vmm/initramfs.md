@@ -1,5 +1,11 @@
 # initramfs
 
+前チャプターではゲストが initramfs を読み込もうとするところまでブートが進みました。
+欲しいのならば、あげましょう。
+本チャプターでは、Linux にロードさせるための initramfs を用意し、Surtr と Ymir が連携してゲストのメモリ空間にロードします。
+先にネタバレしてしまうと、このチャプターを終えることでゲスト Linux が完全に起動するようになります。
+ネタバレしてごめんね。
+
 ## Table of Contents
 
 <!-- toc -->
@@ -12,23 +18,23 @@
 **initramfs** はメモリ上に展開される RAM FS の一種です。
 ディレクトリとファイルが単純に [cpio](https://en.wikipedia.org/wiki/Cpio) 圧縮 (+ gzib) された簡単な構造をしています。
 Linux はカーネル自体が initramfs を操作するための機能を持っており、他の FS をマウントしていない間の一時的な FS として利用することができます。
-この initramfs からカーネルモジュールをロードし、そのモジュールを使って実際のルートファイルシステムをマウントすることができます。
+この initramfs からカーネルモジュールをロードし、そのモジュールを使って実際のルートファイルシステムをマウントしたりします。
 Ymir では簡単のために initramfs をずっと使用し、他の FS は一切使用しません。
 
 まずはゲストがロードするための initramfs を作成します。
 initramfs を作成する方法は色々とありますが、ここでは [buildroot](https://buildroot.org/) を使用することにします。
 buildroot は組み込み用 Linux をビルドするためのツールチェインですが、ここではファイルシステムを生成するためだけに使います。
-[buildroot のダウンロードページ](https://buildroot.org/download.html) から適当なバージョンをダウンロードし、解凍します。
+[buildroot のダウンロードページ](https://buildroot.org/download.html) から適当なバージョンをダウンロードし、解凍してください。
 解凍したディレクトリで、`make menuconfig` でコンフィグを設定します。
 今回は Linux カーネル自体はビルドする必要がないため、`BR2_LINUX_KERNEL` はオフにします。
-その上で、以下のオプションを有効にして cpio 形式の initramfs を生成するようにします:
+その後、以下のオプションを有効にして cpio 形式の initramfs を生成するようにします:
 
 ![cpio the root filesystem (for use as an initial RAM filesystem)](../assets/buildroot.png)
 *cpio the root filesystem (for use as an initial RAM filesystem)*
 
 `make` を実行し、ファイルシステムを生成します。
 ファイルは `./output/images/rootfs.cpio` に出力されます。
-cpio ファイルは、以下の手順で展開および圧縮することができます:
+cpio ファイルは、以下の手順で展開および圧縮することができます[^lysithea]:
 
 ```bash
 # 展開
@@ -44,6 +50,7 @@ Linux はカーネルのブート後に FS の `/init` を実行します。
 `rcS` は `/etc/init.d/` に置いてある `S` で始まるスクリプトを順番にサブプロセスで実行します。
 
 出力された initramfs を展開し、中から余計な起動スクリプトを消してあげます。
+本シリーズではネットワークはサポートしないため、ネットワーク関連のスクリプトを削除しましょう:
 
 ```bash
 rm ./x/etc/init.d/S41dhcpcd
@@ -58,9 +65,6 @@ rm ./x/extracted/etc/init.d/S40network
 mdev -s
 mount -t proc none /proc
 stty -opost
-echo 0 >/proc/sys/kernel/kptr_restrict
-echo 0 >/proc/sys/kernel/dmesg_restrict
-chmod 666 /dev/ptmx
 
 /bin/sh
 
@@ -226,7 +230,9 @@ etc      lib64    mnt      root     sys      var
 ```
 
 **ついに！Linux が！起動しました！**
-シリアルによる入力も受け付けており、自由にシェルを操作することができます！
+仮想化されたシリアルによる入力も受け付けており、自由にシェルを操作することができます！
 ここまで合計30チャプター近くもある長い道のりでしたが、いよいよゲストを動かすことができました。
 おもちゃレベルではあるものの、これで "Hypervisor" と呼べるものができたのではないでしょうか。
-次のチャプターでは、おまけとして VMCALL を実装してゲストから VMM の機能を呼び出す仕組みを実装し、本シリーズを締めくくろうと思います。
+次のチャプターでは、おまけとして [VMCALL](https://www.felixcloutier.com/x86/vmcall) を実装してゲストから VMM の機能を呼び出す仕組みを実装し、本シリーズを締めくくろうと思います。
+
+[^lysithea]: このへんの操作を自動化する筆者謹製のスクリプト [smallkirby/lysithea](https://github.com/smallkirby/lysithea) があるので、興味がある人は使ってみてください。
