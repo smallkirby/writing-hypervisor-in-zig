@@ -1,5 +1,9 @@
 # Page Allocator
 
+前チャプターまでは UEFI から提供されるデータ構造を Ymir のものに置き換えていきました。
+ページテーブルもその1つであり、現在は UEFI が用意したページテーブルを使っています。
+ページテーブルを Ymir 用に新しく作成したいのですが、その作業自体に Page Allocator が必要となります。
+
 このチャプターでは、ページ割当てを司る Page Allocator を実装します。
 Zig には「暗黙的なメモリ割当てが極めて少ない」という特徴があります。
 `std` ライブラリでメモリ割当てを必要とする関数は全て引数に `Allocator` をとります。
@@ -81,7 +85,7 @@ pub fn init(self: *Self, map_: MemoryMap) void {
 `MemoryDescriptorIterator` は [メモリマップとお片付け](../bootloader/cleanup_memmap.md) で実装したものであり、
 メモリマップに対するイテレータを提供します。
 このイテレータを使ってメモリマップを順に取り出していきます。
-メモリマップには、その[メモリの種類](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#memory-type-usage-before-exitbootservices)　も記録されています。
+メモリマップには、その [メモリの種類](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#memory-type-usage-before-exitbootservices) も記録されています。
 この内、Ymir では *Conventional Memory* と *Boot Services Code* の2つを OS(Ymir) が自由に利用可能な領域として扱います。
 
 > [!NOTE] 本当はまだある利用可能領域
@@ -109,7 +113,7 @@ inline fn isUsableMemory(descriptor: *uefi.tables.MemoryDescriptor) bool {
 ### 管理できるメモリサイズ
 
 `PageAllocator` が使うビットマップは、1ビットを1ページに対応させます。
-Zig では整数型を任意のビット幅で持たせることもできますが、
+Zig では任意のビット幅を持つ整数型を利用することができますが、
 `[N]u1` のような配列を作っても一要素が 1byte になってしまいます。
 よって、今回は `u64` 型の配列としてビットマップを実装していきます:
 
@@ -215,7 +219,7 @@ fn set(self: *Self, frame: FrameId, status: Status) void {
 0 ~ 63 の値を取るため、`u6` 型としています。
 `set()` は逆にビットマップの指定したページ番号の `Status` を設定します。
 
-続いて、1ページ単位ではなく複数ページの状態をまとめて変更する関数を用意します:
+1ページ単位ではなく複数ページの状態をまとめて変更するヘルパー関数も用意しておきます:
 
 ```ymir/mem/PageAllocator.zig
 fn markAllocated(self: *Self, frame: FrameId, num_frames: usize) void {
@@ -375,11 +379,6 @@ fn resize(_: *anyopaque, _: []u8, _: u8, _: usize, _: usize) bool {
 
 ```ymir/mem/PageAllocator.zig
 pub fn allocPages(self: *PageAllocator, num_pages: usize, align_size: usize) ?[]u8 {
-    if (align_size % page_size != 0) {
-        log.err("Invalid alignment size: {}", .{align_size});
-        return null;
-    }
-
     const num_frames = num_pages;
     const align_frame = (align_size + page_size - 1) / page_size;
     var start_frame = align_frame;
@@ -404,7 +403,7 @@ pub fn allocPages(self: *PageAllocator, num_pages: usize, align_size: usize) ?[]
 
 中身はほぼ `allocate()` と同じです。
 引数はサイズをの代わりにページ数を受け取ります。
-また、指定されたアラインが 4KiB アラインされているかどうかのアサートもしておきます。
+`align_size` にはページサイズ以上のアラインメントを指定することができ、秋ページを探索する際にはこのアラインメントを考慮します。
 
 ## Allocator の作成
 
@@ -423,13 +422,13 @@ pub const page_allocator = Allocator{
 `page_allocator_instance` は `PageAllocator` の唯一のインスタンスです。
 基本的にこちらのインスタンスは直接触ることはありません。
 唯一使う必要があるのは、先ほどの `allocaPages()` を呼び出す場合のみです。
-というか、このインスタンスは直接触らせたくないので `pub` 指定したくありません。
+というか、このインスタンスは直接触らせたくないので本当は `pub` 指定したくありません。
 `PageAllocator` という型自体も同様です。
 しかし、`Allocator.alignedAlloc()` がページサイズ以上のアラインを許容しないため致し方ありません[^align]。
 
-肝心の `Allocator` は `ptr` と `vtable` を指定してあげることで作成します。
+肝心の `Allocator` は、`ptr` と `vtable` を指定してあげることで作成します。
 `ptr` は `page_allocator_instance` インスタンスへのポインタです。
-これにより先ほど実装した3つの関数だけでなく、`alloc()`, `create()`, `alignedAlloc()`, `allocSentinel()` 等さまざまな関数を利用できるようになります。
+これにより先ほど実装した3つの関数だけでなく、`alloc()`, `create()`, `alignedAlloc()`, `allocSentinel()` など `Allocator` インタフェースが提供するさまざまな関数を利用できるようになります。
 
 利用時には以下のようにして `Allocator` として利用します (内部実装を気にする必要がありません):
 
@@ -439,8 +438,9 @@ const array = try page_allocator.alloc(u32, 4);
 log.debug("Memory allocated @ {X:0>16}", .{@intFromPtr(array.ptr)});
 ```
 
-## アウトロ
+## まとめ
 
+本チャプターでは UEFI から提供されたメモリマップをもとに利用可能なページを追跡する `PageAllocator` を実装しました。
 メモリアロケータができたことで、いろいろなことができるようになります。
 たとえばページテーブル用のページを確保できるようになったため、メモリマップを再構築できるようになります。
 また、VT-x では vCPU ごとに VMCS 用のページを確保してあげる必要もあります。
