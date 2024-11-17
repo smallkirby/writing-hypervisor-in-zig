@@ -2,7 +2,8 @@
 
 本チャプターは UEFI が用意してくれたものを Ymir が置き換えていくシリーズの第2弾です。
 今回は割り込みと例外を扱います。
-UEFI が Surtr に処理を渡した時点で、基本的な例外設定を UEFI がしてくれています (どれもアボートするだけのようですが)。
+UEFI が Surtr に処理を渡した時点で、基本的な例外設定は UEFI がしてくれています。
+どの例外ハンドラもアボートするだけのようですが。
 Ymir ではこれを置き換えて、割り込みの適切な処理や例外時のエラー表示等をします。
 
 なお、本チャプターは *SDM Vol.3A Chapter 6 INTERRUPT AND EXCEPTION HANDLING* に基づいています。
@@ -15,31 +16,32 @@ Ymir ではこれを置き換えて、割り込みの適切な処理や例外時
 ## 割り込みと例外の基礎
 
 CPU は **割り込み (Interrupts)** と **例外 (Excetpions)**  という2つのイベント[^call]を受け取ることができます。
-割り込みは HW からの信号によって任意のタイミングで発生[^timing]するのに対し、
+割り込みはハードウェアからの信号によって任意のタイミングで発生[^timing]するのに対し、
 例外は CPU が instruction を実行するタイミングでエラーを検知して発生します。
+なお、どちらもハンドラが呼び出されるのは Instruction Boundary に制限されるため、命令の途中で割り込みハンドラが呼び出されることはありません。
 
 ### 分類
 
-割り込みは interrupt source によって以下に分類されます:
+**割り込み** は Interrupt Source によって以下の2つに分類されます:
 
 | Name | Description |
 |--------|-------------|
-| *External Interrupts* | CPU 内部から発生する割り込み。 |
-| *Software-generated Interrupts* | ソフトウェアから [INT](https://www.felixcloutier.com/x86/intn:into:int3:int1) 命令で発生。任意の番号の割り込みを発生可能。 |
+| **External Interrupts** | CPU 内部から発生する割り込み。 |
+| **Software-generated Interrupts** | ソフトウェアから [INT](https://www.felixcloutier.com/x86/intn:into:int3:int1) 命令で発生。任意の番号の割り込みを発生可能。 |
 
-例外も interrupt source によって3種類に分類されますが、そんなに使い分けることがないので省略します。
-割り込みと同様に [INT](https://www.felixcloutier.com/x86/intn:into:int3:int1) 命令で任意の vector の例外を発生可能です。
-ただし、*Error Code* がスタックに PUSH されないという制約があります。
+**例外** も Interrupt Source によって3種類に分類されますが、そんなに使い分けることがないので省略します。
+割り込みと同様に [INT](https://www.felixcloutier.com/x86/intn:into:int3:int1) 命令で任意の vector の例外を発生させることができます。
+ただし、INT 命令による例外には **Error Code** がスタックに PUSH されないという制約があります。
 
 例外には、例外を発生させたタスクの再開が可能かどうかに応じて以下の3つのクラスがあります:
 
-| Name | Can Resume | Return Address |
+| Name | Can Resume? | Return Address |
 |---|---|---|
-| *Faults* | Yes | Faulting instruction. |
-| *Traps* | Yes | Next instruction. |
-| *Aborts* | No | - |
+| **Faults** | Yes | Faulting instruction. |
+| **Traps**| Yes | Next instruction. |
+| **Aborts** | No | - |
 
-例外は CPU が発生させるものであるため、例外の種類はアーキテクチャに依存します。
+例外は CPU が定義するものであるため、例外の種類はアーキテクチャに依存します。
 x64 では以下のように例外が定義されています:
 
 | Vector | Name | Class |
@@ -76,14 +78,17 @@ x64 では以下のように例外が定義されています:
 GDT と同様に **Gate Descriptor** という 8byte のエントリから成る配列[^idt-size]です。
 Gate Descriptor には *Task Gate* / *Interrupt Gate* / *Trap Gate* という3つの種類があります。
 Task Gate は HW タスクスイッチに使われますが本シリーズでは使いません。
-Interrupt Gate と Trap Gate の違いは、ハンドラ呼び出し時に割り込みを無効化する ( *IF* をクリアする) かどうかです。
+Interrupt Gate と Trap Gate の違いは、ハンドラ呼び出し時に割り込みを無効化する ( `RFLAGS.IF` をクリアする) かどうかです。
 **本シリーズでは Interrupt Gate だけを使います**。
+
 Gate Descriptor は以下の構造を持ちます:
 
 ![IDT Gate Descriptors](../assets/sdm/idt_gate_descriptors.png)
 *SDM Vol.3A 6.11 Figure 6-2. IDT Gate Descriptors*
 
 *Offset* / *Segment Selector* / *DPL* 以外は固定値です。
+**Segment Selector** は例外・割り込みハンドラが位置するセグメントを選択するためのセレクタです。
+Segment Selector が指定するセグメント内のオフセットは **Offset** によって指定されます。
 
 ### ハンドラの呼び出し
 
@@ -142,7 +147,7 @@ pub const GateType = enum(u4) {
 
 続いて、IDT を定義します。
 GDT と同様に `.data` セクションに確保される配列とします。
-なお、GDT の NULL descriptor とは異なり 0 番目の要素も実際に使われます:
+なお、GDT の [NULL Descriptor](./gdt.md#null-descriptor) とは異なり 0 番目の要素も実際に使うことができます:
 
 ```ymir/arch/x86/idt.zig
 pub const max_num_gates = 256;
@@ -171,7 +176,8 @@ pub fn setGate(
 ```
 
 `Isr` は後述する割り込みハンドラの関数型です。
-セグメントは CS を指定します (下位 3bit は *RPL* / *TI*[^ti] なのでシフトします)。
+ハンドラはコード領域に置かれるため、セグメントは CS を指定します
+(下位 3bit は RPL/TI[^ti] なのでその分だけシフトします)。
 
 ## 空の IDT の初期化
 
@@ -195,9 +201,9 @@ pub fn init() void {
 }
 ```
 
-IDT 自体のアドレスは **IDTR: Interrupt Descriptor Table Register** にセットします:
-GDT の GDTR に対応するレジスタです。
-やはり GDT と同様に、Zig 0.13.0 時点のバグのせいで `.base = &idt` と定義できないため、
+IDT 自体のアドレスは **IDTR: Interrupt Descriptor Table Register** にセットします。
+GDT における GDTR に対応するレジスタです。
+やはり GDT と同様に、Zig 0.13.0 時点のバグのせいで `.base = &idt` というような定義ができないため、
 `init()` の中で IDT のアドレスをセットします。
 `am.lidt()` は [LIDT](https://www.felixcloutier.com/x86/lgdt:lidt) を実行するためのアセンブリ関数です。
 
@@ -210,14 +216,14 @@ log.info("Initialized IDT.", .{});
 
 これで空の IDT を設定できました。
 実際に例外を起こしてみましょう。
-Zig で定数値を使って `#DE` を引き起こすのは少し面倒なため、今回は `#GP` を引き起こします:
+Zig で定数値を使って `#DE: Devide Error` を引き起こすのは少し面倒なため、今回は `#GP: General Protection Fault` を引き起こしてみます:
 
 ```ymir/main.zig
 const ptr: *u64 = @ptrFromInt(0xDEAD_0000_0000_0000);
 log.info("ptr.* = {d}", .{ptr.*});
 ```
 
-`0xDEAD000000000000` というアドレスは、**canonical form** ではありません。
+`0xDEAD000000000000` というアドレスは、**Canonical Form** ではありません。
 Canonical Form は仮想アドレスが満たすべきフォーマットのことで、 *Most Significant Implemented Bit* (おそらく最近のCPUだと 47-th bit) とそれより高位のビットが全て同じであることを要求します。
 今回のアドレスは 47-th bit が `0` なのに対し、それより上位のビットが `0x00000000` ではないため `#GP` が発生します。
 
@@ -225,13 +231,13 @@ Canonical Form は仮想アドレスが満たすべきフォーマットのこ�
 これは **Triple Fault** が発生したためです。
 まず、指定したアドレスから値を取得しようとして `#GP` が発生します。
 CPU は `#GP` のベクタである 13 番目のエントリを IDT から取得します。
-現在 IDT は全て 0 で埋めてあるため、*Segment Selector* が 0 (*NULL segment selector*) として解釈されます。
-Null segment selector を使ったメモリアクセスは `#GP` を発生させようとしますが[^deref-null]、
-2回連続の `#GP` なので `#DF` が発生します[^double-fault]。
+現在 IDT は全て 0 で埋めてあるため、*Segment Selector* が 0 (*NULL Segment Selector*) として解釈されます。
+Null Segment Selector を使ったメモリアクセスは `#GP` を発生させようとしますが[^deref-null]、
+2回連続の `#GP` なので `#DF: Double Fault` が発生します[^double-fault]。
 ここでもやはりハンドラのアドレス解決時に `#GP` が発生し、最終的には Triple Fault が発生します。
 Triple Fault はシステムをシャットダウンするため、QEMU が終了します。
 
-なにはともあれ、UEFI の用意した IDT から Ymir の IDT に置き換えること自体には成功しました。
+なにはともあれ、UEFI の用意した IDT から Ymir の IDT に置き換えること自体には成功しているようです。
 
 > [!NOTE] UEFI の用意する IDT
 > `main.zig` において、IDT と GDT の初期化をする関数呼び出しをコメントアウトした状態で `#GP` を発生させると、UEFI が用意してくれた IDT が使われます。
@@ -267,6 +273,7 @@ Triple Fault はシステムをシャットダウンするため、QEMU が終�
 短くて書きやすいので以降は ISR と呼びます。
 
 ISR には vector に関わらず共通でするべき処理があります。
+レジスタの退避・復帰などです。
 そのため、Ymir では共通の処理を呼び出した後に vector に対応する個別のハンドラを呼び出すような ISR を作成します。
 
 以下では ISR の共通部分を実装していきましょう。
@@ -304,7 +311,7 @@ pub fn generateIsr(comptime vector: usize) idt.Isr {
 `generateIsr()` は、割り込み vector を受取り、その vector に対応する ISR を生成します。
 全 ISR に「共通」の処理ではありますが、**関数自体は vector の個数分だけ生成する**ということです。
 これがなぜかというと、CPU は ISR の呼び出し時に vector をスタックやレジスタに保存してくれないからです。
-そのため、全 ISR に対して1つの関数しか用意しない場合、現在処理されている割り込み vector を知る方法がありません。
+全 ISR に対して1つの関数しか用意しない場合、現在処理されている割り込み vector を知る方法がありません。
 これを避けるため、vector ごとに関数を生成します。
 
 > [!NOTE] 関数を返す関数
@@ -319,12 +326,12 @@ Trap Gate 経由でジャンプするときにはクリアしません。
 
 続いて、例外が **Error Code** を提供しない場合にはダミーのエラーコードを PUSH します。
 一部の例外は Error Code によって例外の原因などを少し詳しく通知してくれます。
-例えば、`#PF` はフォルトを起こしたアクセスが read/write のどちらなのか等を Error Code に含めます。
+例えば、`#PF: Page Fault` はフォルトを起こしたアクセスが read/write のどちらなのか等を Error Code に含めます。
 Error Code を提供するものとしないもののスタックの状態を同じにするため、
 ISR では Error Code を提供しない例外にもダミーのエラーコードを PUSH します。
 各例外の Error Code の有無や意味は *SDM Vol.3A 6.15 Exception and Interrupt Reference* を参照してください。
 
-最後に、ISR の(vectorによらない)共通部分にジャンプする前に vector を PUSH します。
+最後に、ISR の vectorによらない共通部分にジャンプする前に vector を PUSH します。
 これによって、全割り込みで1つしか用意されていない関数の中でも vector を取得できます。
 
 全割り込みで共通して使う部分は以下です:
@@ -355,8 +362,14 @@ export fn isrCommon() callconv(.Naked) void {
     asm volatile (
         \\pushq %%rsp
         \\popq %%rdi
-        \\pushq %%rdi
-        \\call  intrZigEntry
+        // Align stack to 16 bytes.
+        \\pushq %%rsp
+        \\pushq (%%rsp)
+        \\andq $-0x10, %%rsp
+        // Call the dispatcher.
+        \\call intrZigEntry
+        // Restore the stack.
+        \\movq 8(%%rsp), %%rsp
     );
 
     // Remove general-purpose registers, error code, and vector from the stack.
@@ -402,6 +415,12 @@ ISR を呼び出す直前に CPU はスタックに以下のものを積んで�
 スタックは必ずこの図のとおりになります。
 加えて、Ymir の ISR ではこれに vector も PUSH していました。
 よって、IRET する前には vector と Error Code をスタックから取り除くために `add $0x10, %%rsp` を行っています。
+
+> [!NOTE] スタックのアライン
+> x64 の命令の中には、スタックが 16byte にアラインされていることを要求する命令があります。
+> その一例は [MOVAPS](https://www.felixcloutier.com/x86/movaps) 命令です。
+> この命令はスタックが 16byte にアラインされていない場合に `#GP` を発生させます。
+> ISR から `intrZigEntry()` を呼び出す際にはスタックを 16byte にアラインする操作を挟んでいます。
 
 ## vector 固有のハンドラ
 
@@ -529,11 +548,14 @@ pub fn init() void {
 ```
 
 `inline for` を使って、256 回だけ `idt.setGate()` を呼び出します。
-`inline for` が必要なのは、`isr.generateIsr()` が関数を返すためコンパイル時に評価される必要があるためです。
+`inline for` が必要なのは、`isr.generateIsr()` が関数を返すためコンパイル時に `for` が評価される必要があるためです。
 `generateIsr(i)` を使って生成された ISR は、先ほど実装した `idt.setGate()` によって Interrupt Gate として IDT にセットされます。
-最後に、[STI](https://www.felixcloutier.com/x86/sti) で RFLAGS.IF をセットして割り込みを有効化します。
+最後に、[STI](https://www.felixcloutier.com/x86/sti) で `RFLAGS.IF` をセットして割り込みを有効化します。
 
-これで本当に IDT の初期化の完了です。
+## まとめ
+
+本チャプターでは vector に関わらず共通な部分と vector 固有の部分に分けて ISR を実装しました。
+全ての割り込みに対して ISR を生成し、IDT に登録しました。
 登録された ISR は、各 vector ごとのハンドラを呼び出します。
 現在はまだ vector ごとのハンドラをひとつも登録していないため、全ての割り込みが `unhandledHandler()` によって処理されます。
 先ほどの `#GP` を発生させるコードをもう一度実行すると、以下のようになります:
@@ -567,9 +589,14 @@ pub fn init() void {
 
 ちゃんとレジスタの状態がダンプされていますね。
 
-本シリーズでは、Ymir で例外が発生することは想定しません。
+なお、本シリーズでは **Ymir で例外が発生することは想定しません**。
 のちのチャプターで扱いますが、カーネルは全ての物理アドレス空間を初期化時にマップするため、`#PF` も発生しません (Linuxと同じです)。
 一方で割り込みはいくつか登録するため、その時になったら今回実装した vector ごとのハンドラを登録する仕組みが活躍することになります。
+
+以上で UEFI が提供する IDT から独自の IDT に切り替えることができました。
+UEFI に依存しているものは、残すところページテーブルだけです。
+しかし、ページテーブルを切り替えるにはその過程の中でページアロケータが必要になります。
+次チャプターではページアロケータを実装していきましょう。
 
 [^call]: 本シリーズでは割り込みと例外を区別する必要がない場合にまとめて *割り込み* と呼びます。
 [^timing]: 割り込み信号は任意のタイミングで CPU に通知される可能性があるものの、
