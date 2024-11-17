@@ -1,6 +1,6 @@
 ---
 name: Question
-about: 質問
+about: 質問をする
 title: ':question: '
 labels: 'question'
 assignees: '@smallkirby'
