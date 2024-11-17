@@ -1,6 +1,7 @@
 # GDT: Global Descriptor Table
 
 このチャプターから数回にかけて、UEFI が用意してくれた構造を Ymir のものに置き換えていきます。
+この置き換え作業は Ymir がメモリアロケータを実装するに当たり、UEFI の領域を解放するために必要なステップです。
 その第1弾が GDT です。
 
 ## Table of Contents
@@ -9,9 +10,9 @@
 
 ## GDT の概要
 
-**GDT: Global Descriptor Table** は、セグメンテーションの設定をする構造です[^ldt]。
+**GDT: Global Descriptor Table** は、セグメンテーションの設定をするテーブル構造です[^ldt]。
 セグメンテーションは、メモリをいくつかの仮想的なブロックに分割する機能です。
-x86/64 ではアドレスには3つの種類があり、以下のように変換されます:
+x86-64 には3つのアドレスの種類があり、以下のように変換されます:
 
 ```mermaid
 graph TD
@@ -29,8 +30,8 @@ graph TD
 
 ## Linear Address と Segment Selector
 
-Linear Address は 32bit のアドレス (`0` - `0xFFFFFFFF`) です[^phys-space]。
-Logical to Linear 変換には GDT というテーブルと **Segment Selector** が使われます。
+Linear Address は Logical Address にセグメンテーションによる変換を施した 64bit のアドレスです[^phys-space]。
+Logical to Linear 変換には GDT と **Segment Selector** が使われます。
 GDT と Segment Selector の2つから、そのセグメントの *Base* / *Limit* / *Access Right* などを取得できます。
 
 ![Logical Address to Linear Address Translation](../assets/sdm/logi2lin.png)
@@ -52,18 +53,18 @@ x64 の Segment Register は **CS** / **SS** / **DS** / **ES** / **FS** / **GS**
 
 Segment Selector は、GDT のエントリを指すインデックスです。
 このインデックスをもとにして GDT が取得され、そのエントリの *Base* から Linear Address が取得されます。
-Hidden Part は、selector が指す GDT のエントリの一部をキャッシュします。
-解決時の際には Hidden Part に GDT の中身がキャッシュされているため、
+**Hidden Part は、selector が指す GDT のエントリの"一部"をキャッシュします**。
+アドレス変換の際には Hidden Part に GDT の中身がキャッシュされているため、
 CPU は GDT からエントリを取得する必要がなくなります[^hidden-cache]。
 
-プログラムから直接設定できるのは selector のみです。
+**プログラムから直接設定できるのは selector のみ** です。
 プログラムが selector を設定すると、CPU が自動的に GDT からエントリを取得し、Hidden Part にキャッシュします。
 
 > [!NOTE] セグメントとアクセスチェック
 > Logical to Linear 変換の際には、アドレスの計算以外にも以下のチェックが行われます:
 >
-> - Logical Address のオフセット部が *Limit* を超えていないか
-> - セグメントの *Access Right* が適切か
+> - Logical Address のオフセット部が **Limit** を超えていないか
+> - セグメントの **Access Right** が適切か
 
 ### Global Descriptor Table
 
@@ -76,20 +77,20 @@ GDT エントリは 64bit で以下の構造をしています:
 
 GDT エントリは各セグメントに対して以下の主な情報を定義します:
 
-- *Base*: セグメントの開始 Linear Address
-- *Limit*: セグメントのサイズ。*Granularity* によって単位が変わる
-- *DPL: Descriptor Privilege Level*: セグメントの特権レベル。CPL が DPL 以下でないとアクセスできない。
+- **Base**: セグメントの開始 Linear Address
+- **Limit**: セグメントのサイズ。*Granularity* によって単位が変わる
+- **DPL (Descriptor Privilege Level)**: セグメントの特権レベル。CPL が DPL 以下でないとアクセスできない。
 
 GDT 自体のアドレスは **GDTR: GDT Register** に格納されています。
-サイズは可変であり、サイズ情報も GDTR に格納されています。
+GDT のサイズ、つまりエントリ数は可変であるため、GDT のサイズ情報も GDTR に格納されています。
 
 ### Privilege Level
 
 CPU が持つ権限レベルは [Ring (Protection Ring)](https://en.wikipedia.org/wiki/Protection_ring) と呼ばれたりもします。
-*Ring* は時折複数の異なる概念として扱われることもありますが、基本的には **CPL: Current Privilege Level** のことを指す場合が多いです。
+Ring は時折複数の異なる概念を指す場合もありますが、基本的には **CPL: Current Privilege Level** のことを指す場合が多いです。
 
-*CPL* は CS レジスタの下位 2bit で表され、`0` - `3` の値を取ります。
-Logical to Linear 変換の際には、*CPL* が変換に利用するセグメントの *DPL* 以下であるか(権限が強いか)どうかがチェックされます。
+CPL は CS レジスタの下位 2bit で表され、`0` - `3` の値を取ります。
+Logical to Linear 変換の際には、CPL が変換に利用するセグメントの DPL 以下であるか(権限が強いか)どうかがチェックされます。
 その他にも、CPL(Ring) は特権レジスタや特権命令の実行ができるかどうかの判断にも使われます。
 例として [Control Register](https://wiki.osdev.org/CPU_Registers_x86-64#Control_Registers) には Ring-0 でないとアクセスできません。
 
@@ -101,22 +102,25 @@ Logical to Linear 変換の際には、*CPL* が変換に利用するセグメ�
 
 ## 64bit モードのセグメンテーション
 
-ここまでセグメントについて説明してきましたが、x64 ではセグメンテーションの機能のほとんどはHW的に無効化されています。
-厳密には、Intel64 (x64) アーキテクチャの [64bit mode (IA-32e mode の 64bit mode)](https://ja.wikipedia.org/wiki/X64) においてはセグメンテーションはほぼ無効化されています。
+ここまでセグメントについて説明してきましたが、
+**x64 ではセグメンテーションの機能のほとんどはハードウェア的に無効化されています**。
+厳密には、Intel 64 アーキテクチャの [64bit mode (IA-32e mode の 64bit mode)](https://ja.wikipedia.org/wiki/X64) においてセグメンテーションがほぼ無効化されています。
 *Base* は `0` として解釈され、*Limit* によるチェックは行われません。
 よって、Logical to Linear 変換では実際にはアドレスの変換は行われず、フラットで巨大な1つのセグメントが使われているものとして扱われます[^virt]。
 
-例外は *FS* と *GS* セグメントです。
+例外は **FS** と **GS** セグメントです。
 この2つに対しては依然としてセグメントが設定ができ、どのように利用するかはソフトウェア依存です。
-[glibc](https://www.gnu.org/software/libc/) においては FS は **TLS: Thread Local Storage** を表現するのに使われます。
-Linux Kernel においては、GS は per-CPU データを表現するのに使われます[^linux-fsgs]。
+[glibc](https://www.gnu.org/software/libc/) では FS は **TLS: Thread Local Storage** を表現するのに使われます。
+Linux Kernel では、GS は Per-CPU データを表現するのに使われます[^linux-fsgs]。
 
 なお、FS/GS を使う場合にも実際に利用されるのは *Base* 部分のみです。
-それも FS/GS の Segment Selector (Segment Register) に書き込む方法に加え、
-**FSBASE** / **GSBASE** という MSR に *Base* を書き込むことで設定する方法も可能です。
-FS/GS の Hidden Part の一部は *FSBASE* / *GSBASE* にマップされています。
+FS/GS の Hidden Part における *Base* 部分は、 **FSBASE** / **GSBASE** という MSR にマップされています。
+FS/GS の Base の設定を変更するには Segment Selector (Segment Register) に書き込む従来の方法に加え、
+FSBASE / GSBASE  MSR に *Base* を直接書き込むことも可能です。
 ちなみに、MSR への書き込み ([WRMSR](https://www.felixcloutier.com/x86/wrmsr)) は特権命令であるため context switch を伴います。
-そのため Ivy Bridge からは [FSGSBASE](https://www.intel.com/content/www/us/en/developer/articles/technical/software-security-guidance/best-practices/guidance-enabling-fsgsbase.html) という拡張機能が実装され、ユーザランドから直接 *FSBASE* にアクセスできるようになりました ([RDFSBASE / RDGSBASE](https://www.felixcloutier.com/x86/rdfsbase:rdgsbase))。
+そのため Ivy Bridge からは [FSGSBASE](https://www.intel.com/content/www/us/en/developer/articles/technical/software-security-guidance/best-practices/guidance-enabling-fsgsbase.html) という拡張機能が実装され、ユーザランドから直接 *FSBASE* / *GSBASE* にアクセスできるようになりました ([RDFSBASE / RDGSBASE](https://www.felixcloutier.com/x86/rdfsbase:rdgsbase))。
+
+とどのつまり、Ymir においてはほとんどセグメントの設定をする必要はないということです。
 
 > [!WARN] 64bit mode における権限チェック
 > セグメンテーションが無効化されると書きましたが、これはアドレス変換が行われないという意味です。
@@ -181,7 +185,7 @@ pub const Granularity = enum(u1) {
 };
 ```
 
-上記で説明していなかったフィールドについては以下のようになります:
+これまで説明していなかったフィールドについて以下の表で説明します:
 
 | Field | Description |
 | --- | --- |
@@ -195,10 +199,10 @@ pub const Granularity = enum(u1) {
 ### NULL Descriptor
 
 GDT の 0 番目のエントリは **NULL Descriptor** として使われます。
-*NULL descriptor* は CPU が実際に利用することはありません。
-*NULL descriptor* を指す Segment Selector は **NULL segment selector** と呼ばれます。
+NULL descriptor は CPU が実際に利用することはありません。
+NULL descriptor を指す Segment Selector は **NULL segment selector** と呼ばれます。
 CS/SS を除く使わない Segment Selector には *NULL segment selector* を入れることができます。
-ただし、NULL segment selector を使ってメモリアクセスをしようとすると *#GP* になります。
+ただし、NULL segment selector を使ってメモリアクセスをしようとすると *#GP: General Protection Fault* になります。
 
 ### エントリの作成
 
@@ -308,11 +312,11 @@ pub fn init() void {
 GDTR は GDT のアドレスとサイズのみを持ちます。
 アドレスは本来であれば物理アドレスを指定するべきですが、Ymir はまだ UEFI が提供してくれたストレートマップを利用しており、
 仮想アドレスと物理アドレスが等しいです。
-そのため、`&gdt` をそのまま物理アドレスとして使っています。
+そのため、`&gdt` (仮想アドレス) をそのまま物理アドレスとして使っています。
 
 > [!WARN] Zig の static initialization バグ
-> 本当は `gdtr` について宣言時に `.base = &gdt` として初期化したかったのですが、
-> 現在 Zig or LLVM にバグ[^zig-bug]がありエラーになってしまいます。
+> 本当は `gdtr` の宣言時に `.base = &gdt` として初期化したかったのですが、
+> 現在 Zig or LLVM にバグ[^zig-bug]があり、この初期化方法はエラーになってしまいます。
 > そのため、仕方なく `init()` の中で `&gdt` を代入しています。
 
 `am.lgdt()` は [LGDT](https://www.felixcloutier.com/x86/lgdt:lidt) 命令をするだけのアセンブリ関数です:
@@ -331,7 +335,7 @@ pub inline fn lgdt(gdtr: u64) void {
 
 GDT の初期化は終わりましたが、まだ新しいセグメントの設定は反映されません。
 なぜならば、**セグメントの *Base* は Segment Register の Hidden Part にキャッシュされているから**です。
-Segment Register の selector 部に新しく GDT のインデックスを設定して初めて新しいセグメント設定が使われるようになります:
+Segment Register の selector 部に新しく GDT のインデックスを設定し Hidden Part をフラッシュすることで、初めて新しいセグメント設定が使われるようになります:
 
 ```ymir/arch/x86/gdt.zig
 fn loadKernelDs() void {
@@ -353,10 +357,10 @@ fn loadKernelDs() void {
 ```
 
 Segment Register には [MOV](https://www.felixcloutier.com/x86/mov) 命令を使って直接代入できます。
-*DI* レジスタを使って代入しているため、*DI* レジスタを [clobber](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#Clobbers-and-Scratch-Registers) しています。
+DI レジスタを使って代入しているため、DI レジスタを [clobber](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#Clobbers-and-Scratch-Registers) しています。
 
-ただし、*CS* レジスタに関しては直接 *MOV* はできません。
-そのため、[long return](https://docs.oracle.com/cd/E19620-01/805-4693/instructionset-68/index.html) することで CS を設定します:
+ただし、CS レジスタに関しては直接 MOV はできません。
+そのため、[Long Return](https://docs.oracle.com/cd/E19620-01/805-4693/instructionset-68/index.html) することで CS を設定します:
 
 ```ymir/arch/x86/gdt.zig
 fn loadKernelCs() void {
@@ -380,10 +384,10 @@ fn loadKernelCs() void {
 }
 ```
 
-`lret` はスタックに積んだ CS/RIP を POP して設定してくれます。
-RIP は変更させたくないため直後の `lret` の次の命令を PUSH することで、CS を設定する効果だけを得ています。
+`lret` はスタックに積んだ CS/RIP を POP してレジスタにセットしてくれます。
+RIP は変更させたくないため `lret` の直後のアドレスを PUSH することで、CS を設定する効果だけを得ています。
 
-以上で GDT の更新が反映されるように成ります。
+以上で GDT の更新が反映されるようになります。
 `init()` から呼び出すようにしておきましょう:
 
 ```ymir/arch/x86/gdt.zig
@@ -394,7 +398,7 @@ pub fn init() void {
 }
 ```
 
-## 確認
+## まとめ
 
 実装した GDT の初期化関数を `kernelMain()` から呼び出すようにします:
 
@@ -403,7 +407,7 @@ arch.gdt.init();
 log.info("Initialized GDT.", .{});
 ```
 
-実行すると、一見すると何も変わらずループまで到達すると思います。
+実行すると、見た目は何も変わらず HLT ループまで到達すると思います。
 そこで QEMU monitor を立ち上げ、レジスタをチェックしてみましょう:
 
 ```txt
@@ -429,11 +433,17 @@ IDT=     000000001f537018 00000fff
 CR0=80010033 CR2=0000000000000000 CR3=000000001e4d6000 CR4=00000668
 ```
 
-セグメントレジスタの一番左の数字が Segment Selector です。
+セグメントレジスタの一番左の 4nibble の数字が Segment Selector です。
 Selector のうち下位 3bit は *RPL*/*TI* であり、それ以降が GDT index になっています。
 CS では selector が `0x10`、つまり index が `0x02` になっています。
 DS/ES/FS/GS は selector が `0x08`、つまり index が `0x01` になっています。
 それぞれ `kernel_ds_index` / `kernel_cs_index` に設定した値になっていることが確認できます。
+用意した GDT がちゃんと反映されていることが確認できました。
+
+本チャプターでは、GDT の初期化を行いました。
+x64 の 64bit モードではほとんどセグメンテーションは使われないため、2つのセグメントだけを設定しました。
+もう UEFI が提供していた GDT は使われないため、その領域は Ymir が自由に使えるように成りました。
+次のチャプターでは UEFI が提供する他の構造である IDT を Ymir のものに置き換えていきます。
 
 [^ldt]: 同様にセグメントを設定する構造に **LDT: Local Descriptor Table** がありますが、Ymir では GDT のみを使います。
 [^phys-space]: x64 (Intel64) における物理アドレス空間のサイズは実装依存です。
