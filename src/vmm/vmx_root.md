@@ -9,11 +9,11 @@
 
 ## VMM 概観
 
-まずは hypervisor における基礎的な概念や用語を確認します。
+まずは Hypervisor における基礎的な概念や用語を確認します。
 以降は、Ymir のようにベアメタルで動作し CPU や外部リソースに対する完全な制御権を持つソフトを **VMM: Virtual-Machine Monitor** (hypervisor) と呼びます。
-VMM の上で動作し、CPU 上で直接動作するものの VMM によってリソースへのアクセス権が仮想化されるソフトを **ゲスト** と呼びます。
+VMM の上で動作し、CPU 上で直接動作するものの VMM によってリソースへのアクセス権など仮想化されるソフトを **ゲスト** と呼びます。
 
-仮想化を支援する CPU では、**VMX Operation** というモードに入ることができます。
+仮想化を支援する Intel CPU では、**VMX Operation** というモードに入ることができます。
 このモードでは仮想化を支援する命令が追加されたり、CPU の挙動が変更されたりします。
 VMX Operation には **VMX Root Operation** と **VMX Non-root Operation** の2つのモードがあります。
 VMM は VMX Root Operation で動作します。
@@ -22,6 +22,7 @@ VMM は VMX Root Operation で動作します。
 このモードでは一部の特権命令が制限され、それらの命令を実行すると処理が VMM に移されます。
 このような、VMX Non-root から VMX Root へのモード遷移を **VM Exit** と呼び、
 逆に VMX Root から VMX Non-root へのモード遷移を **VM Entry** と呼びます。
+両者をまとめて **VMX Transition** と呼ぶことがあります。
 特権命令が VM Exit を引き起こすことで、VMM はゲストの挙動に介入し、リソースを仮想化できます。
 
 ![Interaction of a Virtual-Machine Monitor and Guests](../assets/sdm/interaction_vmm.png)
@@ -29,7 +30,7 @@ VMM は VMX Root Operation で動作します。
 
 Ymir Kernel は [VMXON](https://www.felixcloutier.com/x86/vmxon) 命令によって VMX Root Operation に遷移します。
 逆に VMX Root Operation から通常のモードに遷移する際には [VMXOFF](https://www.felixcloutier.com/x86/vmxoff) 命令を使用します。
-VMX Operation に遷移した CPU は新たに拡張命令を利用できるようになります。
+VMX Operation に遷移した CPU は新たに拡張命令である **VMX Instructions** を利用できるようになります。
 その1つである [VMLAUNCH](https://www.felixcloutier.com/x86/vmlaunch:vmresume) や [VMRESUME](https://www.felixcloutier.com/x86/vmlaunch:vmresume) 命令を使用して VM Entry を行います。
 ゲスト(VMX Non-Root Operation) に遷移したあとは、基本的には通常通り CPU 上で直接ゲストの命令が実行できます。
 ソフトウェアによる命令のエミュレーションが必要ないため、VT-x によるハードウェアレベルでの仮想化はソフトウェア仮想化よりも高速になります。
@@ -49,7 +50,7 @@ VMM は VM Exit の発生原因をもとにして適切な処理をし、再度 
     - Vendor ID が `GenuineIntel` であることを確認する[^genuine]
 2. [CPUID](https://www.felixcloutier.com/x86/cpuid) 命令で VMX がサポートされているかを確認する
 3. [CPUID](https://www.felixcloutier.com/x86/cpuid) 命令で [SMX Operation](https://www.intel.co.jp/content/www/jp/ja/content-details/315168/intel-trusted-execution-technology-intel-txt-software-development-guide.html) でなくとも VMXON できることを確認する
-    - SMX: Safer Mode Extension は、Intel® Trusted Execution Technology で提供されるモード。Ymir では使わないため SMX の外でも VMXON できる必要がある
+    - **SMX: Safer Mode Extension** は、Intel® Trusted Execution Technology で提供されるモード。Ymir では使わないため SMX の外でも VMXON できる必要がある
 
 VMX Operation に入る前にこれらの条件が満たされているかを順に確認していきます。
 以降、VMX に関連する操作は `ymir/vmx.zig` をルートとして実装していきます:
@@ -87,7 +88,7 @@ EAX で取得したい情報を指定します。一部の場合は追加で ECX
 このとき、EAX のことを **Leaf**, ECX のことを **Subleaf** と呼びます。
 本シリーズでは、Leaf が `N` で Subleaf が `M` の CPUID を `CPUID[N:M]` と表記します。
 返り値には EAX, EBX, ECX, EDX の4つのレジスタが使われます。
-どれに何が入るかは Leaf/Subleaf に依存します。
+どのレジスタにどのような情報が入るかは、指定した Leaf/Subleaf に依存します。
 CPUID の Leaf/Subleaf 一覧については *SDM Vol.2A Chapter 3.3 Table 3-8* を参照してください。
 
 ```ymir/arch/x86/cpuid.zig
@@ -118,7 +119,7 @@ const CpuidRegisters = struct {
 };
 ```
 
-`Leaf` すべての Leaf を列挙しているわけではありません。
+`Leaf` enum は、すべての Leaf を列挙しているわけではありません。
 というか、CPUID は無限に拡張されていくためすべてを列挙するのは不可能ですし意味がありません。
 ここでは使う分だけを列挙し、残りは `_` として無視しています。
 このような `_` を持つ `enum` は [Non-exhaustive Enum](https://ziglang.org/documentation/master/#Non-exhaustive-enum) と呼びます。
@@ -232,7 +233,7 @@ pub fn writeMsr(msr: Msr, value: u64) void {
 
 ### Vendor ID の確認
 
-手順1の Vendor ID String は `CPUID[0]` で取得できます:
+手順1の Vendor ID String は `CPUID[0]` (`.maximum_input`) で取得できます:
 
 ```ymir/arch/x86/arch.zig
 pub fn getCpuVendorId() [12]u8 {
@@ -289,11 +290,11 @@ pub fn isVmxSupported() bool {
 }
 ```
 
-VMXON Outside SMX が無効化されていた場合、MSR を操作して有効化します。
+*VMXON Outside SMX* が無効化されていた場合、MSR を操作して有効化します。
 このとき、`IA32_FEATURE_CONTROL[0]` の **Lock Bit** がクリアされていることを確認します。
 Lock Bit がセットされている場合、この MSR には一切の書き込みができません。
 Lock Bit はシステムがリセットされるまでクリアされることがないため、もしもこのビットがセットされている場合には諦めるしかありません。
-逆に、Lock Bit がクリアされていると VMXON が失敗するため、この関数内でロックしておきます。
+逆に、Lock Bit がクリアされたままだと VMXON が失敗するため、必要の値の変更後、この関数内でロックしておきます。
 
 そもそも Lock Bit は BIOS がシステムでサポートする機能を設定・固定化するためのものです。
 一度 BIOS から設定されたあとは OS 側で変更できない場合がほとんどです。
@@ -318,7 +319,7 @@ _ = vm;
 
 ## vCPU
 
-VMX Operation に入るというのは現在の CPU の状態を変更することであり、各CPUに対して行う操作です。
+VMX Operation に入るということは、現在の CPU の状態を変更することであり、各CPUに対して行う操作です。
 本シリーズの Ymir では1コアのみをサポートするためとりわけ意識する必要があることではないのですが、
 それでも CPU に固有ということを意識するためにも `Vcpu` という構造体を作っておきます:
 
@@ -369,14 +370,14 @@ VMX Operation に移行するためには、CR レジスタの設定と VMXON �
 
 ### CR レジスタの設定
 
-VMX Operation に入るためには CR0, CR4 レジスタの設定を適切に指定する必要があります。
-また、一度 VMX Operation に入ると CR0, CR4 の一部の値は固定化され、値を変更しようとすると `#GP` になります。
+VMX Operation に入るためには CR0, CR4 レジスタを適切に設定する必要があります。
+また、一度 VMX Operation に入ると CR0, CR4 の一部の値は固定化され、値を変更しようとすると `#GP: General Protection Fault` になります。
 
-CR0 の値は `IA32_VMX_CR0_FIXED0` と `IA32_VMX_CR0_FIXED1` の2つの MSR で指定されます。
+CR0 の値は `IA32_VMX_CR0_FIXED0` と `IA32_VMX_CR0_FIXED1` の2つの MSR で規定されます。
 前者の N-th bit が `1` の場合、`CR0[N]` は `1` である必要があります。
 後者の N-th bit が `0` の場合、`CR0[N]` は `0` である必要があります。
 CR4 も同様で `IA32_VMX_CR4_FIXED0` と `IA32_VMX_CR4_FIXED1` の2つの MSR をもとに値を指定します。
-各 MSR のアドレスは以下のとおりです:
+各 MSR のインデックスは以下のとおりです:
 
 | MSR | Address |
 | --- | ------- |
@@ -406,7 +407,7 @@ fn adjustControlRegisters() void {
 }
 ```
 
-一応どのビットが強制的に 0/1 になるかを検証してみたところ、以下のようになりました:
+一応どのビットが強制的に 0/1 になるかを検証してみたところ、筆者の環境では以下のようになりました:
 
 | MSR | Bits | Description |
 | --- | ---- | ----------- |
@@ -467,8 +468,8 @@ const VmxonRegion = packed struct {
 ```
 
 VMXON Region で唯一設定する必要のあるフィールドが **VMCS Revision Identifier** です。
-**VMCS** というのは VM/VMM の状態を設定する構造であり VMX における最も重要なものではありますが、
-ここで説明するには紙面が足りなさすぎるのでのちのチャプターに回します。
+**VMCS** というのは ゲスト/VMM の状態を設定する構造であり VMX における最も重要なものではありますが、
+ここで説明するには紙面が足りなさすぎるので [次のチャプター](./vmcs.md) に回します。
 ここでは、VMCS という構造体のバージョン番号を VMXON Region にも設定する必要があると考えれば十分です。
 この ID は、VMXON Region のサイズと同様に `IA32_VMX_BASIC` から取得します[^vmx_basic]:
 
@@ -579,7 +580,7 @@ pub fn init(self: *Self, allocator: Allocator) Error!void {
 ```
 
 実行して最後まで処理が確認できたことを確認してみてください。
-とはいっても、VMX Root Operation に遷移したということを直接的に確認する方法はありません。
+とはいっても、**VMX Root Operation に遷移したということを直接的に確認する方法はありません**。
 とりわけ、VMX Non-root Operation にいる間に自身が VMX Operation にいるということを知る方法はありまえん。
 これはセキュリティ的にゲストが自分が仮想化されていることを知ることがよろしくないためです。
 
@@ -596,8 +597,12 @@ asm volatile("vmlaunch");
 実行して、例外が発生しないことを確認してください。
 また、`vm.init()` を呼び出す前にこの命令を実行して例外が発生することも確認してください。
 
-以上で VMX Root Operation に遷移することができました。
+## まとめ
+
+本チャプターでは VMX Root Operation に遷移しました。
 今のところ、変わったことといえば VMX 拡張命令が使えるようになったことくらいです。
+しかしながら、CPU の状態が切り替わったことには変わりありません。
+わくわくしますね。
 次回は、VMX の最も重要な設定項目であり、VMX の全てであると言っても過言ではない **VMCS** を扱います。
 
 [^condition]: VM Exit が発生する要因についてはのちのチャプターで詳しく扱います。
