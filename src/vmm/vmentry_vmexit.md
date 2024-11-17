@@ -2,7 +2,8 @@
 
 前チャプターでは VMCS を設定し VMLAUNCH でゲストを実行することに成功しました。
 しかし、VM Entry 前や VM Exit 後の状態の保存・復元処理はほとんどしていませんでした。
-本チャプターでは、VM Entry と VM Exit の処理を実装し、適切に状態の保存・復元と VM Exit のハンドリングをします。
+これは、ゲストとホストがレジスタなどの状態を共有してしまっていることを意味します。
+本チャプターでは VM Entry と VM Exit の処理を実装し、適切に状態の保存・復元と VM Exit のハンドリングをするようにします。
 
 ## Table of Contents
 
@@ -46,7 +47,7 @@ pub const GuestRegisters = extern struct {
 整数型の汎用レジスタと8つの XMM レジスタを保持します。
 本来であれば浮動小数点レジスタは AVX や AVX-512 などシステムがサポートするレジスタ全てを保存するべきです。
 しかしながら、それらの保存には [XSAVE](https://www.felixcloutier.com/x86/xsave) 命令を適切に使う必要があります。
-めんどうなので、Ymir ではゲストに対して SSE よりもモダンな浮動小数点レジスタをサポートしないことにしています[^avx]。
+めんどうなので、Ymir ではゲストに対して SSE2 よりもモダンな浮動小数点レジスタをサポートしないことにしています[^avx]。
 
 `Vcpu` 構造体にゲストの情報を保持する変数を持たせます:
 
@@ -182,7 +183,7 @@ VMCS の設定が適切にされていれば VMX 拡張命令は失敗するこ�
 
 ### 呼び出し部分
 
-さきほど出てきた `vmentry()` はアセンブリの VMLAUNCH/VMRESUME をラップする関数です:
+さきほど出てきた `vmentry()` はアセンブリの VMLAUNCH / VMRESUME をラップする関数です:
 
 ```ymir/arch/x86/vmx/vcpu.zig
 fn vmentry(self: *Self) VmxError!void {
@@ -249,7 +250,7 @@ export fn asmVmEntry() callconv(.Naked) u8 {
 続いて、引数としてとった `*Vcpu` のうち、`.guest_regs` フィールドのアドレスを RBX 経由でスタックに積みます。
 `asmVmEntry()` は `.Naked` calling convention であり引数を取ることができないため、
 `vmentry()` では CALL 前に明示的に RDI に引数を入れていました。
-`Vcpu` 内の `.guest_regs` のオフセットは `@offsetOf()` と `std.fmt.comptimePrint()` を使って計算しています。
+`Vcpu` 内の `.guest_regs` のオフセットは `@offsetOf()` と `std.fmt.comptimePrint()` を使って計算します。
 `comptimePrint()` はコンパイル時に評価される文字列を生成できるため、`asm volatile()` の引数として指定することができます。
 このようにオフセットを計算することで、**`.guest_regs` のオフセットが変わったとしてもコードを修正する必要がなくなります**:
 
@@ -403,6 +404,7 @@ VMX 拡張命令が失敗した場合には続く命令が実行されます。
         \\pop %%r13
         \\pop %%r14
         \\pop %%r15
+        \\pop %%rbp
     );
     // Return to caller of asmVmEntry()
     asm volatile (
@@ -418,7 +420,7 @@ VMX 拡張命令が失敗した場合には続く命令が実行されます。
 
 ゲストが何らかの要因で VM Exit すると、VMCS Host-State に設定した RIP に処理が移ります。
 Ymir では `asmVmExit()` をセットするため、この関数にホストへの復帰処理を実装します。
-VM Exit した時点ではスタックは先ほどの図のようになっています。
+VM Exit した時点ではスタックは先ほどの図の黄色部分のようになっています。
 最も上には `&.guest_regs` が積んであります。
 ゲストの状態を保存するために使うため、まずはこれを取り出しましょう:
 
@@ -518,7 +520,7 @@ RAX はスクラッチレジスタとして使います。
 
 この時点でスタックの最も上には `vmentry()` が CALL の際に積んだ RIP があります。
 よって、ここで RET すると `vmentry()` に復帰することができます。
-呼び出し側は、あたかも `asmVmEntry()` を関数呼び出したかのように処理を続行することができます:
+呼び出し側は、**あたかも `asmVmEntry()` を関数呼び出したかのように処理を続行することができます**:
 
 ```ymir/arch/x86/vmx/asm.zig
     // Return to caller of asmVmEntry()
@@ -553,7 +555,7 @@ fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
 この中には VM Exit した大まかな要因が記録されているため、この要因に応じて `switch` します。
 現在はとりあえず HLT による VM Exit 用の処理だけを用意し、HLT が起こったことだけをログ出力するだけにしておきます。
 
-`ExitInfo` は VMCS VM-Exit Information カテゴリの Basic VM-Exit Information フィールドから取得することができます:
+`ExitInfo` は VMCS **VM-Exit Information** カテゴリの **Basic VM-Exit Information** フィールドから取得することができます:
 
 ```ymir/arch/x86/vmx/vcpu.zig
 pub fn loop(self: *Self) VmxError!void {
@@ -592,7 +594,7 @@ VMCS Execution Controls の Primary Processor-based Controls における `.hlt`
 つまり、今回はそれらも意図したとおりに動いているということが分かります。
 
 ゲストの状態が正しく保存・復元されているかどうかが気になる人は、`loop()` の `while` に入る前に `guest_regs.rax = 0xDEADBEEF` のようにゲストレジスタの値をいじってみてください。
-HLT で VM Exit しないように設定しゲストを実行すると、ゲストの HLT ループで止まってくれます。
+HLT で VM Exit しないように設定しゲストを実行すると、ゲストが HLT ループで止まってくれます。
 その状態で QEMU monitor でレジスタの状態を確認すると、RAX が `0xDEADBEEF` になっているはずです。
 
 本チャプターでは VM Entry / VM Exit の処理を適切に実装することで、何回も VM Entry を繰り返すことができるようになりました。
