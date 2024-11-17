@@ -21,6 +21,14 @@
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
         <title>{{ title }}</title>
+        <script type="application/ld+json">
+            {
+            "@context" : "https://schema.org",
+            "@type" : "WebSite",
+            "name" : "Writing Hypervisor in Zig",
+            "url" : "https://hv.smallkirby.com/"
+            }
+        </script>
         {{#if is_print }}
         <meta name="robots" content="noindex">
         {{/if}}
@@ -34,7 +42,7 @@
 
         <meta name="description" content="{{ description }}">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#ffffff">
+        <meta name="theme-color" content="#161923">
 
         {{#if favicon_svg}}
         <link rel="icon" href="{{ path_to_root }}favicon.svg">
@@ -179,7 +187,9 @@
                     </div>
 
                     <h1 class="menu-title">
-                        {{ book_title }}
+                        <a href="/">
+                            {{ book_title }}
+                        </a>
                     </h1>
 
                     <div class="right-buttons">
