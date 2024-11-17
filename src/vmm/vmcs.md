@@ -27,7 +27,7 @@ VMCS は以下の6つのカテゴリに分類されます:
 
 このカテゴリはゲストのプロセッサの状態を保持します。
 VM Entry 時にこれらの状態が自動的にロードされることで、ゲストは VM Exit の直前の状態から実行を再開することができます。
-プロセッサの状態には以下が含まれます:
+保存・復帰されるプロセッサの状態には以下が含まれます:
 
 - Control Registers
 - RSP, RIP, RFLAGS
@@ -38,14 +38,14 @@ VM Entry 時にこれらの状態が自動的にロードされることで、�
 これらのレジスタは VMM がソフトウェア的に保存およびロードしてあげる必要があります。
 
 また、保存される MSR もごく一部です。
-MSR へアクセスする [RDMSR](https://www.felixcloutier.com/x86/rdmsr) / [WRMSR](https://www.felixcloutier.com/x86/wrmsr) 命令は、特権命令として設定することができます。
-この場合、ゲストが RDMSR/WRMSR をした場合に VM Exit が発生し、VMM が実際に読み込み・書き込みする値を制御することができます。
+MSR へアクセスする [RDMSR](https://www.felixcloutier.com/x86/rdmsr) / [WRMSR](https://www.felixcloutier.com/x86/wrmsr) 命令は、特権命令として指定することができます。
+この場合、ゲストが RDMSR/WRMSR すると VM Exit が発生し、VMM が実際に読み込み・書き込みする値を制御することができます。
 
 ### Host-State
 
 このカテゴリは VMM のプロセッサの状態を保持します。
 これらの値は VM Exit 時にロードされ、VMM は VM Entry する直前の状態から実行を再開することができます。
-プロセッサの状態には以下が含まれます:
+復帰されるプロセッサの状態には以下が含まれます:
 
 - Control Registers
 - RSP, RIP
@@ -55,6 +55,7 @@ MSR へアクセスする [RDMSR](https://www.felixcloutier.com/x86/rdmsr) / [WR
 
 **Host-State は Guest-State の場合と異なり、VM Entry の際に自動的に保存されることがありません**。
 そのため、VM Entry する前に VMM はソフトウェア的にこれらの値を適切に設定する必要があります。
+VM-Exit 時には、これらの値が自動的にロードされます。
 
 ### VM-Execution Control
 
@@ -63,13 +64,13 @@ MSR へアクセスする [RDMSR](https://www.felixcloutier.com/x86/rdmsr) / [WR
 そのため、ここでは代表的なフィールドのみを概観し、必要になった際に都度説明することにします。
 このカテゴリは以下のフィールドを含みます:
 
-- **Pin-Based VM-Execution Controls**: 割り込み・例外等の非同期イベントを制御する。
-- **Processor-Based VM-Execution Controls**: 主に特定の命令で発生するイベントを制御する。
-  - "特別な命令" とは [RDTSCP](https://www.felixcloutier.com/x86/rdtscp), [HLT](https://www.felixcloutier.com/x86/hlt), [INVLPG](https://www.felixcloutier.com/x86/invlpg), MOV CRX などのこと
-- **Exception Bitmap**: どの例外で VM Exit するかを制御する。
-- **I/O-Bitmap**: どの I/O ポートアクセスで VM Exit するかを制御する。
-- **MSR-Bitmap**: どの MSR アクセスで VM Exit するかを制御する。
-- **EPTP: Extended-Page-Table Pointer**: EPT の Lv4 テーブルを指すポインタ。EPT については別のチャプターで詳しく扱う。
+- **Pin-Based VM-Execution Controls**: 割り込み・例外等の非同期イベントを制御する
+- **Processor-Based VM-Execution Controls**: 主に特定の命令で発生するイベントを制御する
+  - "特別な命令" とは [RDTSCP](https://www.felixcloutier.com/x86/rdtscp), [HLT](https://www.felixcloutier.com/x86/hlt), [INVLPG](https://www.felixcloutier.com/x86/invlpg), MOV to CR などのこと
+- **Exception Bitmap**: どの例外で VM Exit するかを制御する
+- **I/O-Bitmap**: どの I/O ポートアクセスで VM Exit するかを制御する
+- **MSR-Bitmap**: どの MSR アクセスで VM Exit するかを制御する
+- **EPTP: Extended-Page-Table Pointer**: EPT の Lv4 テーブルを指すポインタ。EPT については別のチャプターで詳しく扱う
 
 ### VM-Exit Control
 
@@ -131,7 +132,7 @@ fn setupHostState(vcpu: *Vcpu) VmxError!void {}
 fn setupGuestState(vcpu: *Vcpu) VmxError!void {}
 ```
 
-VMCS は **VMCS Region** と呼ばれる領域に確保します。
+VMCS は **VMCS Region** と呼ばれる領域に設定します。
 これは [VMXON Region](./vmx_root.md#vmxon) と似たような構造を持っています:
 
 ![Format of the VMCS Region](../assets/sdm/vmcs_region.png)
@@ -143,7 +144,7 @@ VMCS のバージョン番号を表します。
 VMX-Abort Indicator は本シリーズでは使いません。
 その後からは VMCS の設定項目が続きます。
 各フィールドのレイアウトについては完全に実装依存であり、VMM側で知る必要/知る方法はありません。
-レイアウトが分からないフィールドにどのように書き込むのかについては、のちほど説明します。
+「レイアウトが分からないデータ構造にどのように書き込むのか」については、のちほど説明します。
 
 VMCS Region を定義します:
 
@@ -166,7 +167,7 @@ const VmcsRegion = packed struct {
 ```
 
 続いて確保した VMCS Region をセットしていきます。
-VMCS の状態は、以下の状態遷移図で表されます:
+VMCS は以下の遷移図で表される状態を持っています:
 
 ![State of VMCS X](../assets/sdm/vmcs_state.png)
 *State of VMCS X. SDM Vol.3C 25.1 Figure 25-1.*
@@ -179,6 +180,7 @@ Current VMCS が設定されている場合、論理コアはその VMCS を参�
 一度 Launched になった VMCS は再度 Clear することができません。
 Launched 状態の VMCS を使って VM Entry するためには [VMRESUME](https://www.felixcloutier.com/x86/vmlaunch:vmresume) 命令を使います。
 VMCS が Clear と Launched のどちらなのかを直接的に知る方法はありません[^launched]。
+そのため、この状態はソフトウェア的に記憶する必要があります。
 
 VMCS Region を設定するというのは、VMCS の状態を *Active + Current + Clear* にすることを意味します。
 これには以下の2命令を使います:
@@ -241,7 +243,7 @@ pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
 ### VMCS-field Encoding
 
 VMCS のフィールドレイアウトは実装依存です。
-もしかしたら即値が入っているのではなくエンコードされた値が入っている可能性すらあります。
+もしかしたら即値が入っているのではなく圧縮・暗号化された値が入っている可能性すらあります。
 それすらも VMM は意識する必要がなく、知る方法もありません。
 
 レイアウトの分からない VMCS フィールドに対する読み込みや書き込みには、VMX 拡張命令である [VMREAD](https://www.felixcloutier.com/x86/vmread) / [VMWRITE](https://www.felixcloutier.com/x86/vmwrite) を使います。
@@ -432,7 +434,7 @@ pub const guest = enum(u32) {
 
 ### VMREAD / VMWRITE
 
-VMCS encoding が定義できたため、VMCS フィールドにアクセスするための関数を定義します:
+VMCS encoding が定義できたため、VMCS フィールドにアクセスするための関数を定義します。
 まずは [VMREAD](https://www.felixcloutier.com/x86/vmread) です。
 引数として encoding を受取り、読み取ったフィールドの値を返します。
 本来であればフィールドの *Width* に応じて適切な型を返すべきですが、面倒なので全て一律 64bit としています。
@@ -505,7 +507,7 @@ asm volatile("vmlaunch");
 このまま実行すると...。
 何も言われません。
 
-これは前チャプターで扱ったように、
+これは [前チャプター](./vmx_root.md#vmx-instruction-error) で扱ったように、
 **VMX 拡張命令である VMLAUNCH は失敗した場合に例外ではなく独自の方法でエラーを返す**ためです。
 単に VMLAUNCH を呼ぶのではなく、このエラーをチェックしてあげましょう:
 
@@ -528,7 +530,7 @@ vmx.vmxtry(rflags) catch |err| {
 ```
 
 これは `RFLAGS.ZF` がセットされており、**エラーコードを利用可能であることを示しています**。
-エラーコードは VMCS の VM-Exit Information 内の VM-Instruction Error Field に格納されています。
+エラーコードは VMCS の **VM-Exit Information** 内の **VM-Instruction Error Field** に格納されています。
 エラーコードに対応する `enum` と、VM-Instruction Error Field からエラーコードを取得するヘルパー関数を作ります。
 エラー番号の一覧と説明は *SDM Vol.3C 31.4 VM INSTRUCTION ERROR NUMBERS* を参照してください:
 
