@@ -1,6 +1,8 @@
 # VMLAUNCH: Restricted Guest の実行
 
-本チャプターでは VMCS を設定して VMLAUNCH を実行し、ゲスト (VMX Non-root Operation) に遷移します。
+前チャプターでは VMCS を現在のコアにセットし、中身は未設定のまま VMLAUNCH をしてエラーが発生することを確認しました。
+本チャプターでは VMCS を適切に設定して VMLAUNCH を実行します。
+それにより VMX Non-root Operation でゲストが実行できることを目標とします。
 
 ## Table of Contents
 
@@ -29,7 +31,7 @@ Calling Convention は `.Naked` にしています。
 感覚としてはゲストを動かすと言うよりも **Ymir をそのまま VMX Non-root Operation に遷移させるような感じ**です:
 
 - **Restricted Guest**: ページングをすることが強制されるモード
-- IA-32e 64bit mode (long mode)
+- IA-32e 64bit mode (Long Mode)
 - GDT / ページテーブル はホストと共有する
 - その他の重要なレジスタ等についてもホストと共有する
 
@@ -91,7 +93,7 @@ fn setupExecCtrls(_: *Vcpu, _: Allocator) VmxError!void {
 }
 ```
 
-本チャプターでは非同期イベントを扱わないため、Pin-Based Controls はデフォルトの値を使用します。
+本チャプターではまだ非同期イベントを扱わないため、Pin-Based Controls はデフォルトの値を使用します。
 
 VMCS に書き込む値には **Reserved Bits** が多くあります。
 Reserved Bits は単にゼロクリアすれば良いわけではありません。
@@ -472,7 +474,7 @@ fn setupGuestState(_: *Vcpu) VmxError!void {
 まずは Base を設定します。
 Base はどのセグメントでも利用しないため、適当に `0` を入れておきます。
 LDTR だけは `0xDEAD00` を入れておきます。
-これは現在動いているのが VMM なのかゲストなのかを区別するためのマーカーとして使います:
+これは実際に使うことはありませんが、**現在動いているのが VMM なのかゲストなのかを区別するためのマーカーとして使います**:
 
 ```ymir/arch/x86/vmx/vcpu.zig
     try vmwrite(vmcs.guest.cs_base, 0);
@@ -503,7 +505,8 @@ Limit に関しても使わないので、とりあえずとり得る最大値�
 ```
 
 続いてセレクタを設定します。
-本チャプターで使うゲストである `blobGuest()` は関数のプロローグを持たないため、利用するセグメントは CS だけです。
+本チャプターで使うゲストである `blobGuest()` は関数のプロローグを持たないため、データセグメントは使いません。
+利用するセグメントは CS だけです。
 そのため、CS にだけホストと同じセレクタを入れておきます:
 
 ```ymir/arch/x86/vmx/vcpu.zig
@@ -519,7 +522,7 @@ Limit に関しても使わないので、とりあえずとり得る最大値�
 
 最後に Access Rights を設定します。
 これは [GDTのチャプター](../kernel/gdt.md) で扱った GDT のエントリとほぼ同じ情報を持ちます。
-しかしフォーマットが異なるので改めて VMCS ように定義します。
+しかしフォーマットが微妙に異なるので改めて VMCS 用に定義します。
 各フィールドの意味については [GDTのチャプター](../kernel/gdt.md) のものと同じであるためそちらを参照してください:
 
 ```ymir/arch/x86/vmx/common.zig
@@ -663,7 +666,7 @@ pub const EntryCtrl = packed struct(u32) {
 };
 ```
 
-この内、IA-32e mode guest (`.ia32e_mode_guest`) を設定します。
+この内、*IA-32e Mode Guest* (`.ia32e_mode_guest`) を設定します。
 このフィールドは VM Entry 後にゲストが IA-32e モードで動作することを示します。
 これが有効になっている場合、VM Entry 後に `IA32_EFER.LMA` (Long Mode Activate) ビットがセットされ、64bit モードとして動作することができます:
 
@@ -837,7 +840,7 @@ EFER=0000000000000d00
 VMX Root Operation と VMX Non-root Operation のどちらの状態にいるのかを直接的に知る方法はありません。
 注目するべきは LDT の Base です。
 VMCS Guest-State でこの値はマーカーとして `0xDEAD00` に設定していました。
-現在の LDT の Base が `0xDEAD00` であることから、VMX Non-root Operation に遷移していることがわかります。
+現在の LDT の Base が `0xDEAD00` であることから、**VMX Non-root Operation に遷移できていることがわかります**。
 
 また、RIP の値 `0xFFFFFFFF8010A6B1` について `addr2line` でコードのどの部分に該当するかを確認してみます:
 
