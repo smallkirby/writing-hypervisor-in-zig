@@ -342,7 +342,7 @@ surtr.root_module.addOptions("option", options);
 ここで追加したオプションは、コード中で以下のように参照できます:
 
 ```surtr/log.zig
-const optoin = @import("option"); // build.zig で指定したオプション名
+const option = @import("option"); // build.zig で指定したオプション名
 const log_level = option.log_level;
 ```
 
