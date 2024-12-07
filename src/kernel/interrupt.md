@@ -86,8 +86,8 @@ Interrupt Gate と Trap Gate の違いは、ハンドラ呼び出し時に割り
 
 Gate Descriptor は以下の構造を持ちます:
 
-![IDT Gate Descriptors](../assets/sdm/idt_gate_descriptors.png)
-*SDM Vol.3A 6.11 Figure 6-2. IDT Gate Descriptors*
+![64-Bit IDT Descriptors](../assets/sdm/idt_gate_descriptors.png)
+*SDM Vol.3A 6.14.1 Figure 6-8. 64-Bit IDT Gate Descriptors*
 
 *Offset* / *Segment Selector* / *DPL* 以外は固定値です。
 **Segment Selector** は例外・割り込みハンドラが位置するセグメントを選択するためのセレクタです。
