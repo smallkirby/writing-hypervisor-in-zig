@@ -178,7 +178,7 @@ pub fn init(out: *Sto) void {
 試しに以下のようなログ出力をしてみましょう:
 
 ```surtr/boot.zig
-cosnt log = std.log;
+const log = std.log;
 
 blog.init(con_out);
 log.info("Initialized bootloader log.", .{});
