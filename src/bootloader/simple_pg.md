@@ -402,6 +402,8 @@ pub const PageAttribute = enum {
     executable,
 };
 
+pub const PageError = error{ NoMemory, NotPresent, NotCanonical, InvalidAddress, AlreadyMapped };
+
 pub fn map4kTo(virt: Virt, phys: Phys, attr: PageAttribute, bs: *BootServices) PageError!void {
     const rw = switch (attr) {
         .read_only, .executable => false,
