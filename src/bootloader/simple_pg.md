@@ -353,7 +353,7 @@ fn getEntry(T: type, vaddr: Virt, paddr: Phys) *T {
         Lv1Entry => 12,
         else => @compileError("Unsupported type"),
     };
-    return &table[(vaddr >> shift) & 0x1FFF];
+    return &table[(vaddr >> shift) & 0x1FF];
 }
 
 fn getLv4Entry(addr: Virt, cr3: Phys) *Lv4Entry {
