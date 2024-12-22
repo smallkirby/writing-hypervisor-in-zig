@@ -314,7 +314,7 @@ Surtr では、4KiB ページのみをサポートすることにします。
 まずは各レベルのページテーブルを取得する関数です:
 
 ```surtr/arch/x86/page.zig
-const page_mask_4k = 0xFFF;
+const page_mask_4k: u64 = 0xFFF;
 const num_table_entries: usize = 512;
 
 fn getTable(T: type, addr: Phys) []T {
