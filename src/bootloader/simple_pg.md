@@ -374,10 +374,25 @@ fn getLv1Entry(addr: Virt, lv1tbl_paddr: Phys) *Lv1Entry {
 その後、先程の図に従って仮想アドレスからエントリのインデックスを計算し、テーブルから該当するエントリを取得して返します。
 `getTable()` と同様に、残りの4つの関数は引数 `T` を具体化したヘルパー関数になっています。
 
-仮想アドレスからページテーブルエントリを取得する準備ができました。
-4KiB ページをマップする関数が以下です:
+これで、仮想アドレスからページテーブルエントリを取得する準備がほぼ整いました。
+ヘルパー関数として CR3 レジスタを取得する取得するラッパーを `asm.zig` に追加します:
+
+```surtr/arch/x86/asm.zig
+pub inline fn readCr3() u64 {
+    var cr3: u64 = undefined;
+    asm volatile (
+        \\mov %%cr3, %[cr3]
+        : [cr3] "=r" (cr3),
+    );
+    return cr3;
+}
+```
+
+最後に、4KiB ページをマップする関数を次に示します。
 
 ```surtr/arch/x86/page.zig
+const am = @import("asm.zig");
+
 pub const PageAttribute = enum {
     /// RO
     read_only,
