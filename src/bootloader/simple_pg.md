@@ -562,6 +562,18 @@ pub fn setLv4Writable(bs: *BootServices) PageError!void {
 }
 ```
 
+また、ヘルパー関数 `loadCr3()` を追加します:
+
+```surtr/arch/x86/asm.zig
+pub inline fn loadCr3(cr3: u64) void {
+    asm volatile (
+        \\mov %[cr3], %%cr3
+        :
+        : [cr3] "r" (cr3),
+    );
+}
+```
+
 `setLv4Writable()` は Boot Services を利用して新たにページテーブルを確保し、現在の Lv4 テーブルを全てコピーします。
 最後に `loadCr3()` で CR3 を新しく確保した Lv4 テーブルの物理アドレスにセットします。
 CR3 のリロードは全ての TLB をフラッシュするため、以降は新しい Lv4 テーブルが使われるようになります。
