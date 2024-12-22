@@ -455,6 +455,9 @@ Lv1 にまでたどり着いたら、事前に定義した `newMapPage()` を使
 新たにページテーブルを確保する関数 `allocateNewTable()` は以下のように実装されています:
 
 ```surtr/arch/x86/page.zig
+pub const kib = 1024;
+pub const page_size_4k = 4 * kib;
+
 fn allocateNewTable(T: type, entry: *T, bs: *BootServices) PageError!void {
     var ptr: Phys = undefined;
     const status = bs.allocatePages(.AllocateAnyPages, .BootServicesData, 1, @ptrCast(&ptr));
