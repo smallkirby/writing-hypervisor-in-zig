@@ -38,7 +38,7 @@ if (status != .Success) {
 
 続いて、開いていた Ymir の ELF ファイルを閉じます:
 
-```zig
+```surtr/boot.zig
 status = kernel.close();
 if (status != .Success) {
     log.err("Failed to close kernel file.", .{});
@@ -48,7 +48,7 @@ if (status != .Success) {
 
 これで開いているファイルが存在しなくなったため、ルートディレクトリを閉じてあげます:
 
-```zig
+```surtr/boot.zig
 status = root_dir.close();
 if (status != .Success) {
     log.err("Failed to close filesystem volume.", .{});
@@ -164,7 +164,7 @@ status = getMemoryMap(&map, boot_service);
 
 続いて、実際にメモリマップを取得する関数を実装します:
 
-```zig
+```surtr/boot.zig
 fn getMemoryMap(map: *defs.MemoryMap, boot_services: *uefi.tables.BootServices) uefi.Status {
     return boot_services.getMemoryMap(
         &map.map_size,
