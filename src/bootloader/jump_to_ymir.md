@@ -376,7 +376,7 @@ const surtr_module = b.createModule(.{
 ymir.root_module.addImport("surtr", surtr_module);
 ```
 
-これで、 `@import("surtr")` によって `surtr/defx.zig` を参照できるようになりました。
+これで、 `@import("surtr")` によって `surtr/defs.zig` を参照できるようになりました。
 `kernelMain()` で `BootInfo()` の検証をしましょう:
 
 ```ymir/main.zig
