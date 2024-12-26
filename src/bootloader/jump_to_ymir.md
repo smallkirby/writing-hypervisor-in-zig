@@ -332,7 +332,7 @@ export fn kernelTrampoline(boot_info: surtr.BootInfo) callconv(.Win64) noreturn 
     unreachable;
 }
 
-fn kernelMain(bs: boot_info: surtr.BootInfo) !void {
+fn kernelMain(boot_info: surtr.BootInfo) !void {
     while (true) asm volatile("hlt");
 }
 ```
@@ -381,7 +381,7 @@ ymir.root_module.addImport("surtr", surtr_module);
 
 ```ymir/main.zig
 // Validate the boot info.
-validateBootInfo(bs_boot_info) catch |err| {
+validateBootInfo(boot_info) catch {
     // 本当はここでログ出力をしたいけど、それはまた次回
     return error.InvalidBootInfo;
 };
