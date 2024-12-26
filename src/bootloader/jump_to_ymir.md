@@ -326,7 +326,6 @@ export fn kernelEntry() callconv(.Naked) noreturn {
 ```ymir/main.zig
 export fn kernelTrampoline(boot_info: surtr.BootInfo) callconv(.Win64) noreturn {
     kernelMain(boot_info) catch |err| {
-        log.err("Kernel aborted with error: {}", .{err});
         @panic("Exiting...");
     };
 
