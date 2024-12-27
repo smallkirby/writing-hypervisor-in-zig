@@ -271,7 +271,7 @@ pub fn writeByte(byte: u8, port: Ports) void {
         am.relax();
     }
 
-    // Put char to the transmitter holding buffer
+    // Put char into the transmitter holding buffer
     am.outb(byte, @intFromEnum(port));
 }
 ```
