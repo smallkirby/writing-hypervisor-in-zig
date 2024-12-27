@@ -226,7 +226,9 @@ Zig では、「あらゆるものは参照されるまで評価されない」�
 ルートファイルである Ymir に以下を追加します:
 
 ```ymir/ymir.zig
-testing {
+const testing = @import("std").testing;
+
+test {
     testing.refAllDeclsRecursive(@This());
 }
 ```
