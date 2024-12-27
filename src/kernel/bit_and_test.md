@@ -45,7 +45,7 @@ pub fn tobit(T: type, nth: anytype) T {
     const val = switch (@typeInfo(@TypeOf(nth))) {
         .Int, .ComptimeInt => nth,
         .Enum => @intFromEnum(nth),
-        else => @compileError("setbit: invalid type"),
+        else => @compileError("tobit: invalid type"),
     };
     return @as(T, 1) << @intCast(val);
 }
