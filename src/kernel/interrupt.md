@@ -111,7 +111,7 @@ FS/GS 等の Segment Selector と全く同じです。
 
 ```ymir/arch/x86/idt.zig
 /// Entry in the Interrupt Descriptor Table.
-pub const GateDesriptor = packed struct(u128) {
+pub const GateDescriptor = packed struct(u128) {
     /// Lower 16 bits of the offset to the ISR.
     offset_low: u16,
     /// Segment Selector that must point to a valid code segment in the GDT.
@@ -136,7 +136,7 @@ pub const GateDesriptor = packed struct(u128) {
     /// Reserved.
     _reserved3: u32 = 0,
 
-    pub fn offset(self: GateDesriptor) u64 {
+    pub fn offset(self: GateDescriptor) u64 {
         return @as(u64, self.offset_high) << 32 | @as(u64, self.offset_middle) << 16 | @as(u64, self.offset_low);
     }
 };
@@ -154,7 +154,7 @@ GDT と同様に `.data` セクションに確保される配列とします。
 
 ```ymir/arch/x86/idt.zig
 pub const max_num_gates = 256;
-var idt: [max_num_gates]GateDesriptor align(4096) = [_]GateDesriptor{std.mem.zeroes(GateDesriptor)} ** max_num_gates;
+var idt: [max_num_gates]GateDescriptor align(4096) = [_]GateDescriptor{std.mem.zeroes(GateDescriptor)} ** max_num_gates;
 ```
 
 最後に、IDT にエントリを追加する関数を用意します:
@@ -167,7 +167,7 @@ pub fn setGate(
     gate_type: GateType,
     offset: Isr,
 ) void {
-    idt[index] = GateDesriptor{
+    idt[index] = GateDescriptor{
         .offset_low = @truncate(@intFromPtr(&offset)),
         .seg_selector = gdt.kernel_cs_index << 3,
         .gate_type = gate_type,
@@ -190,7 +190,7 @@ IDT の初期化関数を用意します:
 ```ymir/arch/x86/idt.zig
 const IdtRegister = packed struct {
     limit: u16,
-    base: *[max_num_gates]GateDesriptor,
+    base: *[max_num_gates]GateDescriptor,
 };
 
 var idtr = IdtRegister{
