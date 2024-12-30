@@ -85,7 +85,7 @@ fn allocatePage(allocator: Allocator) PageError![*]align(page_size_4k) u8 {
 ```ymir/arch/x86/page.zig
 pub fn reconstruct(allocator: Allocator) PageError!void {
     const lv4tbl_ptr: [*]Lv4Entry = @ptrCast(try allocatePage(allocator));
-    const lv4tbl = lv4tbl_ptr[0..num_table_entries]; // 256
+    const lv4tbl = lv4tbl_ptr[0..num_table_entries]; // 512
     @memset(lv4tbl, std.mem.zeroes(Lv4Entry));
     ...
 }
@@ -93,7 +93,7 @@ pub fn reconstruct(allocator: Allocator) PageError!void {
 
 まず最初に新しい Lv4 ページテーブルを確保します。
 `allocatePage()` が返す領域は [many-item pointer](https://ziglang.org/documentation/master/#Pointers) であるため、
-テーブルあたりのエントリ数 256 でスライスを作っています。
+テーブルあたりのエントリ数 512 でスライスを作っています。
 作成したページテーブルはとりあえず全部ゼロ埋めしておきます。
 ゼロ埋めすることでエントリの `present` フィールドが 0 になるため、何もマップしない状態になります。
 念の為以下にページテーブルエントリの構造を再掲しておきます:
