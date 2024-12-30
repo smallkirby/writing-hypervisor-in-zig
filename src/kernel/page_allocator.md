@@ -74,7 +74,7 @@ Ymir の `PageAllocator` では、利用できる(割当可能な)ページを�
 `PageAllocator` では初期化時にこのメモリマップを受取り、メモリを探査して利用可能なページをビットマップに記録していきます:
 
 ```ymir/mem/PageAllocator.zig
-pub fn init(self: *Self, map_: MemoryMap) void {
+pub fn init(self: *Self, map: MemoryMap) void {
     var avail_end: Phys = 0;
     var desc_iter = MemoryDescriptorIterator.new(map);
 
