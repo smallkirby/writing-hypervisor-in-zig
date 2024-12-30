@@ -425,7 +425,7 @@ pub const page_allocator = Allocator{
 
 `page_allocator_instance` は `PageAllocator` の唯一のインスタンスです。
 基本的にこちらのインスタンスは直接触ることはありません。
-唯一使う必要があるのは、先ほどの `allocaPages()` を呼び出す場合のみです。
+唯一使う必要があるのは、先ほどの `allocPages()` を呼び出す場合のみです。
 というか、このインスタンスは直接触らせたくないので本当は `pub` 指定したくありません。
 `PageAllocator` という型自体も同様です。
 しかし、`Allocator.alignedAlloc()` がページサイズ以上のアラインを許容しないため致し方ありません[^align]。
