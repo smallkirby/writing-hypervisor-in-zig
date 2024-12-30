@@ -306,7 +306,7 @@ pub fn virt2phys(addr: u64) Phys {
 pub fn phys2virt(addr: u64) Virt {
     return if (!mapping_reconstructed) b: {
         // UEFI's page table.
-        break :b value;
+        break :b addr;
     } else b: {
         // Direct map region.
         break :b addr + ymir.direct_map_base;
