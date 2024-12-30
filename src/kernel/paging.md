@@ -245,10 +245,12 @@ fn cloneLevel1Table(lv1_table: []Lv1Entry, allocator: Allocator) PageError![]Lv1
 Lv4 ページテーブルのアドレスは CR3 レジスタに書き込むことで変更できます。
 
 ```ymir/arch/x86/page.zig
+pub fn reconstruct(allocator: Allocator) PageError!void {
     ...
+
     const cr3 = @intFromPtr(lv4tbl) & ~@as(u64, 0xFFF);
     am.loadCr3(cr3);
-    ...
+}
 ```
 
 CR3 へ書き込みを行うと、TLB の前エントリがフラッシュされ古いエントリが無効になります。
