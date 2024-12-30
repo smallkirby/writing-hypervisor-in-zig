@@ -153,6 +153,7 @@ const BitMap = [num_maplines]MapLineType;
 
 ```ymir/mem/PageAllocator.zig
 const FrameId = u64;
+const bytes_per_frame = 4 * kib;
 
 inline fn phys2frame(phys: Phys) FrameId {
     return phys / bytes_per_frame;
