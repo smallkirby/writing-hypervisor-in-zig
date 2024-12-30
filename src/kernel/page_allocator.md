@@ -414,6 +414,15 @@ pub fn allocPages(self: *PageAllocator, num_pages: usize, align_size: usize) ?[]
 以上で準備が整いました。
 Ymir で利用できる `Allocator` を作成しましょう:
 
+```ymir/mem/PageAllocator.zig
+pub fn newUninit() Self {
+    return Self{
+        .frame_end = undefined,
+        .bitmap = undefined,
+    };
+}
+```
+
 ```ymir/mem.zig
 pub const PageAllocator = @import("mem/PageAllocator.zig");
 pub var page_allocator_instance = PageAllocator.newUninit();
@@ -421,6 +430,10 @@ pub const page_allocator = Allocator{
     .ptr = &page_allocator_instance,
     .vtable = &PageAllocator.vtable,
 };
+
+pub fn initPageAllocator(map: MemoryMap) void {
+    page_allocator_instance.init(map);
+}
 ```
 
 `page_allocator_instance` は `PageAllocator` の唯一のインスタンスです。
@@ -436,10 +449,14 @@ pub const page_allocator = Allocator{
 
 利用時には以下のようにして `Allocator` として利用します (内部実装を気にする必要がありません):
 
-```zig
+```ymir/main.zig
+mem.initPageAllocator(boot_info.memory_map);
+log.info("Initialized page allocator", .{});
 const page_allocator = ymir.mem.page_allocator;
+
 const array = try page_allocator.alloc(u32, 4);
 log.debug("Memory allocated @ {X:0>16}", .{@intFromPtr(array.ptr)});
+page_allocator.free(array);
 ```
 
 ## まとめ
