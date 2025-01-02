@@ -172,22 +172,22 @@ fn EntryBase(table_level: TableLevel) type {
         /// Present.
         present: bool = true,
         /// Read/Write.
-        /// If set to false, wirte access is not allowed to the region.
+        /// If set to false, write access is not allowed to the region.
         rw: bool,
         /// User/Supervisor.
         /// If set to false, user-mode access is not allowed to the region.
         us: bool,
-        /// Page-level writh-through.
+        /// Page-level write-through.
         /// Indirectly determines the memory type used to access the page or page table.
         pwt: bool = false,
         /// Page-level cache disable.
         /// Indirectly determines the memory type used to access the page or page table.
         pcd: bool = false,
         /// Accessed.
-        /// Indicates wheter this entry has been used for translation.
+        /// Indicates whether this entry has been used for translation.
         accessed: bool = false,
         /// Dirty bit.
-        /// Indicates wheter software has written to the 2MiB page.
+        /// Indicates whether software has written to the 2MiB page.
         /// Ignored when this entry references a page table.
         dirty: bool = false,
         /// Page Size.
@@ -314,7 +314,7 @@ Surtr では、4KiB ページのみをサポートすることにします。
 まずは各レベルのページテーブルを取得する関数です:
 
 ```surtr/arch/x86/page.zig
-const page_mask_4k = 0xFFF;
+const page_mask_4k: u64 = 0xFFF;
 const num_table_entries: usize = 512;
 
 fn getTable(T: type, addr: Phys) []T {
@@ -337,7 +337,7 @@ fn getLv1Table(lv1_paddr: Phys) []Lv1Entry {
 
 `getTable()` が内部実装であり、取得したいページテーブルエントリの型と物理アドレスを受け取ります。
 ページテーブルは必ず 4KiB アラインメントされているため、下位12ビットをマスクしてページテーブルの先頭アドレスを取得します。
-そうして計算したアドレスから 256 個のエントリを持つスライスとしてテーブルを返します。
+そうして計算したアドレスから 512 個のエントリを持つスライスとしてテーブルを返します。
 残りの4つの関数は、それぞれのレベルのページテーブルを取得するためのヘルパー関数です。
 
 続いて、指定された仮想アドレスに対応するページテーブルエントリを取得する関数を実装します。
@@ -353,7 +353,7 @@ fn getEntry(T: type, vaddr: Virt, paddr: Phys) *T {
         Lv1Entry => 12,
         else => @compileError("Unsupported type"),
     };
-    return &table[(vaddr >> shift) & 0x1FFF];
+    return &table[(vaddr >> shift) & 0x1FF];
 }
 
 fn getLv4Entry(addr: Virt, cr3: Phys) *Lv4Entry {
@@ -374,10 +374,25 @@ fn getLv1Entry(addr: Virt, lv1tbl_paddr: Phys) *Lv1Entry {
 その後、先程の図に従って仮想アドレスからエントリのインデックスを計算し、テーブルから該当するエントリを取得して返します。
 `getTable()` と同様に、残りの4つの関数は引数 `T` を具体化したヘルパー関数になっています。
 
-仮想アドレスからページテーブルエントリを取得する準備ができました。
-4KiB ページをマップする関数が以下です:
+これで、仮想アドレスからページテーブルエントリを取得する準備がほぼ整いました。
+ヘルパー関数として CR3 レジスタを取得する取得するラッパーを `asm.zig` に追加します:
+
+```surtr/arch/x86/asm.zig
+pub inline fn readCr3() u64 {
+    var cr3: u64 = undefined;
+    asm volatile (
+        \\mov %%cr3, %[cr3]
+        : [cr3] "=r" (cr3),
+    );
+    return cr3;
+}
+```
+
+最後に、4KiB ページをマップする関数を次に示します。
 
 ```surtr/arch/x86/page.zig
+const am = @import("asm.zig");
+
 pub const PageAttribute = enum {
     /// RO
     read_only,
@@ -386,6 +401,8 @@ pub const PageAttribute = enum {
     /// RX
     executable,
 };
+
+pub const PageError = error{ NoMemory, NotPresent, NotCanonical, InvalidAddress, AlreadyMapped };
 
 pub fn map4kTo(virt: Virt, phys: Phys, attr: PageAttribute, bs: *BootServices) PageError!void {
     const rw = switch (attr) {
@@ -438,6 +455,9 @@ Lv1 にまでたどり着いたら、事前に定義した `newMapPage()` を使
 新たにページテーブルを確保する関数 `allocateNewTable()` は以下のように実装されています:
 
 ```surtr/arch/x86/page.zig
+pub const kib = 1024;
+pub const page_size_4k = 4 * kib;
+
 fn allocateNewTable(T: type, entry: *T, bs: *BootServices) PageError!void {
     var ptr: Phys = undefined;
     const status = bs.allocatePages(.AllocateAnyPages, .BootServicesData, 1, @ptrCast(&ptr));
@@ -539,6 +559,18 @@ pub fn setLv4Writable(bs: *BootServices) PageError!void {
     @memcpy(new_lv4tbl, lv4tbl);
 
     am.loadCr3(@intFromPtr(new_lv4tbl.ptr));
+}
+```
+
+また、ヘルパー関数 `loadCr3()` を追加します:
+
+```surtr/arch/x86/asm.zig
+pub inline fn loadCr3(cr3: u64) void {
+    asm volatile (
+        \\mov %[cr3], %%cr3
+        :
+        : [cr3] "r" (cr3),
+    );
 }
 ```
 

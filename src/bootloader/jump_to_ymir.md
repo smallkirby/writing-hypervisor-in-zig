@@ -326,14 +326,13 @@ export fn kernelEntry() callconv(.Naked) noreturn {
 ```ymir/main.zig
 export fn kernelTrampoline(boot_info: surtr.BootInfo) callconv(.Win64) noreturn {
     kernelMain(boot_info) catch |err| {
-        log.err("Kernel aborted with error: {}", .{err});
         @panic("Exiting...");
     };
 
     unreachable;
 }
 
-fn kernelMain(bs: boot_info: surtr.BootInfo) !void {
+fn kernelMain(boot_info: surtr.BootInfo) !void {
     while (true) asm volatile("hlt");
 }
 ```
@@ -377,12 +376,12 @@ const surtr_module = b.createModule(.{
 ymir.root_module.addImport("surtr", surtr_module);
 ```
 
-これで、 `@import("surtr")` によって `surtr/defx.zig` を参照できるようになりました。
+これで、 `@import("surtr")` によって `surtr/defs.zig` を参照できるようになりました。
 `kernelMain()` で `BootInfo()` の検証をしましょう:
 
 ```ymir/main.zig
 // Validate the boot info.
-validateBootInfo(bs_boot_info) catch |err| {
+validateBootInfo(boot_info) catch {
     // 本当はここでログ出力をしたいけど、それはまた次回
     return error.InvalidBootInfo;
 };
