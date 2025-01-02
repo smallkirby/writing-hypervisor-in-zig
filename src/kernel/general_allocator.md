@@ -183,7 +183,7 @@ Bin から chunk を取得したり返却する処理が実装できたため、
 
 `PageAllocator` の場合と異なり、`BinAllocator` はページサイズ以下の領域を確保する可能性があります。
 よって、 `BinAllocator` 要求されたアラインを考慮する必要があります。
-要求されるアラインは、`allocater()`の第3引数に渡されます:
+要求されるアラインは、`allocate()`の第3引数に渡されます:
 
 ```ymir/mem/BinAllocator.zig
 fn allocate(ctx: *anyopaque, n: usize, log2_align: u8, _: usize) ?[*]u8 {

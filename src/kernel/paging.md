@@ -85,7 +85,7 @@ fn allocatePage(allocator: Allocator) PageError![*]align(page_size_4k) u8 {
 ```ymir/arch/x86/page.zig
 pub fn reconstruct(allocator: Allocator) PageError!void {
     const lv4tbl_ptr: [*]Lv4Entry = @ptrCast(try allocatePage(allocator));
-    const lv4tbl = lv4tbl_ptr[0..num_table_entries]; // 256
+    const lv4tbl = lv4tbl_ptr[0..num_table_entries]; // 512
     @memset(lv4tbl, std.mem.zeroes(Lv4Entry));
     ...
 }
@@ -93,7 +93,7 @@ pub fn reconstruct(allocator: Allocator) PageError!void {
 
 まず最初に新しい Lv4 ページテーブルを確保します。
 `allocatePage()` が返す領域は [many-item pointer](https://ziglang.org/documentation/master/#Pointers) であるため、
-テーブルあたりのエントリ数 256 でスライスを作っています。
+テーブルあたりのエントリ数 512 でスライスを作っています。
 作成したページテーブルはとりあえず全部ゼロ埋めしておきます。
 ゼロ埋めすることでエントリの `present` フィールドが 0 になるため、何もマップしない状態になります。
 念の為以下にページテーブルエントリの構造を再掲しておきます:
@@ -245,10 +245,12 @@ fn cloneLevel1Table(lv1_table: []Lv1Entry, allocator: Allocator) PageError![]Lv1
 Lv4 ページテーブルのアドレスは CR3 レジスタに書き込むことで変更できます。
 
 ```ymir/arch/x86/page.zig
+pub fn reconstruct(allocator: Allocator) PageError!void {
     ...
+
     const cr3 = @intFromPtr(lv4tbl) & ~@as(u64, 0xFFF);
     am.loadCr3(cr3);
-    ...
+}
 ```
 
 CR3 へ書き込みを行うと、TLB の前エントリがフラッシュされ古いエントリが無効になります。
@@ -263,7 +265,7 @@ CR3 へ書き込みを行うと、TLB の前エントリがフラッシュされ
 
 本シリーズの Ymir では [PCID: Process Context Identifiers](https://en.wikipedia.org/wiki/Translation_lookaside_buffer#PCID) は使わないため，この表のフォーマットに従います[^pcid]。
 表中の `M` は物理アドレスのサイズであり、おそらく最近の Core シリーズでは `46` になるのではないかと思います。
-3-th / 4-th bit は Lv4 テーブルにアクセスする際のキャッシュタイプを決定する要因の1つになります。
+3-rd / 4-th bit は Lv4 テーブルにアクセスする際のキャッシュタイプを決定する要因の1つになります。
 今回は特にこのあたりは気にせず、どちらも `0` としています。
 
 ## 仮想-物理アドレス変換
@@ -304,7 +306,7 @@ pub fn virt2phys(addr: u64) Phys {
 pub fn phys2virt(addr: u64) Virt {
     return if (!mapping_reconstructed) b: {
         // UEFI's page table.
-        break :b value;
+        break :b addr;
     } else b: {
         // Direct map region.
         break :b addr + ymir.direct_map_base;
@@ -385,6 +387,19 @@ pub fn changeMap4k(virt: Virt, attr: PageAttribute) PageError!void {
 もしも途中で 1GiB や 2MiB のページがマップされていたとしても、それらはページテーブルをマップするものとして扱ってしまうためバグります。
 ただし、Surtr はカーネルのロードで 4KiB だけを使うため、この関数の前提は満たされます。
 途中で存在しない (`present == false`) ページエントリが見つかった場合には gracefull にエラーを返すようにしています。
+
+特定の TLB エントリをフラッシュするヘルパー関数は、INVLPG 命令を使用します:
+
+```surtr/arch/x86/asm.zig
+pub inline fn flushTlbSingle(virt: u64) void {
+    asm volatile (
+        \\invlpg (%[virt])
+        :
+        : [virt] "r" (virt),
+        : "memory"
+    );
+}
+```
 
 続いて、カーネルのロード部分を修正します:
 

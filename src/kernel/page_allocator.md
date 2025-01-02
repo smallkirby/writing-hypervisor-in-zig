@@ -61,7 +61,7 @@ const PageAllocator = @import("mem/PageAllocator.zig").PageAllocator; // <= 冗�
 `Allocator` 経由で呼ばれたこれらの関数は、第1引数 `ctx` に `Allocator.ptr` が渡されます。
 これはアロケータインスタンスであるため、共通の `Allocator` 経由で呼ばれても各アロケータの内部実装を呼び出すことができます。
 つまりここでやるべきことは、`PageAllocator.zig` にページアロケータの内部実装を定義した上で、
-`allocater()` / `free()` / `resize()` の 3API を提供することです。
+`allocate()` / `free()` / `resize()` の 3API を提供することです。
 この3つさえ実装すれば、残りの細々としたユーティリティ関数は `Allocator` が提供してくれます。
 
 ## Bitmap
@@ -74,7 +74,7 @@ Ymir の `PageAllocator` では、利用できる(割当可能な)ページを�
 `PageAllocator` では初期化時にこのメモリマップを受取り、メモリを探査して利用可能なページをビットマップに記録していきます:
 
 ```ymir/mem/PageAllocator.zig
-pub fn init(self: *Self, map_: MemoryMap) void {
+pub fn init(self: *Self, map: MemoryMap) void {
     var avail_end: Phys = 0;
     var desc_iter = MemoryDescriptorIterator.new(map);
 
@@ -153,6 +153,7 @@ const BitMap = [num_maplines]MapLineType;
 
 ```ymir/mem/PageAllocator.zig
 const FrameId = u64;
+const bytes_per_frame = 4 * kib;
 
 inline fn phys2frame(phys: Phys) FrameId {
     return phys / bytes_per_frame;
@@ -413,6 +414,15 @@ pub fn allocPages(self: *PageAllocator, num_pages: usize, align_size: usize) ?[]
 以上で準備が整いました。
 Ymir で利用できる `Allocator` を作成しましょう:
 
+```ymir/mem/PageAllocator.zig
+pub fn newUninit() Self {
+    return Self{
+        .frame_end = undefined,
+        .bitmap = undefined,
+    };
+}
+```
+
 ```ymir/mem.zig
 pub const PageAllocator = @import("mem/PageAllocator.zig");
 pub var page_allocator_instance = PageAllocator.newUninit();
@@ -420,11 +430,15 @@ pub const page_allocator = Allocator{
     .ptr = &page_allocator_instance,
     .vtable = &PageAllocator.vtable,
 };
+
+pub fn initPageAllocator(map: MemoryMap) void {
+    page_allocator_instance.init(map);
+}
 ```
 
 `page_allocator_instance` は `PageAllocator` の唯一のインスタンスです。
 基本的にこちらのインスタンスは直接触ることはありません。
-唯一使う必要があるのは、先ほどの `allocaPages()` を呼び出す場合のみです。
+唯一使う必要があるのは、先ほどの `allocPages()` を呼び出す場合のみです。
 というか、このインスタンスは直接触らせたくないので本当は `pub` 指定したくありません。
 `PageAllocator` という型自体も同様です。
 しかし、`Allocator.alignedAlloc()` がページサイズ以上のアラインを許容しないため致し方ありません[^align]。
@@ -435,10 +449,14 @@ pub const page_allocator = Allocator{
 
 利用時には以下のようにして `Allocator` として利用します (内部実装を気にする必要がありません):
 
-```zig
+```ymir/main.zig
+mem.initPageAllocator(boot_info.memory_map);
+log.info("Initialized page allocator", .{});
 const page_allocator = ymir.mem.page_allocator;
+
 const array = try page_allocator.alloc(u32, 4);
 log.debug("Memory allocated @ {X:0>16}", .{@intFromPtr(array.ptr)});
+page_allocator.free(array);
 ```
 
 ## まとめ
