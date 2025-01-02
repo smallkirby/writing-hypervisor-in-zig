@@ -212,7 +212,7 @@ const am = @import("asm.zig");
 
 pub fn initSerial(port: Ports, baud: u32) void {
     const p = @intFromEnum(port);
-    am.outb(0b00_000_0_00, p + offsets.lcr); // 8n1: no paritiy, 1 stop bit, 8 data bit
+    am.outb(0b00_000_0_00, p + offsets.lcr); // 8n1: no parity, 1 stop bit, 8 data bit
     am.outb(0, p + offsets.ier); // Disable interrupts
     am.outb(0, p + offsets.fcr); // Disable FIFO
     ...
@@ -271,7 +271,7 @@ pub fn writeByte(byte: u8, port: Ports) void {
         am.relax();
     }
 
-    // Put char to the transmitter holding buffer
+    // Put char into the transmitter holding buffer
     am.outb(byte, @intFromEnum(port));
 }
 ```

@@ -45,7 +45,7 @@ pub fn tobit(T: type, nth: anytype) T {
     const val = switch (@typeInfo(@TypeOf(nth))) {
         .Int, .ComptimeInt => nth,
         .Enum => @intFromEnum(nth),
-        else => @compileError("setbit: invalid type"),
+        else => @compileError("tobit: invalid type"),
     };
     return @as(T, 1) << @intCast(val);
 }
@@ -226,7 +226,9 @@ Zig では、「あらゆるものは参照されるまで評価されない」�
 ルートファイルである Ymir に以下を追加します:
 
 ```ymir/ymir.zig
-testing {
+const testing = @import("std").testing;
+
+test {
     testing.refAllDeclsRecursive(@This());
 }
 ```

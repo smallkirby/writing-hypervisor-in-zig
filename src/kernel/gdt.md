@@ -390,6 +390,18 @@ fn loadKernelCs() void {
 `lret` はスタックに積んだ CS/RIP を POP してレジスタにセットしてくれます。
 RIP は変更させたくないため `lret` の直後のアドレスを PUSH することで、CS を設定する効果だけを得ています。
 
+`SegmentSelector` の構造は次のとおりです:
+```ymir/arch/x86/gdt.zig
+pub const SegmentSelector = packed struct(u16) {
+    /// Requested Privilege Level.
+    rpl: u2,
+    /// Table Indicator.
+    ti: u1 = 0,
+    /// Index.
+    index: u13,
+};
+```
+
 以上で GDT の更新が反映されるようになります。
 `init()` から呼び出すようにしておきましょう:
 
