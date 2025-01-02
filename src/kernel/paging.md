@@ -388,6 +388,19 @@ pub fn changeMap4k(virt: Virt, attr: PageAttribute) PageError!void {
 ただし、Surtr はカーネルのロードで 4KiB だけを使うため、この関数の前提は満たされます。
 途中で存在しない (`present == false`) ページエントリが見つかった場合には gracefull にエラーを返すようにしています。
 
+特定の TLB エントリをフラッシュするヘルパー関数は、INVLPG 命令を使用します:
+
+```surtr/arch/x86/asm.zig
+pub inline fn flushTlbSingle(virt: u64) void {
+    asm volatile (
+        \\invlpg (%[virt])
+        :
+        : [virt] "r" (virt),
+        : "memory"
+    );
+}
+```
+
 続いて、カーネルのロード部分を修正します:
 
 ```surtr/boot.zig
