@@ -255,6 +255,15 @@ fn resize(_: *anyopaque, _: []u8, _: u8, _: usize, _: usize) bool {
 `BinAllocator` をインスタンス化して利用可能な状態にします:
 
 ```ymir/mem/BinAllocator.zig
+pub fn newUninit() Self {
+    return Self{
+        .page_allocator = undefined,
+        .list_heads = undefined,
+    };
+}
+```
+
+```ymir/mem.zig
 pub const general_allocator = Allocator{
     .ptr = &bin_allocator_instance,
     .vtable = &BinAllocator.vtable,
