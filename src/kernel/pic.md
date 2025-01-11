@@ -232,6 +232,8 @@ const Ocw = union(ocw) {
 続いて、これらの CW を PIC に対して発行するためのヘルパー関数を定義します:
 
 ```ymir/arch/x86/pic.zig
+const am = @import("asm.zig");
+
 fn issue(cw: anytype, port: u16) void {
     const T = @TypeOf(cw);
     if (T != Icw and T != Ocw) {
@@ -241,10 +243,6 @@ fn issue(cw: anytype, port: u16) void {
         inline else => |s| am.outb(@bitCast(s), port),
     }
     am.relax();
-}
-
-pub fn relax() void {
-    asm volatile ("rep; nop");
 }
 ```
 
