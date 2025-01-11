@@ -117,7 +117,7 @@ pub const panic = ymir.panic.panic_fn;
 `ReleaseFast` レベルだと最適化が結構強く働くため、関数がインライン化されてスタックトレースが出力できない場合があります:
 
 ```ymir/main.tmp.zig
-panic("fugafuga");
+@panic("fugafuga");
 ```
 
 出力は以下のようになります:
