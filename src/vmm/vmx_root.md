@@ -259,7 +259,7 @@ pub fn getCpuVendorId() [12]u8 {
 const vendor = arch.getCpuVendorId();
 if (!std.mem.eql(u8, vendor[0..], "GenuineIntel")) {
     log.err("Unsupported CPU vendor: {s}", .{vendor});
-    return Error.SystemNotSupported;
+    return VmError.SystemNotSupported;
 }
 ```
 
@@ -308,7 +308,7 @@ Lock Bit はシステムがリセットされるまでクリアされること�
 ```ymir/vmx.zig
 if (!arch.isVmxSupported()) {
     log.err("Virtualization is not supported.", .{});
-    return Error.SystemNotSupported;
+    return VmError.SystemNotSupported;
 }
 ```
 
