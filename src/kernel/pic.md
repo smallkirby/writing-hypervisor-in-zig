@@ -489,6 +489,18 @@ pub fn enableInterrupt(port: Ports) void {
 }
 ```
 
+`idefs` は、`interrupts.zig` のインポートであり、次のようになります。
+
+```ymir/interrupts.zig
+const arch = @import("ymir").arch;
+
+pub const user_intr_base = arch.intr.num_system_exceptions;
+
+pub const pic_timer = 0 + user_intr_base;
+...
+pub const pic_serial1 = 4 + user_intr_base;
+```
+
 なお、IER の 1-th bit をクリアしているのは無限割り込みを防ぐためです。
 Tx-empty は、シリアル出力しようとしたデータが実際に送信され、出力バッファに他のデータを書き込める状態になった時に発生します。
 しかし、割り込みハンドラの中でさらにシリアルログ出力をしており、これがまた Tx-empty を発生させます。
