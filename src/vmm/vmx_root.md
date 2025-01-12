@@ -316,7 +316,7 @@ if (!arch.isVmxSupported()) {
 `kernelMain()` から呼び出して、VMX がサポートされていることを確認しましょう:
 
 ```ymir/main.zig
-var vm = try vmx.Vm.new();
+const vm = try vmx.Vm.new();
 _ = vm;
 ```
 
