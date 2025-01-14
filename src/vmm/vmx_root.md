@@ -289,14 +289,14 @@ if (!std.mem.eql(u8, vendor[0..], "GenuineIntel")) {
 ### VMX サポートを確認
 
 手順 2/3 は同じ関数内 `isVmxSupported()` で確認します。
-まず手順2の VMX がサポートされているかどうかは `CPUID[7]` で確認します。
+まず手順2の VMX がサポートされているかどうかは `CPUID[1]` で確認します。
 手順3では VMXON が SMX Operation の外でも実行可能かを確認します。
 これは MSR の `IA32_FEATURE_CONTROL` の値をチェックすることで確かめられます:
 
 ```ymir/arch/x86/arch.zig
 pub fn isVmxSupported() bool {
     // Check CPUID if VMX is supported.
-    const regs = cpuid.Leaf.query(.ext_feature, null);
+    const regs = cpuid.Leaf.query(.vers_and_feat_info, null);
     const ecx: cpuid.FeatureInfoEcx = @bitCast(regs.ecx);
     if (!ecx.vmx) return false;
 
