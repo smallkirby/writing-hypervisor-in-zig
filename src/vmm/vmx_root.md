@@ -92,7 +92,7 @@ EAX で取得したい情報を指定します。一部の場合は追加で ECX
 本シリーズでは、Leaf が `N` で Subleaf が `M` の CPUID を `CPUID[N:M]` と表記します。
 返り値には EAX, EBX, ECX, EDX の4つのレジスタが使われます。
 どのレジスタにどのような情報が入るかは、指定した Leaf/Subleaf に依存します。
-CPUID の Leaf/Subleaf 一覧については *SDM Vol.2A Chapter 3.3 Table 3-8* を参照してください。
+CPUID の Leaf/Subleaf 一覧については *[SDM Vol.2A](https://cdrdv2-public.intel.com/812383/253666-sdm-vol-2a.pdf) Chapter 3.3 Table 3-8* を参照してください。
 
 ```ymir/arch/x86/cpuid.zig
 pub const Leaf = enum(u32) {
