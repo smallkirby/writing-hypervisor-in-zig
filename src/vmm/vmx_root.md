@@ -207,10 +207,24 @@ MSR も CPUID と同様にどんどん追加され続けるため、すべてを
 
 ```ymir/arch/x86/asm.zig
 pub const Msr = enum(u32) {
+    /// IA32_FEATURE_CONTROL MSR.
+    feature_control = 0x003A,
+
     /// IA32_VMX_BASIC MSR.
     vmx_basic = 0x0480,
 
     _,
+};
+
+pub const MsrFeatureControl = packed struct(u64) {
+    /// Lock bit.
+    lock: bool,
+    /// VMX in SMX (Safer Mode Extensions) operation.
+    vmx_in_smx: bool,
+    /// VMX outside SMX operation.
+    vmx_outside_smx: bool,
+    /// ...
+    _other_fields: u61,
 };
 ```
 
