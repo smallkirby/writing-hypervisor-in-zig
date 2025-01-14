@@ -384,6 +384,7 @@ pub const Vm = struct {
 
     pub fn new() VmError!Self {
         ...
+        const vcpu = impl.Vcpu.new(0);
         return Self{ .vcpu = vcpu };
     }
 };
