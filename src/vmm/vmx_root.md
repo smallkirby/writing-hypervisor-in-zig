@@ -120,6 +120,15 @@ const CpuidRegisters = struct {
     ecx: u32,
     edx: u32,
 };
+
+pub const FeatureInfoEcx = packed struct(u32) {
+    /// ...
+    _other_fields1: u5,
+    /// Virtual Machine Extensions.
+    vmx: bool = false,
+    /// ...
+    _other_fields2: u26,
+};
 ```
 
 `Leaf` enum は、すべての Leaf を列挙しているわけではありません。
