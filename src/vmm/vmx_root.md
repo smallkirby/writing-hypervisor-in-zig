@@ -97,7 +97,7 @@ CPUID の Leaf/Subleaf 一覧については *[SDM Vol.2A](https://cdrdv2-public
 ```ymir/arch/x86/cpuid.zig
 pub const Leaf = enum(u32) {
     maximum_input = 0x0,
-    version_info = 0x1,
+    vers_and_feat_info = 0x1,
     ext_feature = 0x7,
     ext_enumeration = 0xD,
     ext_func = 0x80000000,
