@@ -600,6 +600,8 @@ pub fn virtualize(self: *Self, allocator: Allocator) VmxError!void {
 `Vm` からこの関数を呼び出します:
 
 ```ymir/vmx.zig
+pub const Error = VmError || impl.VmxError;
+
 pub fn init(self: *Self, allocator: Allocator) Error!void {
     try self.vcpu.virtualize(allocator);
     log.info("vCPU #{X} was created.", .{self.vcpu.id});
