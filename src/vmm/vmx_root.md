@@ -602,7 +602,7 @@ pub fn virtualize(self: *Self, allocator: Allocator) VmxError!void {
 ```ymir/vmx.zig
 pub fn init(self: *Self, allocator: Allocator) Error!void {
     try self.vcpu.virtualize(allocator);
-    log.info("vCPU #{X} is created.", .{self.vcpu.id});
+    log.info("vCPU #{X} was created.", .{self.vcpu.id});
 }
 ```
 
