@@ -570,7 +570,7 @@ pub const InstructionError = enum(u32) {
     vmentry_events_blocked = 26,
     invalid_invept = 28,
 
-    /// Get a instruction error number from VMCS.
+    /// Get an instruction error number from VMCS.
     pub fn load() VmxError!InstructionError {
         return @enumFromInt(@as(u32, @truncate(try vmread(vmcs.ro.vminstruction_error))));
     }
