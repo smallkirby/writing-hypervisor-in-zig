@@ -576,6 +576,20 @@ pub fn vmxtry(rflags: u64) VmxError!void {
 
 この関数を使うと先ほどの `am.vmxon()` のように、VMX 拡張命令を呼び出す関数の末尾で `try vmxtry()` とすることでエラー処理ができます。
 
+EFLAGS レジスタは次のように定義されます。
+```ymir/arch/x86/asm.zig
+pub const FlagsRegister = packed struct(u64) {
+    /// Carry flag.
+    cf: bool,
+    /// Five other fields, see repository for details.
+    _other_fields1: u5,
+    /// Zero flag.
+    zf: bool,
+    /// More fields, see repository for details.
+    _other_fields2: u57,
+};
+```
+
 ## VMX Root Operation に遷移できたことの確認
 
 最後に、VMX 自体を有効化します。
