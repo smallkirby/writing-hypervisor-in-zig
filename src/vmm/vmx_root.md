@@ -627,6 +627,8 @@ VMX の有効化は `CR4[13]` に `1` をセットすることで行います。
 VMX を有効化したら、VMXON で VMX Root Operation に遷移します:
 
 ```ymir/arch/x86/vmx/vcpu.zig
+vmxon_region: *VmxonRegion = undefined,
+...
 pub fn virtualize(self: *Self, allocator: Allocator) VmxError!void {
     // Adjust control registers.
     adjustControlRegisters();
