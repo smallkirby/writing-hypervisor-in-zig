@@ -117,15 +117,19 @@ Read-only であることからも分かるように、このカテゴリは特�
 VMCS を設定するための雛形を `Vcpu` に追加しておきます:
 
 ```ymir/arch/x86/vmx/vcpu.zig
-pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
+pub const Vcpu = struct {
     ...
 
-    // Initialize VMCS fields.
-    try setupExecCtrls(self, allocator);
-    try setupExitCtrls(self);
-    try setupEntryCtrls(self);
-    try setupHostState(self);
-    try setupGuestState(self);
+    pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
+        ...
+
+        // Initialize VMCS fields.
+        try setupExecCtrls(self, allocator);
+        try setupExitCtrls(self);
+        try setupEntryCtrls(self);
+        try setupHostState(self);
+        try setupGuestState(self);
+    }
 }
 
 fn setupExecCtrls(vcpu: *Vcpu, allocator: Allocator) VmxError!void {}
