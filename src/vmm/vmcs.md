@@ -295,25 +295,25 @@ fn encode(
     });
 }
 
-/// Encodes a VMCS field for guest state area.
+/// Encodes a VMCS field for the guest state area.
 fn eg(
     comptime index: u9,
     comptime access_type: AccessType,
     comptime width: Width,
 ) u32 { return encode(.guest_state, index, access_type, width); }
-/// Encodes a VMCS field for host state area.
+/// Encodes a VMCS field for the host state area.
 fn eh(
     comptime index: u9,
     comptime access_type: AccessType,
     comptime width: Width,
 ) u32 { return encode(.host_state, index, access_type, width); }
-/// Encodes a VMCS field for control area.
+/// Encodes a VMCS field for the control area.
 fn ec(
     comptime index: u9,
     comptime access_type: AccessType,
     comptime width: Width,
 ) u32 { return encode(.control, index, access_type, width); }
-/// Encodes a VMCS field for read-only area.
+/// Encodes a VMCS field for the read-only area.
 fn er(
     comptime index: u9,
     comptime access_type: AccessType,
