@@ -447,6 +447,36 @@ fn adjustControlRegisters() void {
 強制的に無効化されるのは SMX や PKS など Ymir では使わない拡張機能だけでした。
 よって、このマスクを適用することに問題はありません。
 
+`readCr4` と `loadCr4` は `readCr0` と `loadCr0` と似ていますが、`@bitCast` を使用して構造体としてアクセスする点が異なります。
+
+```ymir/arch/x86/asm.zig
+pub const Cr4 = packed struct(u64) {
+    /// Other fields, see repository for details.
+    _other_fields1: u13,
+    /// Virtual machine extensions enable. (Used further down.)
+    vmxe: bool,
+    /// More fields, see repository for details.
+    _other_fields2: u40,
+};
+
+pub inline fn readCr4() Cr4 {
+    var cr4: u64 = undefined;
+    asm volatile (
+        \\mov %%cr4, %[cr4]
+        : [cr4] "=r" (cr4),
+    );
+    return @bitCast(cr4);
+}
+
+pub inline fn loadCr4(cr4: anytype) void {
+    asm volatile (
+        \\mov %[cr4], %%cr4
+        :
+        : [cr4] "r" (@as(u64, @bitCast(cr4))),
+    );
+}
+```
+
 ### VMXON
 
 VMX Operation に遷移するには [VMXON](https://www.felixcloutier.com/x86/vmxon) 命令を使います。
