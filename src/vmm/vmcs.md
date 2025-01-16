@@ -593,6 +593,34 @@ pub const InstructionError = enum(u32) {
 `load()` が VMCS からエラーコードを取得する関数です。
 VMREAD の初めての出番ですね。かわいい。
 
+<details>
+<summary>(GitHub にアクセスできない人のために、`ro` 列挙型の定義を次に示します):</summary>
+
+```ymir/arch/x86/vmx/vmcs.zig
+pub const ro = enum(u32) {
+    // Natural-width fields.
+    exit_qual = er(0, .full, .natural),
+    io_rcx = er(1, .full, .natural),
+    io_rsi = er(2, .full, .natural),
+    io_rdi = er(3, .full, .natural),
+    io_rip = er(4, .full, .natural),
+    guest_linear_address = er(5, .full, .natural),
+    // 32-bit fields.
+    vminstruction_error = er(0, .full, .dword),
+    vmexit_reason = er(1, .full, .dword),
+    exit_intr_info = er(2, .full, .dword),
+    exit_intr_ec = er(3, .full, .dword),
+    idt_vectoring_info = er(4, .full, .dword),
+    idt_vectoring_ec = er(5, .full, .dword),
+    exit_inst_len = er(6, .full, .dword),
+    exit_inst_info = er(7, .full, .dword),
+    // 64-bit fields.
+    guest_physical_address = er(0, .full, .qword),
+};
+```
+
+</details>
+
 さて、VMLAUNCH 後にエラーコードを取得してみましょう:
 
 ```ymir/arch/x86/vmx/vcpu.tmp.zig
