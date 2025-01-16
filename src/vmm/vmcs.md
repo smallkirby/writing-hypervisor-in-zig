@@ -247,6 +247,15 @@ pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
 }
 ```
 
+`Vm.init` から `setupVmcs` を呼び出すことを忘れないでください:
+
+```ymir/vmx.zig
+pub fn init(self: *Self, allocator: Allocator) VmxError!void {
+    ...
+    try self.vcpu.setupVmcs(allocator);
+}
+```
+
 ## フィールドアクセス
 
 ### VMCS-field Encoding
