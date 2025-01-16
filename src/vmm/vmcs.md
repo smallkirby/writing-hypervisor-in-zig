@@ -518,8 +518,10 @@ pub fn vmwrite(field: anytype, value: anytype) VmxError!void {
 
 ```ymir/arch/x86/vmx/vcpu.tmp.zig
 ...
-try resetVmcs(self.vmcs_region);
-asm volatile("vmlaunch");
+pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
+    ...
+    try resetVmcs(self.vmcs_region);
+    asm volatile("vmlaunch");
 ```
 
 このまま実行すると...。
