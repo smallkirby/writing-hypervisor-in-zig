@@ -291,7 +291,7 @@ VMCS のフィールドレイアウトは実装依存です。
 各フィールドに対する Encoding の内容は *SDM Appendix B FIELD ENCODING IN VMCS* に記載されています。
 そのリストをもとに各フィールドの encoding を計算するヘルパー関数を定義します[^encoding]:
 
-```ymir/arch/x86/vmx/common.zig
+```ymir/arch/x86/vmx/vmcs.zig
 fn encode(
     comptime field_type: FieldType,
     comptime index: u9,
@@ -362,12 +362,12 @@ const ComponentEncoding = packed struct(u32) {
 しかし、フィールドの数はとても多いです。
 200 個ほどあります。
 そのため、ここで定義部分のスニペットを載せることはしないでおきます。
-全フィールドの encoding 定義は [Ymir のリポジトリを参照](https://github.com/smallkirby/ymir/blob/master/ymir/arch/x86/vmx/common.zig#TODO) してください。
+全フィールドの encoding 定義は [Ymir のリポジトリを参照](https://github.com/smallkirby/ymir/blob/master/ymir/arch/x86/vmx/vmcs.zig) してください。
 
 <details>
 <summary>(GitHub にアクセスできないという稀有な人のために Guest-State タイプの encoding 定義だけ抜粋しておきます)</summary>
 
-```ymir/arch/x86/vmx/common.zig
+```ymir/arch/x86/vmx/vmcs.zig
 pub const guest = enum(u32) {
     // Natural-width fields.
     cr0 = eg(0, .full, .natural),
