@@ -513,6 +513,17 @@ fn setupHostState(_: *Vcpu) VmxError!void {
 セグメントレジスタのセレクタは以下のアセンブリ関数で取得します:
 
 ```ymir/arch/x86/asm.zig
+const Segment = enum {
+    cs,
+    ss,
+    ds,
+    es,
+    fs,
+    gs,
+    tr,
+    ldtr,
+};
+
 pub fn readSegSelector(segment: Segment) u16 {
     return switch (segment) {
         .cs => asm volatile ("mov %%cs, %[ret]"
