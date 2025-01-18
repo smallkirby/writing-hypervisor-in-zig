@@ -80,6 +80,91 @@ pub const PinExecCtrl = packed struct(u32) {
 各フィールドの意味は実際にそのフィールドを使うときが来たら説明します。
 この構造体には、VMCS から値を取得またはセットするためのメソッド `load()` / `store()` を定義しています。
 
+`ctrl` 列挙型は [Github](https://github.com/smallkirby/ymir/blob/whiz-vmm-vmlaunch/ymir/arch/x86/vmx/vmcs.zig) にあります。
+
+<details>
+<summary>またはこちら。</summary>
+
+```ymir/arch/x86/vmx/vmcs.zig
+pub const ctrl = enum(u32) {
+    // Natural-width fields.
+    cr0_mask = ec(0, .full, .natural),
+    cr4_mask = ec(1, .full, .natural),
+    cr0_read_shadow = ec(2, .full, .natural),
+    cr4_read_shadow = ec(3, .full, .natural),
+    cr3_target0 = ec(4, .full, .natural),
+    cr3_target1 = ec(5, .full, .natural),
+    cr3_target2 = ec(6, .full, .natural),
+    cr3_target3 = ec(7, .full, .natural),
+    // 16-bit fields.
+    vpid = ec(0, .full, .word),
+    posted_intr_notif_vector = ec(1, .full, .word),
+    eptp_index = ec(2, .full, .word),
+    hlat_prefix_size = ec(3, .full, .word),
+    pid_pointer_index = ec(4, .full, .word),
+    // 32-bit fields.
+    pin_exec_ctrl = ec(0, .full, .dword),
+    proc_exec_ctrl = ec(1, .full, .dword),
+    exception_bitmap = ec(2, .full, .dword),
+    pf_ec_mask = ec(3, .full, .dword),
+    pf_ec_match = ec(4, .full, .dword),
+    cr3_target_count = ec(5, .full, .dword),
+    primary_exit_ctrl = ec(6, .full, .dword),
+    exit_msr_store_count = ec(7, .full, .dword),
+    vexit_msr_load_count = ec(8, .full, .dword),
+    entry_ctrl = ec(9, .full, .dword),
+    entry_msr_load_count = ec(10, .full, .dword),
+    entry_intr_info = ec(11, .full, .dword),
+    entry_exception_ec = ec(12, .full, .dword),
+    entry_inst_len = ec(13, .full, .dword),
+    tpr_threshold = ec(14, .full, .dword),
+    secondary_proc_exec_ctrl = ec(15, .full, .dword),
+    ple_gap = ec(16, .full, .dword),
+    ple_window = ec(17, .full, .dword),
+    instruction_timeouts = ec(18, .full, .dword),
+    // 64-bit fields.
+    io_bitmap_a = ec(0, .full, .qword),
+    io_bitmap_b = ec(1, .full, .qword),
+    msr_bitmap = ec(2, .full, .qword),
+    exit_msr_store_address = ec(3, .full, .qword),
+    exit_msr_load_address = ec(4, .full, .qword),
+    entry_msr_load_address = ec(5, .full, .qword),
+    executive_vmcs_pointer = ec(6, .full, .qword),
+    pml_address = ec(7, .full, .qword),
+    tsc_offset = ec(8, .full, .qword),
+    virtual_apic_address = ec(9, .full, .qword),
+    apic_access_address = ec(10, .full, .qword),
+    posted_intr_desc_addr = ec(11, .full, .qword),
+    vm_function_controls = ec(12, .full, .qword),
+    eptp = ec(13, .full, .qword),
+    eoi_exit_bitmap0 = ec(14, .full, .qword),
+    eoi_exit_bitmap1 = ec(15, .full, .qword),
+    eoi_exit_bitmap2 = ec(16, .full, .qword),
+    eoi_exit_bitmap3 = ec(17, .full, .qword),
+    eptp_list_address = ec(18, .full, .qword),
+    vmread_bitmap = ec(19, .full, .qword),
+    vmwrite_bitmap = ec(20, .full, .qword),
+    vexception_information_address = ec(21, .full, .qword),
+    xss_exiting_bitmap = ec(22, .full, .qword),
+    encls_exiting_bitmap = ec(23, .full, .qword),
+    sub_page_permission_table_pointer = ec(24, .full, .qword),
+    tsc_multiplier = ec(25, .full, .qword),
+    tertiary_proc_exec_ctrl = ec(26, .full, .qword),
+    enclv_exiting_bitmap = ec(27, .full, .qword),
+    low_pasid_directory = ec(28, .full, .qword),
+    high_pasid_directory = ec(29, .full, .qword),
+    shared_eptp = ec(30, .full, .qword),
+    pconfig_exiting_bitmap = ec(31, .full, .qword),
+    hlatp = ec(32, .full, .qword),
+    pid_pointer_table = ec(33, .full, .qword),
+    secondary_exit_ctrl = ec(34, .full, .qword),
+    spec_ctrl_mask = ec(37, .full, .qword),
+    spec_ctrl_shadow = ec(38, .full, .qword),
+};
+```
+
+</details>
+
 Execution Control を設定する関数において Pin-Based Controls を設定します:
 
 ```ymir/arch/x86/vmx/vcpu.zig
