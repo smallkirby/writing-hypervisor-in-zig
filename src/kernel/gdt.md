@@ -291,6 +291,7 @@ Segment Descriptor エントリはフィールド数も多くて初期化がめ�
 ```ymir/arch/x86/gdt.zig
 pub const kernel_ds_index: u16 = 0x01;
 pub const kernel_cs_index: u16 = 0x02;
+pub const kernel_tss_index: u16 = 0x03;
 
 pub fn init() void {
     gdt[kernel_cs_index] = SegmentDescriptor.new(
@@ -308,6 +309,12 @@ pub fn init() void {
         false,
         0,
         std.math.maxInt(u20),
+        0,
+        .kbyte,
+    );
+    gdt[kernel_tss_index] = SegmentDescriptor.newTss(
+        0,
+        0,
         0,
         .kbyte,
     );
