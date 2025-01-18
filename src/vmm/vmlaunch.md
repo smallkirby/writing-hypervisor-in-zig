@@ -619,6 +619,8 @@ fn setupHostState(_: *Vcpu) VmxError!void {
 }
 ```
 
+値は 0xC0000080 であることに注意してください。
+
 ## Guest-State
 
 続いて Guest-State カテゴリを設定します。
@@ -857,6 +859,7 @@ fn setupEntryCtrls(_: *Vcpu) VmxError!void {
 ```
 
 ここでも Reserved Bits は `IA32_VMX_ENTRY_CTRLS` または `IA32_VMX_TRUE_ENTRY_CTRLS` の値を参照して設定します。
+値はそれぞれ0x0484と0x0490です。
 
 ## VM-Exit Control
 
@@ -924,6 +927,7 @@ fn setupExitCtrls(_: *Vcpu) VmxError!void {
 ```
 
 ここでも Reserved Bits は `IA32_VMX_EXIT_CTRLS` または `IA32_VMX_TRUE_EXIT_CTRLS` の値を参照して設定します。
+値はそれぞれ0x0483と0x048Fです。
 
 ## VMLAUNCH
 
