@@ -88,6 +88,8 @@ pub fn endlessHalt() noreturn {
 Zig にはスタックトレースを取得するためのユーティリティ構造体である `StackIterator` があるため今回はこれを使います:
 
 ```ymir/panic.zig
+pub const panic_fn = panic;
+
 fn panic(msg: []const u8, _: ?*builtin.StackTrace, _: ?usize) noreturn {
     ...
     var it = std.debug.StackIterator.init(@returnAddress(), null);
