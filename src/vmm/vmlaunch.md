@@ -65,7 +65,7 @@ pub const PinExecCtrl = packed struct(u32) {
         return std.mem.zeroes(Self);
     }
 
-    pub fn load(self: PinExecCtrl) VmxError!void {
+    pub fn load(self: Self) VmxError!void {
         const val: u32 = @bitCast(self);
         try vmx.vmwrite(ctrl.pin_exec_ctrl, val);
     }
