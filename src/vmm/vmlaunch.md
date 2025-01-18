@@ -780,10 +780,11 @@ CS と DS についてはホストに設定しているものと同じ値にし�
 TR と LDTR は Ymir では全く利用していませんが、これらを設定しないと VM Entry 時のチェックでエラーになってしまうため嫌々設定しています。
 とはいってもこの2つに設定するべき値はほぼ固定値なので、そういうもんとして受け入れてください。
 
-### RIP / RSP / MSR など
+### RIP / RSP / MSR / RFLAGS など
 
 今回のゲストである `blobGuest()` は RSP を使わないため RSP は設定する必要がありません。
 RIP は `blobGuest()` のアドレスを指定しておきます。
+RFLAGS も初期化する必要があります。
 また、一部の MSR は VMCS のフィールドを使って設定することができます。
 その中でも今回は `IA32_EFER` だけを設定します。
 この MSR は 64bit モードを有効化するために必須です:
@@ -791,6 +792,7 @@ RIP は `blobGuest()` のアドレスを指定しておきます。
 ```ymir/arch/x86/vmx/vcpu.zig
     try vmwrite(vmcs.guest.rip, &blobGuest);
     try vmwrite(vmcs.guest.efer, am.readMsr(.efer));
+    try vmwrite(vmcs.guest.rflags, am.FlagsRegister.new());
 ```
 
 最後に、**VMCS Link Pointer** を設定します。
