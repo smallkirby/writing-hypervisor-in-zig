@@ -69,6 +69,8 @@ CPU は GDT からエントリを取得する必要がなくなります[^hidden
 > - Logical Address のオフセット部が **Limit** を超えていないか
 > - セグメントの **Access Right** が適切か
 
+上記の 6 つのレジスタに加えて、**TSS (Task State Segment)** もあります。これは、後で VMX を正しく操作するためにも必要です。
+
 ### Global Descriptor Table
 
 GDT は各セグメントの定義をするテーブルです。
