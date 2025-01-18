@@ -256,9 +256,34 @@ pub fn new(
         .base_high = @truncate(base >> 24),
     };
 }
+
+pub fn newTss(
+    base: u32,
+    limit: u20,
+    dpl: u2,
+    granularity: Granularity,
+) SegmentDescriptor {
+    return SegmentDescriptor{
+        .limit_low = @truncate(limit),
+        .base_low = @truncate(base),
+        .accessed = true,
+        .rw = false,
+        .dc = false,
+        .executable = true,
+        .desc_type = .system,
+        .dpl = dpl,
+        .present = true,
+        .limit_high = @truncate(limit >> 16),
+        .avl = 0,
+        .long = false,
+        .db = 0,
+        .granularity = granularity,
+        .base_high = @truncate(base >> 24),
+    };
+}
 ```
 
-Segment Descriptor エントリはフィールド数も多くて初期化がめんどうなので、 `new()` ヘルパー関数もついでに定義しています。
+Segment Descriptor エントリはフィールド数も多くて初期化がめんどうなので、 `new()` と　`newTss()` ヘルパー関数もついでに定義しています。
 
 必要なエントリを初期化しましょう。
 今回はコード・データセグメント用の2つを作成し、CS は前者を、DS/ES/FS/GS は後者を指すようにします:
