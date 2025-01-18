@@ -345,7 +345,7 @@ VM Exit が発生すると、その原因は VMCS VM-Exit Information カテゴ�
 実装が気になる人は以下を展開して確認してください:
 
 <details>
-<summary>VM Exit Reason</summary>
+<summary>VM Exit Reason and Host</summary>
 
 ```ymir/arch/x86/vmx/vmcs.zig
 pub const ExitInfo = packed struct(u32) {
@@ -359,7 +359,7 @@ pub const ExitInfo = packed struct(u32) {
     entry_failure: bool,
 
     pub fn load() VmxError!ExitInfo {
-        return @bitCast(@as(u32, @truncate(try vmread(vmcs.ro.vmexit_reason))));
+        return @bitCast(@as(u32, @truncate(try vmx.vmread(ro.vmexit_reason))));
     }
 };
 
@@ -438,6 +438,40 @@ pub const ExitReason = enum(u16) {
     timeout = 75,
     seamcall = 76,
     tdcall = 77,
+};
+
+pub const host = enum(u32) {
+    // Natural-width fields.
+    cr0 = eh(0, .full, .natural),
+    cr3 = eh(1, .full, .natural),
+    cr4 = eh(2, .full, .natural),
+    fs_base = eh(3, .full, .natural),
+    gs_base = eh(4, .full, .natural),
+    tr_base = eh(5, .full, .natural),
+    gdtr_base = eh(6, .full, .natural),
+    idtr_base = eh(7, .full, .natural),
+    sysenter_esp = eh(8, .full, .natural),
+    sysenter_eip = eh(9, .full, .natural),
+    rsp = eh(10, .full, .natural),
+    rip = eh(11, .full, .natural),
+    s_cet = eh(12, .full, .natural),
+    ssp = eh(13, .full, .natural),
+    intr_ssp_table_addr = eh(14, .full, .natural),
+    // 16-bit fields.
+    es_sel = eh(0, .full, .word),
+    cs_sel = eh(1, .full, .word),
+    ss_sel = eh(2, .full, .word),
+    ds_sel = eh(3, .full, .word),
+    fs_sel = eh(4, .full, .word),
+    gs_sel = eh(5, .full, .word),
+    tr_sel = eh(6, .full, .word),
+    // 32-bit fields.
+    sysenter_cs = eh(0, .full, .dword),
+    // 64-bit fields.
+    pat = eh(0, .full, .qword),
+    efer = eh(1, .full, .qword),
+    perf_global_ctrl = eh(2, .full, .qword),
+    pkrs = eh(3, .full, .qword),
 };
 ```
 
