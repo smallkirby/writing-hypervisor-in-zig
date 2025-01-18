@@ -611,12 +611,20 @@ EFLAGS レジスタは次のように定義されます。
 pub const FlagsRegister = packed struct(u64) {
     /// Carry flag.
     cf: bool,
+    /// Reserved. Must be 1.
+    _reversedO: u1 = 1,
     /// Five other fields, see repository for details.
-    _other_fields1: u5,
+    _other_fields1: u4,
     /// Zero flag.
     zf: bool,
     /// More fields, see repository for details.
     _other_fields2: u57,
+
+    pub fn new() FlagsRegister {
+        var ret = std.mem.zeroes(FlagsRegister);
+        ret._reservedO = 1;
+        return ret;
+    }
 };
 ```
 
