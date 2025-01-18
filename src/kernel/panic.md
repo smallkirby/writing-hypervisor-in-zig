@@ -88,6 +88,8 @@ pub fn endlessHalt() noreturn {
 Zig にはスタックトレースを取得するためのユーティリティ構造体である `StackIterator` があるため今回はこれを使います:
 
 ```ymir/panic.zig
+pub const panic_fn = panic;
+
 fn panic(msg: []const u8, _: ?*builtin.StackTrace, _: ?usize) noreturn {
     ...
     var it = std.debug.StackIterator.init(@returnAddress(), null);
@@ -117,7 +119,7 @@ pub const panic = ymir.panic.panic_fn;
 `ReleaseFast` レベルだと最適化が結構強く働くため、関数がインライン化されてスタックトレースが出力できない場合があります:
 
 ```ymir/main.tmp.zig
-panic("fugafuga");
+@panic("fugafuga");
 ```
 
 出力は以下のようになります:

@@ -232,6 +232,8 @@ const Ocw = union(ocw) {
 続いて、これらの CW を PIC に対して発行するためのヘルパー関数を定義します:
 
 ```ymir/arch/x86/pic.zig
+const am = @import("asm.zig");
+
 fn issue(cw: anytype, port: u16) void {
     const T = @TypeOf(cw);
     if (T != Icw and T != Ocw) {
@@ -241,10 +243,6 @@ fn issue(cw: anytype, port: u16) void {
         inline else => |s| am.outb(@bitCast(s), port),
     }
     am.relax();
-}
-
-pub fn relax() void {
-    asm volatile ("rep; nop");
 }
 ```
 
@@ -489,6 +487,18 @@ pub fn enableInterrupt(port: Ports) void {
     ie &= ~@as(u8, 0b0000_0010); // ~Tx-available
     am.outb(ie, @intFromEnum(port) + offsets.ier);
 }
+```
+
+`idefs` は、`interrupts.zig` のインポートです:
+
+```ymir/interrupts.zig
+const arch = @import("ymir").arch;
+
+pub const user_intr_base = arch.intr.num_system_exceptions;
+
+pub const pic_timer = 0 + user_intr_base;
+...
+pub const pic_serial1 = 4 + user_intr_base;
 ```
 
 なお、IER の 1-th bit をクリアしているのは無限割り込みを防ぐためです。
