@@ -561,6 +561,43 @@ FS と GS の Base はハードウェア的に `IA32_FS_BASE` と `IA32_GS_BASE`
 そのため、これらの Base は MSR から値を読むことで取得できます。
 GDTR と IDTR の Base はそれぞれ [SGDT](https://www.felixcloutier.com/x86/sgdt) と [SIDT](https://www.felixcloutier.com/x86/sidt) 命令で取得できます。
 
+SIDT および SGDT 取得の実装については、次の場所を参照してください:
+
+<details>
+<summary>SIDT and SGDT</summary>
+
+```ymir/arch/x86/asm.zig
+const SgdtRet = packed struct {
+    limit: u16,
+    base: u64,
+};
+
+pub inline fn sgdt() SgdtRet {
+    var gdtr: SgdtRet = undefined;
+    asm volatile (
+        \\sgdt %[ret]
+        : [ret] "=m" (gdtr),
+    );
+    return gdtr;
+}
+
+const SidtRet = packed struct {
+    limit: u16,
+    base: u64,
+};
+
+pub inline fn sidt() SidtRet {
+    var idtr: SidtRet = undefined;
+    asm volatile (
+        \\sidt %[ret]
+        : [ret] "=m" (idtr),
+    );
+    return idtr;
+}
+```
+
+</details>
+
 ### MSR
 
 一部の MSR は VM Exit の際にハードウェア的にセットすることができます。
