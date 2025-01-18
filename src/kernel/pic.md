@@ -489,7 +489,7 @@ pub fn enableInterrupt(port: Ports) void {
 }
 ```
 
-`idefs` は、`interrupts.zig` のインポートであり、次のようになります。
+`idefs` は、`interrupts.zig` のインポートです:
 
 ```ymir/interrupts.zig
 const arch = @import("ymir").arch;
