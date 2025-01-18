@@ -1049,7 +1049,7 @@ VMCS Guest-State でこの値はマーカーとして `0xDEAD00` に設定して
 ```txt
 [INFO ] main    | Starting the virtual machine...
 [DEBUG] vcpu    | [VMEXIT handler]
-[DEBUG] vcpu    |    VMEXIT reason: arch.x86.vmx.common.ExitInfo{ .basic_reason = arch.x86.vmx.common.ExitReason.hlt, ._zero = 0, ._reserved1 = 0, ._one = 0, .pending_mtf = 0, .exit_vmxroot = false, ._reserved2 = 0, .entry_failure = false }
+[DEBUG] vcpu    |    VMEXIT reason: arch.x86.vmx.vmcs.ExitInfo{ .basic_reason = arch.x86.vmcs.ExitReason.hlt, ._zero = 0, ._reserved1 = 0, ._one = 0, .pending_mtf = 0, .exit_vmxroot = false, ._reserved2 = 0, .entry_failure = false }
 ```
 
 ゲストが HLT を実行すると VM Exit が発生し、Host-State に設定した RIP に処理が移ります。
