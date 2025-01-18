@@ -181,6 +181,8 @@ fn setupExecCtrls(_: *Vcpu, _: Allocator) VmxError!void {
 }
 ```
 
+注意: `IA32_VMX_PINBASED_CTRLS` と `IA32_VMX_TRUE_PINBASED_CTRLS` の値はそれぞれ 0x0481 と 0x048D です。
+
 本チャプターではまだ非同期イベントを扱わないため、Pin-Based Controls はデフォルトの値を使用します。
 
 VMCS に書き込む値には **Reserved Bits** が多くあります。
@@ -279,6 +281,7 @@ fn setupExecCtrls(_: *Vcpu, _: Allocator) VmxError!void {
 
 Pin-Based Controls と同様に、Reserved Bits は MSR を参照して設定する必要があります。
 利用する MSR は `IA32_VMX_PROCBASED_CTRLS` または `IA32_VMX_TRUE_PROCBASED_CTRLS` のどちらかです。
+値はそれぞれ0x0482と0x048Eです。
 
 ## Host-State
 
