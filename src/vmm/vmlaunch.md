@@ -332,7 +332,7 @@ fn vmexitBootstrapHandler() callconv(.Naked) noreturn {
 
 export fn vmexitHandler() noreturn {
     log.debug("[VMEXIT handler]", .{});
-    const reason = vmx.ExitInfo.load() catch unreachable;
+    const reason = vmcs.ExitInfo.load() catch unreachable;
     log.debug("   VMEXIT reason: {?}", .{reason});
     while (true) asm volatile ("hlt");
 }
