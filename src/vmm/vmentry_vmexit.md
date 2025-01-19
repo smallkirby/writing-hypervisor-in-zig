@@ -540,7 +540,7 @@ RAX はスクラッチレジスタとして使います。
 VM Exit のハンドラ関数を定義します:
 
 ```ymir/arch/x86/vmx/vcpu.zig
-fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
+fn handleExit(self: *Self, exit_info: vmcs.ExitInfo) VmxError!void {
     switch (exit_info.basic_reason) {
         .hlt => {
             try self.stepNextInst();
