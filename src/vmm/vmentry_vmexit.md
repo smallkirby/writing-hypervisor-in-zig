@@ -552,6 +552,11 @@ fn handleExit(self: *Self, exit_info: vmcs.ExitInfo) VmxError!void {
         },
     }
 }
+
+fn stepNextInst(_: *Self) VmxError!void {
+    const rip = try vmread(vmcs.guest.rip);
+    try vmwrite(vmcs.guest.rip, rip + try vmread(vmcs.ro.exit_inst_len));
+}
 ```
 
 引数には `ExitInfo` 構造体を受け取ります。
