@@ -577,6 +577,17 @@ pub fn loop(self: *Self) VmxError!void {
 Exit ハンドラを呼び出したあとは、`while` ループの先頭に戻り再び VM Entry をします。
 ひたすらにこの繰り返しです。
 
+また、`setupHostState` の `vmwrite` 呼び出しを更新することも忘れないでください:
+```ymir/arch/x86/vmx/vcpu.zig
+let vmam = @import("asm.zig");
+
+fn setupHostState(_: *Vcpu) VmxError!void {
+    ...
+    try vmwrite(vmcs.host.rip, &vmam.asmVmExit);
+    ...
+}
+```
+
 ## まとめ
 
 それでは、実装した VM Entry / VM Exit を用いてゲストを実行してみましょう。
