@@ -526,7 +526,7 @@ RAX はスクラッチレジスタとして使います。
 呼び出し側は、**あたかも `asmVmEntry()` を関数呼び出したかのように処理を続行することができます**:
 
 ```ymir/arch/x86/vmx/asm.zig
-    // Return to caller of asmVmEntry()
+    // Return to caller of asmVmExit()
     asm volatile (
         \\mov $0, %%rax
         \\ret
