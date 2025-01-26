@@ -103,6 +103,27 @@ Logical to Linear 変換の際には、CPL が変換に利用するセグメン�
 > CPL が CS レジスタに格納されているのに対し、IOPL は RFLAGS レジスタに格納されています。
 > IOPL は Ring-0 の場合に限り POPF か IRET 命令のいずれかでのみ変更できます。
 
+### TSS
+
+CS / DS / FS / GS 等のアプリケーションセグメントに加え、**TSS (Task State Segment)** というシステムセグメントもあります。
+TSS は 32bit mode においてハードウェアタスクスイッチに使われてきましたが、64bit mode ではハードウェアタスクスイッチはサポートされていません。
+64-bit mode の TSS は以下の3つの情報だけを保持します:
+
+- *RSPn*: Ring-0 から Ring-2 までの RSP
+- *ISTn*: 割り込みハンドラ用のスタック
+- *I/O map base address*: I/O permission map のアドレス
+
+![64-Bit TSS Format](../assets/sdm/64bit_tss.png)
+*64-Bit TSS Format. SDM Vol.3A Figure 9-11.*
+
+TSS のアドレスは **TSS Descriptor** によって指定されます。
+TSS Descriptor は LDT Descriptor と同じフォーマットを持ちます:
+
+![Format of TSS and LDT Descriptors in 64-bit Mode](../assets/sdm/tss_descriptor.png)
+*Format of TSS and LDT Descriptors in 64-bit Mode. SDM Vol.3A Figure 9-4.*
+
+GDT における TSS Descriptor のインデックスは **TR: Task Register** に格納されます。
+
 ## 64bit モードのセグメンテーション
 
 ここまでセグメントについて説明してきましたが、
@@ -254,9 +275,34 @@ pub fn new(
         .base_high = @truncate(base >> 24),
     };
 }
+
+pub fn newTss(
+    base: u32,
+    limit: u20,
+    dpl: u2,
+    granularity: Granularity,
+) SegmentDescriptor {
+    return SegmentDescriptor{
+        .limit_low = @truncate(limit),
+        .base_low = @truncate(base),
+        .accessed = true,
+        .rw = false,
+        .dc = false,
+        .executable = true,
+        .desc_type = .system,
+        .dpl = dpl,
+        .present = true,
+        .limit_high = @truncate(limit >> 16),
+        .avl = 0,
+        .long = false,
+        .db = 0,
+        .granularity = granularity,
+        .base_high = @truncate(base >> 24),
+    };
+}
 ```
 
-Segment Descriptor エントリはフィールド数も多くて初期化がめんどうなので、 `new()` ヘルパー関数もついでに定義しています。
+Segment Descriptor エントリはフィールド数も多くて初期化がめんどうなので、 `new()` と　`newTss()` ヘルパー関数もついでに定義しています。
 
 必要なエントリを初期化しましょう。
 今回はコード・データセグメント用の2つを作成し、CS は前者を、DS/ES/FS/GS は後者を指すようにします:
@@ -264,6 +310,7 @@ Segment Descriptor エントリはフィールド数も多くて初期化がめ�
 ```ymir/arch/x86/gdt.zig
 pub const kernel_ds_index: u16 = 0x01;
 pub const kernel_cs_index: u16 = 0x02;
+pub const kernel_tss_index: u16 = 0x03;
 
 pub fn init() void {
     gdt[kernel_cs_index] = SegmentDescriptor.new(
@@ -284,12 +331,22 @@ pub fn init() void {
         0,
         .kbyte,
     );
+    gdt[kernel_tss_index] = SegmentDescriptor.newTss(
+        0,
+        0,
+        0,
+        .kbyte,
+    );
     ...
 }
 ```
 
-両者の違いは `executable` かどうかだけです。
+CS と DS の違いは `executable` かどうかだけです。
 `.rw` はデータセグメントでは `writable`、コードセグメントでは `readable` という意味になります。
+
+> [!NOTE] TSS と VM-Entry
+> Ymir ではユーザランドを実装せず、かつ割り込み用のスタックも用意しないため TSS も使いません。
+> しかし、のちほど VM-Entry をする際に "ホストの TR は 0 であってはならない" という制約があるため、ここでは空の TSS を作成しています。
 
 GDT 自体の初期化が終わったため、GDT Register に GDT のアドレスを設定します:
 
@@ -390,16 +447,20 @@ fn loadKernelCs() void {
 `lret` はスタックに積んだ CS/RIP を POP してレジスタにセットしてくれます。
 RIP は変更させたくないため `lret` の直後のアドレスを PUSH することで、CS を設定する効果だけを得ています。
 
-`SegmentSelector` の構造は次のとおりです:
+TSS は専用の命令 [LTR](https://www.felixcloutier.com/x86/ltr) を使って TR にロードします:
+
 ```ymir/arch/x86/gdt.zig
-pub const SegmentSelector = packed struct(u16) {
-    /// Requested Privilege Level.
-    rpl: u2,
-    /// Table Indicator.
-    ti: u1 = 0,
-    /// Index.
-    index: u13,
-};
+fn loadKernelTss() void {
+    asm volatile (
+        \\mov %[kernel_tss], %%di
+        \\ltr %%di
+        :
+        : [kernel_tss] "n" (@as(u16, @bitCast(SegmentSelector{
+            .rpl = 0,
+            .index = kernel_tss_index,
+          }))),
+    );
+}
 ```
 
 以上で GDT の更新が反映されるようになります。
@@ -410,6 +471,7 @@ pub fn init() void {
     ...
     loadKernelDs();
     loadKernelCs();
+    loadKernelTss();
 }
 ```
 
