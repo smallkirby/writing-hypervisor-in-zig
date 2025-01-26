@@ -69,8 +69,6 @@ CPU は GDT からエントリを取得する必要がなくなります[^hidden
 > - Logical Address のオフセット部が **Limit** を超えていないか
 > - セグメントの **Access Right** が適切か
 
-上記の 6 つのレジスタに加えて、**TSS (Task State Segment)** もあります。これは、後で VMX を正しく操作するためにも必要です。
-
 ### Global Descriptor Table
 
 GDT は各セグメントの定義をするテーブルです。
@@ -104,6 +102,27 @@ Logical to Linear 変換の際には、CPL が変換に利用するセグメン�
 > IOPL は I/O 命令の実行に必要な CPL を定義します。
 > CPL が CS レジスタに格納されているのに対し、IOPL は RFLAGS レジスタに格納されています。
 > IOPL は Ring-0 の場合に限り POPF か IRET 命令のいずれかでのみ変更できます。
+
+### TSS
+
+CS / DS / FS / GS 等のアプリケーションセグメントに加え、**TSS (Task State Segment)** というシステムセグメントもあります。
+TSS は 32bit mode においてハードウェアタスクスイッチに使われてきましたが、64bit mode ではハードウェアタスクスイッチはサポートされていません。
+64-bit mode の TSS は以下の3つの情報だけを保持します:
+
+- *RSPn*: Ring-0 から Ring-2 までの RSP
+- *ISTn*: 割り込みハンドラ用のスタック
+- *I/O map base address*: I/O permission map のアドレス
+
+![64-Bit TSS Format](../assets/sdm/64bit_tss.png)
+*64-Bit TSS Format. SDM Vol.3A Figure 9-11.*
+
+TSS のアドレスは **TSS Descriptor** によって指定されます。
+TSS Descriptor は LDT Descriptor と同じフォーマットを持ちます:
+
+![Format of TSS and LDT Descriptors in 64-bit Mode](../assets/sdm/tss_descriptor.png)
+*Format of TSS and LDT Descriptors in 64-bit Mode. SDM Vol.3A Figure 9-4.*
+
+GDT における TSS Descriptor のインデックスは **TR: Task Register** に格納されます。
 
 ## 64bit モードのセグメンテーション
 
@@ -322,8 +341,12 @@ pub fn init() void {
 }
 ```
 
-両者の違いは `executable` かどうかだけです。
+CS と DS の違いは `executable` かどうかだけです。
 `.rw` はデータセグメントでは `writable`、コードセグメントでは `readable` という意味になります。
+
+> [!NOTE] TSS と VM-Entry
+> Ymir ではユーザランドを実装せず、かつ割り込み用のスタックも用意しないため TSS も使いません。
+> しかし、のちほど VM-Entry をする際に "ホストの TR は 0 であってはならない" という制約があるため、ここでは空の TSS を作成しています。
 
 GDT 自体の初期化が終わったため、GDT Register に GDT のアドレスを設定します:
 
@@ -424,7 +447,7 @@ fn loadKernelCs() void {
 `lret` はスタックに積んだ CS/RIP を POP してレジスタにセットしてくれます。
 RIP は変更させたくないため `lret` の直後のアドレスを PUSH することで、CS を設定する効果だけを得ています。
 
-CS と同様に、TSS もロードします:
+TSS は専用の命令 [LTR](https://www.felixcloutier.com/x86/ltr) を使って TR にロードします:
 
 ```ymir/arch/x86/gdt.zig
 fn loadKernelTss() void {
