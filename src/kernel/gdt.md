@@ -117,12 +117,14 @@ TSS は 32bit mode においてハードウェアタスクスイッチに使わ�
 *64-Bit TSS Format. SDM Vol.3A Figure 9-11.*
 
 TSS のアドレスは **TSS Descriptor** によって指定されます。
-TSS Descriptor は LDT Descriptor と同じフォーマットを持ちます:
+TSS Descriptor は LDT Descriptor と同じフォーマットを持ちます。
+なお、他のセグメントディスクリプタとは異なり、TSS Descriptor のサイズは 16byte であることに注意してください:
 
 ![Format of TSS and LDT Descriptors in 64-bit Mode](../assets/sdm/tss_descriptor.png)
 *Format of TSS and LDT Descriptors in 64-bit Mode. SDM Vol.3A Figure 9-4.*
 
 GDT における TSS Descriptor のインデックスは **TR: Task Register** に格納されます。
+TSS Descriptor は GDT のエントリを2つ専有します。
 
 ## 64bit モードのセグメンテーション
 
@@ -220,6 +222,50 @@ pub const Granularity = enum(u1) {
 | `db` | Type field によって意味が異なる。何らかデフォルトのサイズを決める。 |
 | `long` | Code Segment が 64bit かどうか |
 
+続いて、TSS 用のエントリを作成します。他のディスクリプタとは異なり、TSS Descriptor は 16byte なので新しい構造体を定義します:
+
+```ymir/arch/x86/gdt.zig
+const TssDescriptor = packed struct(u128) {
+    /// Lower 16 bits of the segment limit.
+    limit_low: u16,
+    /// Lower 24 bits of the base address.
+    base_low: u24,
+
+    /// Type: TSS.
+    type: u4 = 0b1001, // tss-avail
+    /// Descriptor type: System.
+    desc_type: DescriptorType = .system,
+    /// Descriptor Privilege Level.
+    dpl: u2 = 0,
+    present: bool = true,
+
+    /// Upper 4 bits of the segment limit.
+    limit_high: u4,
+    /// Available for use by system software.
+    avl: u1 = 0,
+    /// Reserved.
+    long: bool = true,
+    /// Size flag.
+    db: u1 = 0,
+    /// Granularity.
+    granularity: Granularity = .kbyte,
+    /// Upper 40 bits of the base address.
+    base_high: u40,
+    /// Reserved.
+    _reserved: u32 = 0,
+
+    /// Create a new 64-bit TSS descriptor.
+    pub fn new(base: Virt, limit: u20) TssDescriptor {
+        return TssDescriptor{
+            .limit_low = @truncate(limit),
+            .base_low = @truncate(base),
+            .limit_high = @truncate(limit >> 16),
+            .base_high = @truncate(base >> 24),
+        };
+    }
+};
+```
+
 ### NULL Descriptor
 
 GDT の 0 番目のエントリは **NULL Descriptor** として使われます。
@@ -275,34 +321,9 @@ pub fn new(
         .base_high = @truncate(base >> 24),
     };
 }
-
-pub fn newTss(
-    base: u32,
-    limit: u20,
-    dpl: u2,
-    granularity: Granularity,
-) SegmentDescriptor {
-    return SegmentDescriptor{
-        .limit_low = @truncate(limit),
-        .base_low = @truncate(base),
-        .accessed = true,
-        .rw = false,
-        .dc = false,
-        .executable = true,
-        .desc_type = .system,
-        .dpl = dpl,
-        .present = true,
-        .limit_high = @truncate(limit >> 16),
-        .avl = 0,
-        .long = false,
-        .db = 0,
-        .granularity = granularity,
-        .base_high = @truncate(base >> 24),
-    };
-}
 ```
 
-Segment Descriptor エントリはフィールド数も多くて初期化がめんどうなので、 `new()` と　`newTss()` ヘルパー関数もついでに定義しています。
+Segment Descriptor エントリはフィールド数も多くて初期化がめんどうなので、 `new()` ヘルパー関数もついでに定義しています。
 
 必要なエントリを初期化しましょう。
 今回はコード・データセグメント用の2つを作成し、CS は前者を、DS/ES/FS/GS は後者を指すようにします:
@@ -331,18 +352,46 @@ pub fn init() void {
         0,
         .kbyte,
     );
-    gdt[kernel_tss_index] = SegmentDescriptor.newTss(
-        0,
-        0,
-        0,
-        .kbyte,
-    );
     ...
 }
 ```
 
 CS と DS の違いは `executable` かどうかだけです。
 `.rw` はデータセグメントでは `writable`、コードセグメントでは `readable` という意味になります。
+
+続いて、TSS を設定します。TSS セグメントは使わないため適当な領域を1ページ分確保し、TSS Descriptor がそこを指すように設定します:
+
+```ymir/arch/x86/gdt.zig
+/// Unused TSS segment.
+const tssUnused: [4096]u8 align(4096) = [_]u8{0} ** 4096;
+
+pub fn init() void {
+    ...
+    // TSS is not used by Ymir. But we have to set it for VMX.
+    setTss(@intFromPtr(&tssUnused));
+    ...
+}
+
+fn setTss(tss: Virt) void {
+    const desc = TssDescriptor.new(tss, std.math.maxInt(u20));
+    @as(*TssDescriptor, @ptrCast(&gdt[kernel_tss_index])).* = desc;
+
+    loadKernelTss();
+}
+
+fn loadKernelTss() void {
+    asm volatile (
+        \\mov %[kernel_tss], %%di
+        \\ltr %%di
+        :
+        : [kernel_tss] "n" (@as(u16, @bitCast(SegmentSelector{
+            .rpl = 0,
+            .index = kernel_tss_index,
+          }))),
+        : "di"
+    );
+}
+```
 
 > [!NOTE] TSS と VM-Entry
 > Ymir ではユーザランドを実装せず、かつ割り込み用のスタックも用意しないため TSS も使いません。
@@ -446,22 +495,6 @@ fn loadKernelCs() void {
 
 `lret` はスタックに積んだ CS/RIP を POP してレジスタにセットしてくれます。
 RIP は変更させたくないため `lret` の直後のアドレスを PUSH することで、CS を設定する効果だけを得ています。
-
-TSS は専用の命令 [LTR](https://www.felixcloutier.com/x86/ltr) を使って TR にロードします:
-
-```ymir/arch/x86/gdt.zig
-fn loadKernelTss() void {
-    asm volatile (
-        \\mov %[kernel_tss], %%di
-        \\ltr %%di
-        :
-        : [kernel_tss] "n" (@as(u16, @bitCast(SegmentSelector{
-            .rpl = 0,
-            .index = kernel_tss_index,
-          }))),
-    );
-}
-```
 
 以上で GDT の更新が反映されるようになります。
 `init()` から呼び出すようにしておきましょう:
