@@ -6,6 +6,8 @@
 Blog series where we write a hypervisor from scratch in Zig.
 
 Refer to [smallkirby/ymir](https://github.com/smallkirby/ymir)'s `whiz-*` branches for the reference implementation.
+Note that these branches might be not necessarily up-to-date.
+Please refer to `master` branch to check available fixes and updates.
 
 ## Development
 
