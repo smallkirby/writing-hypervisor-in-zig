@@ -355,6 +355,12 @@ const feature_info_edx = cpuid.FeatureInfoEdx{
 };
 ```
 
+> [!WARN] Linux における PCID の無効化
+> 最近の Intel Core CPU であれば、PCID はサポートされているはずです。
+> しかしながら、Alder Lake (12th Gen) 以降の CPU では、INVLPG 命令でグローバルページがフラッシュされないというバグがあります。
+> これに対処するため、Linux 6.4 移行のカーネルでは PCID を無効化するパッチ[^pcid-disable]が適用されています。
+> お使いのカーネルおよびCPUがこれに該当する場合、上記の `pcid` を `false` にしてゲストでも PCID を無効化してください。
+
 ### 0x6: Thermal and Power Management
 
 Ymir では Thermal and Power Management には一切対応しません:
@@ -533,3 +539,4 @@ Ymir ではこの Leaf はホストの値をパススルーします:
 加えて、ゲストとホストの MSR を適切に保存・退避するように VMCS の設定をしていきます。
 
 [^non-exhaustive]: Exhaustive Enum では `_` を使うことができない代わりに、明示的に捕捉したフィールド以外の全てのフィールドを `else` で捕捉することができます。
+[^pcid-disable]: [https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git/commit/?h=x86/urgent&id=ce0b15d11ad837fbacc5356941712218e38a0a83](https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git/commit/?h=x86/urgent&id=ce0b15d11ad837fbacc5356941712218e38a0a83)
