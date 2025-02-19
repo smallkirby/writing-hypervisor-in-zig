@@ -293,7 +293,7 @@ pub const Vm = struct {
         // Create simple EPT mapping.
         const eptp = try impl.mapGuest(self.guest_mem, allocator);
         try self.vcpu.setEptp(eptp, self.guest_mem.ptr);
-        log.info("Guet memory is mapped: HVA=0x{X:0>16} (size=0x{X})", .{ @intFromPtr(self.guest_mem.ptr), self.guest_mem.len });
+        log.info("Guest memory is mapped: HVA=0x{X:0>16} (size=0x{X})", .{ @intFromPtr(self.guest_mem.ptr), self.guest_mem.len });
     }
 };
 ```
@@ -522,7 +522,7 @@ ffffffff80115f23:       eb fd                   jmp    ffffffff80115f22 <blobGue
 ```txt
 [INFO ] main    | Entered VMX root operation.
 [DEBUG] ept     | EPT Level4 Table @ FFFF88800000A000
-[INFO ] vmx     | Guet memory is mapped: HVA=0xFFFF888000A00000 (size=0x6400000)
+[INFO ] vmx     | Guest memory is mapped: HVA=0xFFFF888000A00000 (size=0x6400000)
 [INFO ] main    | Setup guest memory.
 [INFO ] main    | Starting the virtual machine...
 ```

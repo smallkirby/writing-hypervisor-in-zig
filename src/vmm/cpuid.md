@@ -527,7 +527,7 @@ Ymir ではこの Leaf はホストの値をパススルーします:
 [INFO ] vmx     | Guest memory region: 0x0000000000000000 - 0x0000000006400000
 [INFO ] vmx     | Guest kernel code offset: 0x0000000000005000
 [DEBUG] ept     | EPT Level4 Table @ FFFF88800000A000
-[INFO ] vmx     | Guet memory is mapped: HVA=0xFFFF888000A00000 (size=0x6400000)
+[INFO ] vmx     | Guest memory is mapped: HVA=0xFFFF888000A00000 (size=0x6400000)
 [INFO ] main    | Setup guest memory.
 [INFO ] main    | Starting the virtual machine...
 [ERROR] vcpu    | Unhandled VM-exit: reason=arch.x86.vmx.common.ExitReason.rdmsr
