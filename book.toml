@@ -6,7 +6,6 @@ language = "ja"
 text-direction = "ltr"
 multilingual = false
 src = "src"
-google_analytics_id = "G-T5QJQWY504"
 
 [build]
 create-missing = false
