@@ -306,6 +306,13 @@ pub const Vm = struct {
 1ページサイズ以上のアラインを要求するメモリ確保は `Allocator` インタフェースには実装されていません。
 そのため、仕方がなく `PageAllocator` インスタンスを直接引数として受け取るようにしています。
 
+`VMX root` 操作に入った後、VM を起動する前に `kernelMail()` からこれを呼び出します:
+
+```ymir/main.zig
+try vm.setupGuestMemory(general_allocator, &mem.page_allocator_instance);
+log.info("Setup guest memory.", .{});
+```
+
 メモリを確保したら、確保した領域の情報をもとに EPT を初期化するため `arch.vmx.mapGuest()` を呼び出します。
 この関数は `arch.vmx.ept` を Ymir 全体に露出させないための単なるラッパー関数です:
 
