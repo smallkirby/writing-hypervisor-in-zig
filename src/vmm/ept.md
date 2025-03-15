@@ -488,7 +488,9 @@ fn setupExecCtrls(_: *Vcpu, _: Allocator) VmxError!void {
 
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupEntryCtrls(_: *Vcpu) VmxError!void {
+    ...
     entry_ctrl.ia32e_mode_guest = false;
+    ...
 }
 ```
 
@@ -496,6 +498,7 @@ fn setupEntryCtrls(_: *Vcpu) VmxError!void {
 
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupGuestState(_: *Vcpu) VmxError!void {
+    ...
     var cr0 = std.mem.zeroes(am.Cr0);
     cr0.pe = true;  // Protected-mode
     cr0.pg = false; // Paging
