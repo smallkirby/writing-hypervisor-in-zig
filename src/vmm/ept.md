@@ -433,7 +433,8 @@ pub const SecondaryProcExecCtrl = packed struct(u32) {
 
 EPT を有効化するには `.ept` ビットをセットします。
 他の Execution Control フィールドと同様に、Reserved Bits を `0` にするか `1` にするかは MSR に問い合わせる必要があります。
-Secondary Processor-Based Control の場合は、`IA32_VMX_PROCBASED_CTLS2` MSR に問い合わせます:
+Secondary Processor-Based Control の場合は、`IA32_VMX_PROCBASED_CTLS2` MSR に問い合わせます。
+値は 0x48B です。
 
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(vcpu: *Vcpu, allocator: Allocator) VmxError!void {
