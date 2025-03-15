@@ -384,7 +384,9 @@ pub const Vm = struct {
 
     pub fn new() VmError!Self {
         ...
-        const vcpu = impl.Vcpu.new(0);
+        // Don't use 0, this is reserved for VMX root, outside VMX operation, or for disabled VPID.
+        // While it works here, it will cause issues in future chapters.
+        const vcpu = impl.Vcpu.new(1);
         return Self{ .vcpu = vcpu };
     }
 };
