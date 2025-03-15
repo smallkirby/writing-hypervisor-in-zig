@@ -198,6 +198,8 @@ fn initTable(T: type, allocator: Allocator) Error![]T {
 }
 ```
 
+`lv4_shift` のような定数や `getLv3Entry` のような関数は、`ymir/arch/x86/page.zig` からコピーするだけです。不明な場合は、[Github リポジトリ](https://github.com/smallkirby/ymir/blob/whiz-vmm-ept/ym​​ir/arch/x86/vmx/ept.zig) を参照してください。
+
 ## EPTP
 
 ページングでは **CR3** レジスタが Lv4 テーブルのアドレス (+αの情報) を保持していました。
