@@ -501,6 +501,7 @@ fn setupGuestState(_: *Vcpu) VmxError!void {
     ...
     var cr0 = std.mem.zeroes(am.Cr0);
     cr0.pe = true;  // Protected-mode
+    cr0.ne = true;  // Numeric error
     cr0.pg = false; // Paging
     try vmwrite(vmcs.guest.cr0, cr0);
     ...
