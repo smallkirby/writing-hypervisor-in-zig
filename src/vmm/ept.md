@@ -494,6 +494,48 @@ fn setupGuestState(_: *Vcpu) VmxError!void {
 }
 ```
 
+<details>
+<summary>CR0の定義</summary>
+
+```ymir/arch/x86/asm.zig
+/// CR0 register.
+pub const Cr0 = packed struct(u64) {
+    /// Protected mode enable.
+    pe: bool,
+    /// Monitor co-processor.
+    mp: bool,
+    /// Emulation.
+    em: bool,
+    /// Task switched.
+    ts: bool,
+    /// Extension type.
+    et: bool,
+    /// Numeric error.
+    ne: bool,
+    /// Reserved.
+    _reserved1: u10 = 0,
+    /// Write protect.
+    wp: bool,
+    /// Reserved.
+    _reserved2: u1 = 0,
+    /// Alignment mask.
+    am: bool,
+    /// Reserved.
+    _reserved3: u10 = 0,
+    /// Not-Write Through.
+    nw: bool,
+    /// Cache disable.
+    cd: bool,
+    /// Paging.
+    pg: bool,
+    /// Reserved.
+    _reserved4: u32 = 0,
+};
+
+```
+
+</details>
+
 これでゲストが Unrestricted Guest + ページング無効になりました。
 最後に、ゲストメモリに `blobGuest()` をコピーして VMCS RIP に `0` を設定します:
 
