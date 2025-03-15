@@ -159,25 +159,25 @@ GPA to HPA 変換が3回のメモリアクセスで完了することから、4�
 
 ```ymir/arch/x86/vmx/ept.zig
 fn map2m(gpa: Phys, hpa: Phys, lv4tbl: []Lv4Entry, allocator: Allocator) Error!void {
-    const lv4index = (guest_phys >> lv4_shift) & index_mask;
+    const lv4index = (gpa >> lv4_shift) & index_mask;
     const lv4ent = &lv4tbl[lv4index];
     if (!lv4ent.present()) {
         const lv3tbl = try initTable(Lv3Entry, allocator);
         lv4ent.* = Lv4Entry.newMapTable(lv3tbl);
     }
 
-    const lv3ent = getLv3Entry(guest_phys, lv4ent.address());
+    const lv3ent = getLv3Entry(gpa, lv4ent.address());
     if (!lv3ent.present()) {
         const lv2tbl = try initTable(Lv2Entry, allocator);
         lv3ent.* = Lv3Entry.newMapTable(lv2tbl);
     }
     if (lv3ent.map_memory) return error.AlreadyMapped;
 
-    const lv2ent = getLv2Entry(guest_phys, lv3ent.address());
+    const lv2ent = getLv2Entry(gpa, lv3ent.address());
     if (lv2ent.present()) return error.AlreadyMapped;
     lv2ent.* = Lv2Entry{
         .map_memory = true,
-        .phys = @truncate(host_phys >> page_shift_4k),
+        .phys = @truncate(hpa >> page_shift_4k),
     };
 }
 ```
