@@ -439,6 +439,8 @@ Secondary Processor-Based Control の場合は、`IA32_VMX_PROCBASED_CTLS2` MSR 
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(vcpu: *Vcpu, allocator: Allocator) VmxError!void {
     ...
+    ppb_exec_ctrl.activate_secondary_controls = true;
+    ...
     var ppb_exec_ctrl2 = try vmcs.SecondaryProcExecCtrl.store();
     ppb_exec_ctrl2.ept = true;
     try adjustRegMandatoryBits(
