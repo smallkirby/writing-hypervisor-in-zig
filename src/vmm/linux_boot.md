@@ -637,7 +637,7 @@ CPUID が原因で VM Exit すれば成功です。
 
 なお、GDB でゲストが動いていることを確認することもできます。
 Ymir の起動後ゲストが起動するまでに、GDB から `target remote :1234` で接続してください。
-その後、hardware breakpoint を `0x100000` に設定してください。
+その後、hardware breakpoint を `0x100000` に設定してください (`hbreak *0x100000`)。
 そのまま `continue` すると breakpoint で止まるはずです:
 
 ```gdb
