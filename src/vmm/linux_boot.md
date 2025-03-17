@@ -545,6 +545,12 @@ fn loadImage(memory: []u8, image: []u8, addr: usize) !void {
 Surtr から渡されるカーネルイメージのアドレスは物理アドレスであるため、仮想アドレスに変換する必要があることに注意してください:
 
 ```ymir/main.zig
+// has to be done before reconstructing the memory mapping
+const guest_info = boot_info.guest_info;
+
+// ...
+
+// right after entering VMX operation
 const guest_kernel = b: {
     const ptr: [*]u8 = @ptrFromInt(ymir.mem.phys2virt(guest_info.guest_image));
     break :b ptr[0..guest_info.guest_size];
