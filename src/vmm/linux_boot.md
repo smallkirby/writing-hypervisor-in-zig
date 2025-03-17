@@ -220,7 +220,7 @@ pub const BootParams = extern struct {
     e820_map: [e820max]E820Entry align(1),
     _unimplemented: [0x330]u8 align(1),
 
-    /// Instantiate a boot params from bzImage.
+    // Instantiate boot params from bzImage.
     pub fn from(bytes: []u8) @This() {
         return std.mem.bytesToValue(
             @This(),
@@ -252,7 +252,7 @@ pub const SetupHeader = extern struct {
     header: u32 align(1),
     /// RO. Boot protocol version supported.
     version: u16 align(1),
-    realmode_swtch: u32 align(1),
+    realmode_switch: u32 align(1),
     start_sys_seg: u16 align(1),
     kernel_version: u16 align(1),
     /// M. The type of loader. Specify 0xFF if no ID is assigned.
@@ -274,7 +274,7 @@ pub const SetupHeader = extern struct {
     ext_loader_type: u8 align(1),
     /// W. The 32-bit linear address of the kernel command line.
     cmd_line_ptr: u32 align(1),
-    /// R. Higest address that can be used for initrd.
+    /// R. Highest address that can be used for initrd.
     initrd_addr_max: u32 align(1),
     kernel_alignment: u32 align(1),
     relocatable_kernel: u8 align(1),
@@ -302,7 +302,7 @@ pub const SetupHeader = extern struct {
         _unused: u3 = 0,
         /// If false, print early messages.
         quiet_flag: bool = false,
-        /// If false, reload the segment registers in the 32bit entry point.
+        /// If false, reload the segment registers in the 32 bit entry point.
         keep_segments: bool = false,
         /// Set true to indicate that the value entered in the `heap_end_ptr` is valid.
         can_use_heap: bool = false,
