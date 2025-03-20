@@ -198,7 +198,8 @@ fn initTable(T: type, allocator: Allocator) Error![]T {
 }
 ```
 
-`lv4_shift` のような定数や `getLv3Entry` のような関数は、`ymir/arch/x86/page.zig` からコピーするだけです。不明な場合は、[Github リポジトリ](https://github.com/smallkirby/ymir/blob/whiz-vmm-ept/ym​​ir/arch/x86/vmx/ept.zig) を参照してください。
+`lv4_shift` のような定数や `getLv3Entry` のような関数は、`ymir/arch/x86/page.zig` で定義されるホストページテーブルのものと同じです。
+詳細は [Github リポジトリ](https://github.com/smallkirby/ymir/blob/5486787bce98ec0613ee81f5fa9c73b6a58ea8ac/ymir/arch/x86/vmx/ept.zig#L13-L33) を参照してください。
 
 ## EPTP
 
@@ -306,13 +307,6 @@ pub const Vm = struct {
 1ページサイズ以上のアラインを要求するメモリ確保は `Allocator` インタフェースには実装されていません。
 そのため、仕方がなく `PageAllocator` インスタンスを直接引数として受け取るようにしています。
 
-`VMX root` 操作に入った後、VM を起動する前に `kernelMail()` からこれを呼び出します:
-
-```ymir/main.zig
-try vm.setupGuestMemory(general_allocator, &mem.page_allocator_instance);
-log.info("Setup guest memory.", .{});
-```
-
 メモリを確保したら、確保した領域の情報をもとに EPT を初期化するため `arch.vmx.mapGuest()` を呼び出します。
 この関数は `arch.vmx.ept` を Ymir 全体に露出させないための単なるラッパー関数です:
 
@@ -357,6 +351,17 @@ pub fn initEpt(
 ```
 
 ゲストのメモリサイズから必要な 2MiB ページの個数を計算し、その回数だけ先ほど実装した `map2m()` を呼び出します。
+
+これらの関数は、VMX Root Operation に入った後 VM を起動する前に `kernelMail()` から呼び出します:
+
+```ymir/main.zig
+fn kernelMain(boot_info: surtr.BootInfo) !void {
+    ...
+    try vm.setupGuestMemory(general_allocator, &mem.page_allocator_instance);
+    log.info("Setup guest memory.", .{});
+    ...
+}
+```
 
 これでゲスト物理メモリのマップが完成しました。
 Lv4 EPT テーブルを指す EPTP を得られたので、これを VMCS Execution Control に設定します。
@@ -433,8 +438,7 @@ pub const SecondaryProcExecCtrl = packed struct(u32) {
 
 EPT を有効化するには `.ept` ビットをセットします。
 他の Execution Control フィールドと同様に、Reserved Bits を `0` にするか `1` にするかは MSR に問い合わせる必要があります。
-Secondary Processor-Based Control の場合は、`IA32_VMX_PROCBASED_CTLS2` MSR に問い合わせます。
-値は 0x48B です。
+Secondary Processor-Based Control の場合は、`IA32_VMX_PROCBASED_CTLS2` MSR (address `0x048B`) に問い合わせます:
 
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(vcpu: *Vcpu, allocator: Allocator) VmxError!void {

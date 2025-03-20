@@ -247,7 +247,7 @@ pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
 }
 ```
 
-`Vm.init` から `setupVmcs` を呼び出すことを忘れないでください:
+`Vm.init()` から `setupVmcs()` を呼び出すようにしておきます:
 
 ```ymir/vmx.zig
 pub fn init(self: *Self, allocator: Allocator) VmxError!void {
@@ -594,7 +594,7 @@ pub const InstructionError = enum(u32) {
 VMREAD の初めての出番ですね。かわいい。
 
 <details>
-<summary>(GitHub にアクセスできない人のために、`ro` 列挙型の定義を次に示します):</summary>
+<summary><code>ro</code> enum の定義:</summary>
 
 ```ymir/arch/x86/vmx/vmcs.zig
 pub const ro = enum(u32) {

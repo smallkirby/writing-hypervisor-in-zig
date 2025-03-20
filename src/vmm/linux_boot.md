@@ -220,7 +220,7 @@ pub const BootParams = extern struct {
     e820_map: [e820max]E820Entry align(1),
     _unimplemented: [0x330]u8 align(1),
 
-    // Instantiate boot params from bzImage.
+    /// Instantiate boot params from bzImage.
     pub fn from(bytes: []u8) @This() {
         return std.mem.bytesToValue(
             @This(),
@@ -545,12 +545,12 @@ fn loadImage(memory: []u8, image: []u8, addr: usize) !void {
 Surtr から渡されるカーネルイメージのアドレスは物理アドレスであるため、仮想アドレスに変換する必要があることに注意してください:
 
 ```ymir/main.zig
-// has to be done before reconstructing the memory mapping
+// Copy boot_info into Ymir's stack since it becomes inaccessible after memory mapping is reconstructed.
 const guest_info = boot_info.guest_info;
 
-// ...
+...
 
-// right after entering VMX operation
+// (After entering VMX Operation)
 const guest_kernel = b: {
     const ptr: [*]u8 = @ptrFromInt(ymir.mem.phys2virt(guest_info.guest_image));
     break :b ptr[0..guest_info.guest_size];
@@ -637,7 +637,7 @@ CPUID が原因で VM Exit すれば成功です。
 
 なお、GDB でゲストが動いていることを確認することもできます。
 Ymir の起動後ゲストが起動するまでに、GDB から `target remote :1234` で接続してください。
-その後、hardware breakpoint を `0x100000` に設定してください (`hbreak *0x100000`)。
+その後、hardware breakpoint を `0x100000` に設定してください (例: `hbreak *0x100000`)。
 そのまま `continue` すると breakpoint で止まるはずです:
 
 ```gdb

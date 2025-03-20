@@ -523,10 +523,10 @@ RAX はスクラッチレジスタとして使います。
 
 この時点でスタックの最も上には `vmentry()` が CALL の際に積んだ RIP があります。
 よって、ここで RET すると `vmentry()` に復帰することができます。
-呼び出し側は、**あたかも `asmVmEntry()` を関数呼び出したかのように処理を続行することができます**:
+呼び出し側は、**あたかも `asmVmEntry()` を関数呼び出ししたかのように処理を続行することができます**:
 
 ```ymir/arch/x86/vmx/asm.zig
-    // Return to caller of asmVmExit()
+    // Return to caller of asmVmEntry()
     asm volatile (
         \\mov $0, %%rax
         \\ret
@@ -540,7 +540,7 @@ RAX はスクラッチレジスタとして使います。
 VM Exit のハンドラ関数を定義します:
 
 ```ymir/arch/x86/vmx/vcpu.zig
-fn handleExit(self: *Self, exit_info: vmcs.ExitInfo) VmxError!void {
+fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
     switch (exit_info.basic_reason) {
         .hlt => {
             try self.stepNextInst();
@@ -577,7 +577,8 @@ pub fn loop(self: *Self) VmxError!void {
 Exit ハンドラを呼び出したあとは、`while` ループの先頭に戻り再び VM Entry をします。
 ひたすらにこの繰り返しです。
 
-また、`setupHostState` の `vmwrite` 呼び出しを更新することも忘れないでください:
+最後に、`setupHostState()` で `vmwrite()` を使って VM Exit 時のエントリポイントを設定しておきます:
+
 ```ymir/arch/x86/vmx/vcpu.zig
 let vmam = @import("asm.zig");
 

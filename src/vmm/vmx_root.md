@@ -282,7 +282,7 @@ pub fn getCpuVendorId() [12]u8 {
 const vendor = arch.getCpuVendorId();
 if (!std.mem.eql(u8, vendor[0..], "GenuineIntel")) {
     log.err("Unsupported CPU vendor: {s}", .{vendor});
-    return VmError.SystemNotSupported;
+    return Error.SystemNotSupported;
 }
 ```
 
@@ -331,7 +331,7 @@ Lock Bit はシステムがリセットされるまでクリアされること�
 ```ymir/vmx.zig
 if (!arch.isVmxSupported()) {
     log.err("Virtualization is not supported.", .{});
-    return VmError.SystemNotSupported;
+    return Error.SystemNotSupported;
 }
 ```
 
@@ -449,7 +449,7 @@ fn adjustControlRegisters() void {
 強制的に無効化されるのは SMX や PKS など Ymir では使わない拡張機能だけでした。
 よって、このマスクを適用することに問題はありません。
 
-`readCr4` と `loadCr4` は `readCr0` と `loadCr0` と似ていますが、`@bitCast` を使用して構造体としてアクセスする点が異なります。
+`readCr4()`/`loadCr4()` の定義を以下に示しておきます:
 
 ```ymir/arch/x86/asm.zig
 pub const Cr4 = packed struct(u64) {
@@ -608,7 +608,8 @@ pub fn vmxtry(rflags: u64) VmxError!void {
 
 この関数を使うと先ほどの `am.vmxon()` のように、VMX 拡張命令を呼び出す関数の末尾で `try vmxtry()` とすることでエラー処理ができます。
 
-EFLAGS レジスタは次のように定義されます。
+EFLAGS レジスタは次のように定義されます:
+
 ```ymir/arch/x86/asm.zig
 pub const FlagsRegister = packed struct(u64) {
     /// Carry flag.

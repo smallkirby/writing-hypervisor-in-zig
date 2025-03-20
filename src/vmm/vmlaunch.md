@@ -79,11 +79,10 @@ pub const PinExecCtrl = packed struct(u32) {
 
 各フィールドの意味は実際にそのフィールドを使うときが来たら説明します。
 この構造体には、VMCS から値を取得またはセットするためのメソッド `load()` / `store()` を定義しています。
-
-`ctrl` 列挙型は [Github](https://github.com/smallkirby/ymir/blob/whiz-vmm-vmlaunch/ymir/arch/x86/vmx/vmcs.zig) にあります。
+`ctrl` 列挙型は [Github](https://github.com/smallkirby/ymir/blob/whiz-vmm-vmlaunch/ymir/arch/x86/vmx/vmcs.zig) を参照してください。
 
 <details>
-<summary>またはこちら。</summary>
+<summary>一応ここにも定義を示しておきます:</summary>
 
 ```ymir/arch/x86/vmx/vmcs.zig
 pub const ctrl = enum(u32) {
@@ -181,15 +180,13 @@ fn setupExecCtrls(_: *Vcpu, _: Allocator) VmxError!void {
 }
 ```
 
-注意: `IA32_VMX_PINBASED_CTRLS` と `IA32_VMX_TRUE_PINBASED_CTRLS` の値はそれぞれ 0x0481 と 0x048D です。
-
 本チャプターではまだ非同期イベントを扱わないため、Pin-Based Controls はデフォルトの値を使用します。
 
 VMCS に書き込む値には **Reserved Bits** が多くあります。
 Reserved Bits は単にゼロクリアすれば良いわけではありません。
 **フィールドごとに適切な MSR を参照し、その値をもとにして Reserved Bits を設定する必要**があります。
 Pin-Based Controls では、`IA32_VMX_BASIC` MSR の 55-th bit (`.true_control`) の値に応じて
-`IA32_VMX_PINBASED_CTRLS` または `IA32_VMX_TRUE_PINBASED_CTRLS` の値を使用します。
+`IA32_VMX_PINBASED_CTRLS`(address: `0x0482`) または `IA32_VMX_TRUE_PINBASED_CTRLS` (address: `0x048E`) の値を使用します。
 これらの MSR は Pin-Based Controls に対して以下のような制約を課します:
 
 - **[31:0]: Allowed 0-settings**: MSR のビットが `1` である場合、VMCS フィールドの該当ビットは `1` でなければならない (*Manadatory 1*)
@@ -280,8 +277,7 @@ fn setupExecCtrls(_: *Vcpu, _: Allocator) VmxError!void {
 今回は Primary Processor-Based Controls のみを使いたいため、`false` に設定します。
 
 Pin-Based Controls と同様に、Reserved Bits は MSR を参照して設定する必要があります。
-利用する MSR は `IA32_VMX_PROCBASED_CTRLS` または `IA32_VMX_TRUE_PROCBASED_CTRLS` のどちらかです。
-値はそれぞれ0x0482と0x048Eです。
+利用する MSR は `IA32_VMX_PROCBASED_CTRLS` (address: `0x0482`) または `IA32_VMX_TRUE_PROCBASED_CTRLS` (address: `0x048E`) のどちらかです。
 
 ## Host-State
 
@@ -332,7 +328,7 @@ fn vmexitBootstrapHandler() callconv(.Naked) noreturn {
 
 export fn vmexitHandler() noreturn {
     log.debug("[VMEXIT handler]", .{});
-    const reason = vmcs.ExitInfo.load() catch unreachable;
+    const reason = vmx.ExitInfo.load() catch unreachable;
     log.debug("   VMEXIT reason: {?}", .{reason});
     while (true) asm volatile ("hlt");
 }
@@ -561,10 +557,8 @@ FS と GS の Base はハードウェア的に `IA32_FS_BASE` と `IA32_GS_BASE`
 そのため、これらの Base は MSR から値を読むことで取得できます。
 GDTR と IDTR の Base はそれぞれ [SGDT](https://www.felixcloutier.com/x86/sgdt) と [SIDT](https://www.felixcloutier.com/x86/sidt) 命令で取得できます。
 
-SIDT および SGDT 取得の実装については、次の場所を参照してください:
-
 <details>
-<summary>SIDT and SGDT</summary>
+<summary>SIDT/SGDT の実装</summary>
 
 ```ymir/arch/x86/asm.zig
 const SgdtRet = packed struct {
@@ -609,7 +603,7 @@ pub inline fn sidt() SidtRet {
 
 本シリーズではシステムコールを実装しないため、`SYSENTER` 系のMSRは復元する必要がありません。
 `IA32_PAT` はページのキャッシュ属性を定義することができる MSR ですがやはり本シリーズでは使いません。
-`IA32_EFER` は 64bit モードの有効化等に必須の MSR であるため、この MSR だけ設定します:
+`IA32_EFER` (address: `0xC0000080`) は 64bit モードの有効化等に必須の MSR であるため、この MSR だけ設定します:
 
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupHostState(_: *Vcpu) VmxError!void {
@@ -618,8 +612,6 @@ fn setupHostState(_: *Vcpu) VmxError!void {
     try vmwrite(vmcs.host.efer, am.readMsr(.efer));
 }
 ```
-
-値は 0xC0000080 であることに注意してください。
 
 ## Guest-State
 
@@ -860,8 +852,7 @@ fn setupEntryCtrls(_: *Vcpu) VmxError!void {
 }
 ```
 
-ここでも Reserved Bits は `IA32_VMX_ENTRY_CTRLS` または `IA32_VMX_TRUE_ENTRY_CTRLS` の値を参照して設定します。
-値はそれぞれ0x0484と0x0490です。
+ここでも Reserved Bits は `IA32_VMX_ENTRY_CTRLS` (address: `0x0484`) または `IA32_VMX_TRUE_ENTRY_CTRLS` (address: `0x0490`) の値を参照して設定します。
 
 ## VM-Exit Control
 
@@ -928,8 +919,7 @@ fn setupExitCtrls(_: *Vcpu) VmxError!void {
 }
 ```
 
-ここでも Reserved Bits は `IA32_VMX_EXIT_CTRLS` または `IA32_VMX_TRUE_EXIT_CTRLS` の値を参照して設定します。
-値はそれぞれ0x0483と0x048Fです。
+ここでも Reserved Bits は `IA32_VMX_EXIT_CTRLS` (address: `0x0483`) または `IA32_VMX_TRUE_EXIT_CTRLS` (address: `0x048F`) の値を参照して設定します。
 
 ## VMLAUNCH
 
