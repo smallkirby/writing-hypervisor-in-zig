@@ -92,12 +92,12 @@ EAX で取得したい情報を指定します。一部の場合は追加で ECX
 本シリーズでは、Leaf が `N` で Subleaf が `M` の CPUID を `CPUID[N:M]` と表記します。
 返り値には EAX, EBX, ECX, EDX の4つのレジスタが使われます。
 どのレジスタにどのような情報が入るかは、指定した Leaf/Subleaf に依存します。
-CPUID の Leaf/Subleaf 一覧については *SDM Vol.2A Chapter 3.3 Table 3-8* を参照してください。
+CPUID の Leaf/Subleaf 一覧については *[SDM Vol.2A](https://cdrdv2-public.intel.com/812383/253666-sdm-vol-2a.pdf) Chapter 3.3 Table 3-8* を参照してください。
 
 ```ymir/arch/x86/cpuid.zig
 pub const Leaf = enum(u32) {
     maximum_input = 0x0,
-    version_info = 0x1,
+    vers_and_feat_info = 0x1,
     ext_feature = 0x7,
     ext_enumeration = 0xD,
     ext_func = 0x80000000,
@@ -119,6 +119,15 @@ const CpuidRegisters = struct {
     ebx: u32,
     ecx: u32,
     edx: u32,
+};
+
+pub const FeatureInfoEcx = packed struct(u32) {
+    /// ...
+    _other_fields1: u5,
+    /// Virtual Machine Extensions.
+    vmx: bool = false,
+    /// ...
+    _other_fields2: u26,
 };
 ```
 
@@ -198,10 +207,24 @@ MSR も CPUID と同様にどんどん追加され続けるため、すべてを
 
 ```ymir/arch/x86/asm.zig
 pub const Msr = enum(u32) {
+    /// IA32_FEATURE_CONTROL MSR.
+    feature_control = 0x003A,
+
     /// IA32_VMX_BASIC MSR.
     vmx_basic = 0x0480,
 
     _,
+};
+
+pub const MsrFeatureControl = packed struct(u64) {
+    /// Lock bit.
+    lock: bool,
+    /// VMX in SMX (Safer Mode Extensions) operation.
+    vmx_in_smx: bool,
+    /// VMX outside SMX operation.
+    vmx_outside_smx: bool,
+    /// ...
+    _other_fields: u61,
 };
 ```
 
@@ -266,14 +289,14 @@ if (!std.mem.eql(u8, vendor[0..], "GenuineIntel")) {
 ### VMX サポートを確認
 
 手順 2/3 は同じ関数内 `isVmxSupported()` で確認します。
-まず手順2の VMX がサポートされているかどうかは `CPUID[7]` で確認します。
+まず手順2の VMX がサポートされているかどうかは `CPUID[1]` で確認します。
 手順3では VMXON が SMX Operation の外でも実行可能かを確認します。
 これは MSR の `IA32_FEATURE_CONTROL` の値をチェックすることで確かめられます:
 
 ```ymir/arch/x86/arch.zig
 pub fn isVmxSupported() bool {
     // Check CPUID if VMX is supported.
-    const regs = cpuid.Leaf.query(.ext_feature, null);
+    const regs = cpuid.Leaf.query(.vers_and_feat_info, null);
     const ecx: cpuid.FeatureInfoEcx = @bitCast(regs.ecx);
     if (!ecx.vmx) return false;
 
@@ -316,7 +339,7 @@ if (!arch.isVmxSupported()) {
 `kernelMain()` から呼び出して、VMX がサポートされていることを確認しましょう:
 
 ```ymir/main.zig
-var vm = try vmx.Vm.new();
+const vm = try vmx.Vm.new();
 _ = vm;
 ```
 
@@ -361,6 +384,9 @@ pub const Vm = struct {
 
     pub fn new() VmError!Self {
         ...
+        // Don't use 0, this is reserved for VMX root, outside VMX operation, or for disabled VPID.
+        // While it works here, it will cause issues in future chapters.
+        const vcpu = impl.Vcpu.new(1);
         return Self{ .vcpu = vcpu };
     }
 };
@@ -422,6 +448,36 @@ fn adjustControlRegisters() void {
 強制的に有効化されるのはページング関係 + VMX だけでした。
 強制的に無効化されるのは SMX や PKS など Ymir では使わない拡張機能だけでした。
 よって、このマスクを適用することに問題はありません。
+
+`readCr4()`/`loadCr4()` の定義を以下に示しておきます:
+
+```ymir/arch/x86/asm.zig
+pub const Cr4 = packed struct(u64) {
+    /// Other fields, see repository for details.
+    _other_fields1: u13,
+    /// Virtual machine extensions enable. (Used further down.)
+    vmxe: bool,
+    /// More fields, see repository for details.
+    _other_fields2: u40,
+};
+
+pub inline fn readCr4() Cr4 {
+    var cr4: u64 = undefined;
+    asm volatile (
+        \\mov %%cr4, %[cr4]
+        : [cr4] "=r" (cr4),
+    );
+    return @bitCast(cr4);
+}
+
+pub inline fn loadCr4(cr4: anytype) void {
+    asm volatile (
+        \\mov %[cr4], %%cr4
+        :
+        : [cr4] "r" (@as(u64, @bitCast(cr4))),
+    );
+}
+```
 
 ### VMXON
 
@@ -552,6 +608,29 @@ pub fn vmxtry(rflags: u64) VmxError!void {
 
 この関数を使うと先ほどの `am.vmxon()` のように、VMX 拡張命令を呼び出す関数の末尾で `try vmxtry()` とすることでエラー処理ができます。
 
+EFLAGS レジスタは次のように定義されます:
+
+```ymir/arch/x86/asm.zig
+pub const FlagsRegister = packed struct(u64) {
+    /// Carry flag.
+    cf: bool,
+    /// Reserved. Must be 1.
+    _reversedO: u1 = 1,
+    /// Five other fields, see repository for details.
+    _other_fields1: u4,
+    /// Zero flag.
+    zf: bool,
+    /// More fields, see repository for details.
+    _other_fields2: u57,
+
+    pub fn new() FlagsRegister {
+        var ret = std.mem.zeroes(FlagsRegister);
+        ret._reservedO = 1;
+        return ret;
+    }
+};
+```
+
 ## VMX Root Operation に遷移できたことの確認
 
 最後に、VMX 自体を有効化します。
@@ -559,6 +638,8 @@ VMX の有効化は `CR4[13]` に `1` をセットすることで行います。
 VMX を有効化したら、VMXON で VMX Root Operation に遷移します:
 
 ```ymir/arch/x86/vmx/vcpu.zig
+vmxon_region: *VmxonRegion = undefined,
+...
 pub fn virtualize(self: *Self, allocator: Allocator) VmxError!void {
     // Adjust control registers.
     adjustControlRegisters();
@@ -576,9 +657,11 @@ pub fn virtualize(self: *Self, allocator: Allocator) VmxError!void {
 `Vm` からこの関数を呼び出します:
 
 ```ymir/vmx.zig
+pub const Error = VmError || impl.VmxError;
+
 pub fn init(self: *Self, allocator: Allocator) Error!void {
     try self.vcpu.virtualize(allocator);
-    log.info("vCPU #{X} is created.", .{self.vcpu.id});
+    log.info("vCPU #{X} was created.", .{self.vcpu.id});
 }
 ```
 

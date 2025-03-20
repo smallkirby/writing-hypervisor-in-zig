@@ -220,7 +220,7 @@ pub const BootParams = extern struct {
     e820_map: [e820max]E820Entry align(1),
     _unimplemented: [0x330]u8 align(1),
 
-    /// Instantiate a boot params from bzImage.
+    /// Instantiate boot params from bzImage.
     pub fn from(bytes: []u8) @This() {
         return std.mem.bytesToValue(
             @This(),
@@ -252,7 +252,7 @@ pub const SetupHeader = extern struct {
     header: u32 align(1),
     /// RO. Boot protocol version supported.
     version: u16 align(1),
-    realmode_swtch: u32 align(1),
+    realmode_switch: u32 align(1),
     start_sys_seg: u16 align(1),
     kernel_version: u16 align(1),
     /// M. The type of loader. Specify 0xFF if no ID is assigned.
@@ -274,7 +274,7 @@ pub const SetupHeader = extern struct {
     ext_loader_type: u8 align(1),
     /// W. The 32-bit linear address of the kernel command line.
     cmd_line_ptr: u32 align(1),
-    /// R. Higest address that can be used for initrd.
+    /// R. Highest address that can be used for initrd.
     initrd_addr_max: u32 align(1),
     kernel_alignment: u32 align(1),
     relocatable_kernel: u8 align(1),
@@ -302,7 +302,7 @@ pub const SetupHeader = extern struct {
         _unused: u3 = 0,
         /// If false, print early messages.
         quiet_flag: bool = false,
-        /// If false, reload the segment registers in the 32bit entry point.
+        /// If false, reload the segment registers in the 32 bit entry point.
         keep_segments: bool = false,
         /// Set true to indicate that the value entered in the `heap_end_ptr` is valid.
         can_use_heap: bool = false,
@@ -421,7 +421,7 @@ Ymir では以下の物理メモリレイアウトでカーネルをロードし
 ```ymir/linux.zig
 pub const layout = struct {
     /// Where the kernel boot parameters are loaded, known as "zero page".
-    /// Must be initialized by zeros.
+    /// Must be initialized with zeros.
     pub const bootparam = 0x0001_0000;
     /// Where the kernel cmdline is located.
     pub const cmdline = 0x0002_0000;
@@ -545,6 +545,12 @@ fn loadImage(memory: []u8, image: []u8, addr: usize) !void {
 Surtr から渡されるカーネルイメージのアドレスは物理アドレスであるため、仮想アドレスに変換する必要があることに注意してください:
 
 ```ymir/main.zig
+// Copy boot_info into Ymir's stack since it becomes inaccessible after memory mapping is reconstructed.
+const guest_info = boot_info.guest_info;
+
+...
+
+// (After entering VMX Operation)
 const guest_kernel = b: {
     const ptr: [*]u8 = @ptrFromInt(ymir.mem.phys2virt(guest_info.guest_image));
     break :b ptr[0..guest_info.guest_size];
@@ -617,7 +623,7 @@ fn setupGuestState(vcpu: *Vcpu) VmxError!void {
 [INFO ] vmx     | Guest memory region: 0x0000000000000000 - 0x0000000006400000
 [INFO ] vmx     | Guest kernel code offset: 0x0000000000005000
 [DEBUG] ept     | EPT Level4 Table @ FFFF88800000A000
-[INFO ] vmx     | Guet memory is mapped: HVA=0xFFFF888000A00000 (size=0x6400000)
+[INFO ] vmx     | Guest memory is mapped: HVA=0xFFFF888000A00000 (size=0x6400000)
 [INFO ] main    | Setup guest memory.
 [INFO ] main    | Starting the virtual machine...
 [ERROR] vcpu    | Unhandled VM-exit: reason=arch.x86.vmx.common.ExitReason.cpuid
@@ -631,7 +637,7 @@ CPUID が原因で VM Exit すれば成功です。
 
 なお、GDB でゲストが動いていることを確認することもできます。
 Ymir の起動後ゲストが起動するまでに、GDB から `target remote :1234` で接続してください。
-その後、hardware breakpoint を `0x100000` に設定してください。
+その後、hardware breakpoint を `0x100000` に設定してください (例: `hbreak *0x100000`)。
 そのまま `continue` すると breakpoint で止まるはずです:
 
 ```gdb

@@ -73,7 +73,7 @@ fn EntryBase(table_level: TableLevel) type {
         type: MemoryType = .uncacheable,
         /// Ignore PAT memory type.
         ignore_pat: bool = false,
-        /// If true, this entry maps an memory, Otherwise, this references a page table.
+        /// If true, this entry maps memory. Otherwise, this references a page table.
         map_memory: bool,
         /// If EPTP[6] is 1, accessed flag. Otherwise, ignored.
         accessed: bool = false,
@@ -159,25 +159,25 @@ GPA to HPA 変換が3回のメモリアクセスで完了することから、4�
 
 ```ymir/arch/x86/vmx/ept.zig
 fn map2m(gpa: Phys, hpa: Phys, lv4tbl: []Lv4Entry, allocator: Allocator) Error!void {
-    const lv4index = (guest_phys >> lv4_shift) & index_mask;
+    const lv4index = (gpa >> lv4_shift) & index_mask;
     const lv4ent = &lv4tbl[lv4index];
     if (!lv4ent.present()) {
         const lv3tbl = try initTable(Lv3Entry, allocator);
         lv4ent.* = Lv4Entry.newMapTable(lv3tbl);
     }
 
-    const lv3ent = getLv3Entry(guest_phys, lv4ent.address());
+    const lv3ent = getLv3Entry(gpa, lv4ent.address());
     if (!lv3ent.present()) {
         const lv2tbl = try initTable(Lv2Entry, allocator);
         lv3ent.* = Lv3Entry.newMapTable(lv2tbl);
     }
     if (lv3ent.map_memory) return error.AlreadyMapped;
 
-    const lv2ent = getLv2Entry(guest_phys, lv3ent.address());
+    const lv2ent = getLv2Entry(gpa, lv3ent.address());
     if (lv2ent.present()) return error.AlreadyMapped;
     lv2ent.* = Lv2Entry{
         .map_memory = true,
-        .phys = @truncate(host_phys >> page_shift_4k),
+        .phys = @truncate(hpa >> page_shift_4k),
     };
 }
 ```
@@ -197,6 +197,9 @@ fn initTable(T: type, allocator: Allocator) Error![]T {
     return tbl;
 }
 ```
+
+`lv4_shift` のような定数や `getLv3Entry` のような関数は、`ymir/arch/x86/page.zig` で定義されるホストページテーブルのものと同じです。
+詳細は [Github リポジトリ](https://github.com/smallkirby/ymir/blob/5486787bce98ec0613ee81f5fa9c73b6a58ea8ac/ymir/arch/x86/vmx/ept.zig#L13-L33) を参照してください。
 
 ## EPTP
 
@@ -293,7 +296,7 @@ pub const Vm = struct {
         // Create simple EPT mapping.
         const eptp = try impl.mapGuest(self.guest_mem, allocator);
         try self.vcpu.setEptp(eptp, self.guest_mem.ptr);
-        log.info("Guet memory is mapped: HVA=0x{X:0>16} (size=0x{X})", .{ @intFromPtr(self.guest_mem.ptr), self.guest_mem.len });
+        log.info("Guest memory is mapped: HVA=0x{X:0>16} (size=0x{X})", .{ @intFromPtr(self.guest_mem.ptr), self.guest_mem.len });
     }
 };
 ```
@@ -348,6 +351,17 @@ pub fn initEpt(
 ```
 
 ゲストのメモリサイズから必要な 2MiB ページの個数を計算し、その回数だけ先ほど実装した `map2m()` を呼び出します。
+
+これらの関数は、VMX Root Operation に入った後 VM を起動する前に `kernelMail()` から呼び出します:
+
+```ymir/main.zig
+fn kernelMain(boot_info: surtr.BootInfo) !void {
+    ...
+    try vm.setupGuestMemory(general_allocator, &mem.page_allocator_instance);
+    log.info("Setup guest memory.", .{});
+    ...
+}
+```
 
 これでゲスト物理メモリのマップが完成しました。
 Lv4 EPT テーブルを指す EPTP を得られたので、これを VMCS Execution Control に設定します。
@@ -424,10 +438,12 @@ pub const SecondaryProcExecCtrl = packed struct(u32) {
 
 EPT を有効化するには `.ept` ビットをセットします。
 他の Execution Control フィールドと同様に、Reserved Bits を `0` にするか `1` にするかは MSR に問い合わせる必要があります。
-Secondary Processor-Based Control の場合は、`IA32_VMX_PROCBASED_CTLS2` MSR に問い合わせます:
+Secondary Processor-Based Control の場合は、`IA32_VMX_PROCBASED_CTLS2` MSR (address `0x048B`) に問い合わせます:
 
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(vcpu: *Vcpu, allocator: Allocator) VmxError!void {
+    ...
+    ppb_exec_ctrl.activate_secondary_controls = true;
     ...
     var ppb_exec_ctrl2 = try vmcs.SecondaryProcExecCtrl.store();
     ppb_exec_ctrl2.ept = true;
@@ -476,7 +492,9 @@ fn setupExecCtrls(_: *Vcpu, _: Allocator) VmxError!void {
 
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupEntryCtrls(_: *Vcpu) VmxError!void {
+    ...
     entry_ctrl.ia32e_mode_guest = false;
+    ...
 }
 ```
 
@@ -484,13 +502,57 @@ fn setupEntryCtrls(_: *Vcpu) VmxError!void {
 
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupGuestState(_: *Vcpu) VmxError!void {
+    ...
     var cr0 = std.mem.zeroes(am.Cr0);
     cr0.pe = true;  // Protected-mode
+    cr0.ne = true;  // Numeric error
     cr0.pg = false; // Paging
     try vmwrite(vmcs.guest.cr0, cr0);
     ...
 }
 ```
+
+<details>
+<summary>CR0の定義</summary>
+
+```ymir/arch/x86/asm.zig
+/// CR0 register.
+pub const Cr0 = packed struct(u64) {
+    /// Protected mode enable.
+    pe: bool,
+    /// Monitor co-processor.
+    mp: bool,
+    /// Emulation.
+    em: bool,
+    /// Task switched.
+    ts: bool,
+    /// Extension type.
+    et: bool,
+    /// Numeric error.
+    ne: bool,
+    /// Reserved.
+    _reserved1: u10 = 0,
+    /// Write protect.
+    wp: bool,
+    /// Reserved.
+    _reserved2: u1 = 0,
+    /// Alignment mask.
+    am: bool,
+    /// Reserved.
+    _reserved3: u10 = 0,
+    /// Not-Write Through.
+    nw: bool,
+    /// Cache disable.
+    cd: bool,
+    /// Paging.
+    pg: bool,
+    /// Reserved.
+    _reserved4: u32 = 0,
+};
+
+```
+
+</details>
 
 これでゲストが Unrestricted Guest + ページング無効になりました。
 最後に、ゲストメモリに `blobGuest()` をコピーして VMCS RIP に `0` を設定します:
@@ -522,7 +584,7 @@ ffffffff80115f23:       eb fd                   jmp    ffffffff80115f22 <blobGue
 ```txt
 [INFO ] main    | Entered VMX root operation.
 [DEBUG] ept     | EPT Level4 Table @ FFFF88800000A000
-[INFO ] vmx     | Guet memory is mapped: HVA=0xFFFF888000A00000 (size=0x6400000)
+[INFO ] vmx     | Guest memory is mapped: HVA=0xFFFF888000A00000 (size=0x6400000)
 [INFO ] main    | Setup guest memory.
 [INFO ] main    | Starting the virtual machine...
 ```

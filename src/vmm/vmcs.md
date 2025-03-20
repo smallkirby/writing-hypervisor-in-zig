@@ -117,15 +117,21 @@ Read-only であることからも分かるように、このカテゴリは特�
 VMCS を設定するための雛形を `Vcpu` に追加しておきます:
 
 ```ymir/arch/x86/vmx/vcpu.zig
-pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
+pub const Vcpu = struct {
+    ...
+    vmcs_region: *VmcsRegion = undefined,
     ...
 
-    // Initialize VMCS fields.
-    try setupExecCtrls(self, allocator);
-    try setupExitCtrls(self);
-    try setupEntryCtrls(self);
-    try setupHostState(self);
-    try setupGuestState(self);
+    pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
+        ...
+
+        // Initialize VMCS fields.
+        try setupExecCtrls(self, allocator);
+        try setupExitCtrls(self);
+        try setupEntryCtrls(self);
+        try setupHostState(self);
+        try setupGuestState(self);
+    }
 }
 
 fn setupExecCtrls(vcpu: *Vcpu, allocator: Allocator) VmxError!void {}
@@ -241,6 +247,15 @@ pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
 }
 ```
 
+`Vm.init()` から `setupVmcs()` を呼び出すようにしておきます:
+
+```ymir/vmx.zig
+pub fn init(self: *Self, allocator: Allocator) VmxError!void {
+    ...
+    try self.vcpu.setupVmcs(allocator);
+}
+```
+
 ## フィールドアクセス
 
 ### VMCS-field Encoding
@@ -276,7 +291,7 @@ VMCS のフィールドレイアウトは実装依存です。
 各フィールドに対する Encoding の内容は *SDM Appendix B FIELD ENCODING IN VMCS* に記載されています。
 そのリストをもとに各フィールドの encoding を計算するヘルパー関数を定義します[^encoding]:
 
-```ymir/arch/x86/vmx/common.zig
+```ymir/arch/x86/vmx/vmcs.zig
 fn encode(
     comptime field_type: FieldType,
     comptime index: u9,
@@ -291,25 +306,25 @@ fn encode(
     });
 }
 
-/// Encodes a VMCS field for guest state area.
+/// Encodes a VMCS field for the guest state area.
 fn eg(
     comptime index: u9,
     comptime access_type: AccessType,
     comptime width: Width,
 ) u32 { return encode(.guest_state, index, access_type, width); }
-/// Encodes a VMCS field for host state area.
+/// Encodes a VMCS field for the host state area.
 fn eh(
     comptime index: u9,
     comptime access_type: AccessType,
     comptime width: Width,
 ) u32 { return encode(.host_state, index, access_type, width); }
-/// Encodes a VMCS field for control area.
+/// Encodes a VMCS field for the control area.
 fn ec(
     comptime index: u9,
     comptime access_type: AccessType,
     comptime width: Width,
 ) u32 { return encode(.control, index, access_type, width); }
-/// Encodes a VMCS field for read-only area.
+/// Encodes a VMCS field for the read-only area.
 fn er(
     comptime index: u9,
     comptime access_type: AccessType,
@@ -347,12 +362,12 @@ const ComponentEncoding = packed struct(u32) {
 しかし、フィールドの数はとても多いです。
 200 個ほどあります。
 そのため、ここで定義部分のスニペットを載せることはしないでおきます。
-全フィールドの encoding 定義は [Ymir のリポジトリを参照](https://github.com/smallkirby/ymir/blob/master/ymir/arch/x86/vmx/common.zig#TODO) してください。
+全フィールドの encoding 定義は [Ymir のリポジトリを参照](https://github.com/smallkirby/ymir/blob/master/ymir/arch/x86/vmx/vmcs.zig) してください。
 
 <details>
 <summary>(GitHub にアクセスできないという稀有な人のために Guest-State タイプの encoding 定義だけ抜粋しておきます)</summary>
 
-```ymir/arch/x86/vmx/common.zig
+```ymir/arch/x86/vmx/vmcs.zig
 pub const guest = enum(u32) {
     // Natural-width fields.
     cr0 = eg(0, .full, .natural),
@@ -503,8 +518,10 @@ pub fn vmwrite(field: anytype, value: anytype) VmxError!void {
 
 ```ymir/arch/x86/vmx/vcpu.tmp.zig
 ...
-try resetVmcs(self.vmcs_region);
-asm volatile("vmlaunch");
+pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
+    ...
+    try resetVmcs(self.vmcs_region);
+    asm volatile("vmlaunch");
 ```
 
 このまま実行すると...。
@@ -566,7 +583,7 @@ pub const InstructionError = enum(u32) {
     vmentry_events_blocked = 26,
     invalid_invept = 28,
 
-    /// Get a instruction error number from VMCS.
+    /// Get an instruction error number from VMCS.
     pub fn load() VmxError!InstructionError {
         return @enumFromInt(@as(u32, @truncate(try vmread(vmcs.ro.vminstruction_error))));
     }
@@ -575,6 +592,34 @@ pub const InstructionError = enum(u32) {
 
 `load()` が VMCS からエラーコードを取得する関数です。
 VMREAD の初めての出番ですね。かわいい。
+
+<details>
+<summary><code>ro</code> enum の定義:</summary>
+
+```ymir/arch/x86/vmx/vmcs.zig
+pub const ro = enum(u32) {
+    // Natural-width fields.
+    exit_qual = er(0, .full, .natural),
+    io_rcx = er(1, .full, .natural),
+    io_rsi = er(2, .full, .natural),
+    io_rdi = er(3, .full, .natural),
+    io_rip = er(4, .full, .natural),
+    guest_linear_address = er(5, .full, .natural),
+    // 32-bit fields.
+    vminstruction_error = er(0, .full, .dword),
+    vmexit_reason = er(1, .full, .dword),
+    exit_intr_info = er(2, .full, .dword),
+    exit_intr_ec = er(3, .full, .dword),
+    idt_vectoring_info = er(4, .full, .dword),
+    idt_vectoring_ec = er(5, .full, .dword),
+    exit_inst_len = er(6, .full, .dword),
+    exit_inst_info = er(7, .full, .dword),
+    // 64-bit fields.
+    guest_physical_address = er(0, .full, .qword),
+};
+```
+
+</details>
 
 さて、VMLAUNCH 後にエラーコードを取得してみましょう:
 
