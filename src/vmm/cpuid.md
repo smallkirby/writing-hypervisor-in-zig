@@ -41,7 +41,7 @@ x64 は [CISC](https://en.wikipedia.org/wiki/Complex_instruction_set_computer) �
 幸いなことに、VMCS VM-Exit Information には **Exit Instruction Length** フィールドが存在し、
 VM Exit を発生させた命令の長さを取得することができます。
 わざわざ自分で x64 命令セットのデコーダを書く必要がないのは非常に助かります。
-`stepNextInst()` ではこのフィールドの値を読み取って、RIP に加算することで次の命令を指すようにします:
+この関数は既に定義済みなので、ここでは念のため説明します:
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
