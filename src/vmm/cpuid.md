@@ -166,8 +166,8 @@ Leaf `0x1` は CPU のバージョンとサポートする機能に関する情�
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cpuid.zig
-    .version_info => {
-        const orig = Leaf.query(.version_info, null);
+    .vers_and_feat_info => {
+        const orig = Leaf.query(.vers_and_feat_info, null);
         setValue(&regs.rax, orig.eax); // Version information.
         setValue(&regs.rbx, orig.ebx); // Brand index / CLFLUSH line size / Addressable IDs / Initial APIC ID
         setValue(&regs.rcx, @as(u32, @bitCast(feature_info_ecx)));
