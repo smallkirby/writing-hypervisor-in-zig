@@ -580,7 +580,10 @@ MOV to CR3 の最後に、INVVPID を使って Combined Mappings をフラッシ
                 ...
                 am.invvpid(.single_context, vcpu.vpid);
             },
-            ...
+            else => {
+                log.err("Unimplemented CR access: {?}", .{qual});
+                vcpu.abort();
+            },
         }
     },
 
