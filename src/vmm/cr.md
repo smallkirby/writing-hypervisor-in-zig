@@ -654,7 +654,7 @@ Linux がブートし始めています！
 `Linux version...` 以降のログは、展開されたカーネルのログです。
 ブートログから分かることがいくつかありますね:
 
-- `vendo_id` が `YmirYmirYmir` となっている。これは CPUID で指定した値。
+- `vendor_id` が `YmirYmirYmir` となっている。これは CPUID で指定した値。
 - `Command line` に `BootParams` で指定した文字列がそのまま表示されている。
 - `BIOS-e820` が表示されている。これは `BootParams` で指定した E820 マップ。
 - `X86/PAT: PAT not supported by the CPU.` と表示されている。これも CPUID で指定したから。
