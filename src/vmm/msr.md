@@ -392,6 +392,8 @@ pub fn handleRdmsrExit(vcpu: *Vcpu) VmxError!void {
 }
 ```
 
+注: まだ定義していない場合、`Msr.apic_base` は 0x001B、`Msr.kernel_gs_base` は 0xC0000102 です。
+
 対応していない MSR (`else`) に対する RDMSR はアボートします。
 対応する必要のある MSR は経験則で決めています。
 `else` だけをもつ `switch` でゲストを動かしてみて、Linux がブートするまでに必要な MSR を追加していったらこうなりました。
@@ -449,6 +451,25 @@ pub fn handleWrmsrExit(vcpu: *Vcpu) VmxError!void {
 
 RDMSR よりは対応する必要のある MSR が多いです。
 `STAR` / `LSTAR` / `CSTAR` (syscall のエントリポイント) などはセットするだけして読むことはないので、当然といえば当然ですね。
+
+<details>
+<summary>新しい `Msr` エントリを忘れないでください:</summary>
+
+```ymir/arch/x86/asm.zig
+pub const Msr = enum(u32) {
+    ...
+    sysenter_cs = 0x174,
+    sysenter_esp = 0x175,
+    sysenter_eip = 0x176,
+    star = 0xC0000081,
+    lstar = 0xC0000082,
+    cstar = 0xC0000083,
+    fmask = 0xC0000084,
+    tsc_aux = 0xC0000103,
+};
+```
+
+</details>
 
 ## まとめ
 
