@@ -677,7 +677,7 @@ Linux がブートし始めています！
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(vcpu: *Vcpu, _: Allocator) VmxError!void {
     ...
-    ppb_exec_ctrl2.enable_invpcid = false;
+    ppb_exec_ctrl2.enable_invpcid = true;
     ...
 }
 ```
