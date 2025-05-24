@@ -298,6 +298,13 @@ fn registerMsrs(vcpu: *Vcpu, allocator: Allocator) !void {
     try vmwrite(vmcs.ctrl.exit_msr_store_address, gm.phys());
     try vmwrite(vmcs.ctrl.entry_msr_load_address, gm.phys());
 }
+
+pub const Vcpu = struct {
+    ...
+    pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
+        ...
+        try registerMsrs(self, allocator);
+        ...
 ```
 
 VM-Exit MSR-Load Area (VM Exit 時にホストの MSR にロードされる領域) は、VM Entry 前に毎回更新する必要があります。
@@ -316,6 +323,13 @@ fn updateMsrs(vcpu: *Vcpu) VmxError!void {
     try vmwrite(vmcs.ctrl.exit_msr_store_count, vcpu.guest_msr.num_ents);
     try vmwrite(vmcs.ctrl.entry_msr_load_count, vcpu.guest_msr.num_ents);
 }
+
+pub const Vcpu = struct {
+    ...
+    pub fn loop(self: *Self) VmxError!void {
+        while (true) {
+            try updateMsrs(self);
+            ...
 ```
 
 本シリーズでは MSR Area に登録する MSR の個数が変わることはありません。
