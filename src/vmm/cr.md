@@ -162,6 +162,9 @@ MOV to か from かは Exit Qualification を取得して判断する必要が�
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
+const qual = vmx.qual;
+const cr = @import("cr.zig");
+
 fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
     switch (exit_info.basic_reason) {
         .cr => {
@@ -179,6 +182,11 @@ CR Access を原因とする VM Exit が発生したら、先ほどの関数を�
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
+const Vcpu = @import("vcpu.zig").Vcpu;
+const vmx = @import("common.zig");
+const VmxError = vmx.VmxError;
+const log = @import("std").log.scoped(.cr);
+
 pub fn handleAccessCr(vcpu: *Vcpu, qual: QualCr) VmxError!void {
     switch (qual.access_type) {
         .mov_to => ...
@@ -206,6 +214,9 @@ CR の値をゲストにそのままパススルーするためのヘルパー�
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
+const vmcs = @import("vmcs.zig");
+const QualCr = vmx.qual.QualCr;
+
 fn passthroughRead(vcpu: *Vcpu, qual: QualCr) VmxError!void {
     const value = switch (qual.index) {
         3 => try vmx.vmread(vmcs.guest.cr3),
