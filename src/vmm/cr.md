@@ -336,6 +336,8 @@ fn passthroughWrite(vcpu: *Vcpu, qual: QualCr) VmxError!void {
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
+const am = @import("../asm.zig");
+
 fn adjustCr0(value: u64) u64 {
     var ret: u64 = @bitCast(value);
     const vmx_cr0_fixed0: u32 = @truncate(am.readMsr(.vmx_cr0_fixed0));
@@ -423,6 +425,49 @@ switch (qual.access_type) {
     ...
 }
 ```
+
+忘れないで：
+
+```ymir/arch/x86/vmx/vcpu.zig
+pub const Vcpu = struct {
+    ...
+    ia32e_enabled: bool = false;
+    ...
+}
+```
+
+<details>
+<summary>Eferの定義:</summary>
+
+```ymir/arch/x86/asm.zig
+/// IA32_EFER MSR.
+pub const Efer = packed struct(u64) {
+    /// System call extensions.
+    sce: bool,
+    /// ReservedZ.
+    reserved1: u7 = 0,
+    /// Long mode enable.
+    lme: bool,
+    ///
+    ignored: bool,
+    /// Long mode active.
+    lma: bool,
+    /// No execute enable.
+    nxe: bool,
+    /// Secure virtual machine enable.
+    svme: bool,
+    /// Long mode segment limit enable.
+    lmsle: bool,
+    /// Fast FXSAVE/FXRSTOR.
+    ffxsr: bool,
+    /// Translation cache extension.
+    tce: bool,
+    /// ReservedZ.
+    reserved2: u48 = 0,
+};
+```
+
+</details>
 
 ### MOV to CR3
 
