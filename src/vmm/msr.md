@@ -36,6 +36,8 @@ RDMSR は `31` / WRMSR は `32` 番の Exit Reason で VM Exit します。
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
+const msr = @import("msr.zig");
+
 fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
     switch (exit_info.basic_reason) {
         ...
@@ -173,6 +175,11 @@ MSR Area を表現する構造体を定義します:
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/msr.zig
+const std = @import("std");
+const Allocator = std.mem.Allocator;
+const mem = std.mem;
+const am = @import("asm.zig");
+
 pub const ShadowMsr = struct {
     /// Maximum number of MSR entries in a page.
     const max_num_ents = 512;
@@ -332,6 +339,10 @@ RDMSR の結果は上位 32bit を RDX に、下位 32bit を RAX に格納し�
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/msr.zig
+const am = @import("../asm.zig");
+const Vcpu = @import("vcpu.zig").Vcpu;
+const log = std.log.scoped(.vcpu);
+
 /// Concatnate two 32-bit values into a 64-bit value.
 fn concat(r1: u64, r2: u64) u64 {
     return ((r1 & 0xFFFF_FFFF) << 32) | (r2 & 0xFFFF_FFFF);
@@ -359,6 +370,10 @@ fn shadowRead(vcpu: *Vcpu, msr_kind: am.Msr) void {
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/msr.zig
+const vmx = @import("common.zig");
+const VmxError = vmx.VmxError;
+const vmcs = @import("vmcs.zig");
+
 pub fn handleRdmsrExit(vcpu: *Vcpu) VmxError!void {
     const guest_regs = &vcpu.guest_regs;
     const msr_kind: am.Msr = @enumFromInt(guest_regs.rcx);
