@@ -177,7 +177,8 @@ MSR Area を表現する構造体を定義します:
 ```ymir/arch/x86/vmx/msr.zig
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const mem = std.mem;
+const ymir = @import("ymir");
+const mem = ymir.mem;
 const am = @import("asm.zig");
 
 pub const ShadowMsr = struct {
