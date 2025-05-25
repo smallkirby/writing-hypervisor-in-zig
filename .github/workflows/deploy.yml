@@ -8,14 +8,24 @@ jobs:
     permissions:
       contents: read
       deployments: write
+
+    env:
+      # Translated languages other than Japanese
+      LANGUAGES: en
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
+
+      - name: Install Gettext
+        run: |
+          sudo apt update
+          sudo apt install gettext
 
       - name: Install dependencies
         run: |
@@ -24,10 +34,18 @@ jobs:
             mdbook-toc@0.14.2 \
             mdbook-callouts@0.2.1 \
             mdbook-codename@0.0.1 \
-            mdbook-mermaid@0.14.0
+            mdbook-mermaid@0.14.0 \
+            mdbook-i18n-helpers@0.3.6
 
-      - name: Build book
-        run: mdbook build
+      - name: Build book for Japanese
+        run: |
+          scripts/build.sh ja book
+
+      - name: Build book for other languages
+        run: |
+          for lang in $LANGUAGES; do
+            scripts/build.sh $lang book/$lang
+          done
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@1

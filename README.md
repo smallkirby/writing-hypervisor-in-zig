@@ -12,22 +12,41 @@ Please refer to `master` branch to check available fixes and updates.
 ## Development
 
 ```sh
-mdbook serve --open
+# Japanese
+./scripts/serve.sh ja book
+# English
+./scripts/serve.sh en book/en
 ```
 
-## Improvement
+## Contributions
 
-以下のような場合には、筆者に対して更新をリクエストしてください:
+Request an update when you:
 
-- 説明に技術的な誤りがある
-- 分かりにくい表現がある
-- 誤字・脱字等を見つけた
-- 提示されたコードが動かない、または分かりにくい
-- 本シリーズでは扱っていない内容を新たに扱ってほしい
+- Find a thchnical error in the description
+- Find an expression that is hard to understand
+- Find a typo or misspelling
+- Find that the provided code does not work or is hard to understand
+- Want to add a new topic that is not covered in this series
+- Want to read the blog in a different language
 
-更新リクエストは [GitHub](https://github.com/smallkirby/writing-hypervisor-in-zig) の Issue や Pull Request で受け付けています。
-PR を作る前に Issue を建てる必要はありません。
-リクエストの大小や内容の正誤に関わらず修正依頼やリクエスト等を歓迎します。
+You can create an issue or pull request to request an update or fix.
+You don't need to create an issue before creating a pull request.
+We welcome any requests or fixes.
+
+### Translations
+
+We use [google/mdbook-i18n-helpers](https://github.com/google/mdbook-i18n-helpers) to support multiple languages.
+To update translations, use below commands:
+
+```sh
+# Original (Japanese) version is updated ->
+MDBOOK_OUTPUT='{"xgettext": {}}' mdbook build -d po
+# Update translations ->
+TARGET_LANG=en
+msgmerge --update po/$TARGET_LANG.po po/messages.pot
+```
+
+`po` files can be edited using PO editors like [Poedit](https://poedit.net/).
 
 ## LICENSE
 
