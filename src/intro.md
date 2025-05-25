@@ -5,6 +5,20 @@
 
 <br>
 
+> [!NOTE]
+> **This blog series has been translated to the following languages:**
+>
+> - [Japanese](/index.md)
+> - [English (WIP)](/en/index.md)
+>
+> **You can switch the language by clicking the earth icon on the top right corner of the page.**
+>
+> Note that Japanese version is original and all other versions can be outdated.
+> When you see Japanese sentences in translated versions, it means the translation is not yet available.
+> Please request a translation at the GitHub repository, or contribute to the translation if you can.
+
+<br>
+
 **Writing Hypervisor in Zig** は [Zig](https://ziglang.org/) 言語を使いフルスクラッチで Type-1 Hypervisor を実装しようというブログシリーズです。
 OS よりも低いレベルで動作するベアメタル Hypervisor を実装するにあたり、ブートローダ・カーネル・VMM の各コンポーネントをイチから組み立てていきます。
 
