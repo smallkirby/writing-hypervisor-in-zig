@@ -15,6 +15,23 @@
   0. You just DO WHAT THE FUCK YOU WANT TO.
 --}}
 
+{{!-- https://github.com/google/comprehensive-rust --}}
+{{!--
+Copyright https://github.com/google/comprehensive-rust
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+--}}
+
 <!DOCTYPE HTML>
 <html lang="{{ language }}" class="{{ default_theme }}" dir="{{ text_direction }}">
     <head>
@@ -192,12 +209,72 @@
                         </a>
                     </h1>
 
+
+{{!-- START: https://github.com/google/comprehensive-rust --}}
                     <div class="right-buttons">
+                        <button id="language-toggle" class="icon-button" type="button"
+                                title="Change language" aria-label="Change language"
+                                aria-haspopup="true" aria-expanded="false"
+                                aria-controls="language-list">
+                            <i class="fa fa-globe"></i>
+                        </button>
+                        <ul id="language-list" class="theme-popup" aria-label="Languages" role="menu">
+                            <li role="none"><button role="menuitem" class="theme">
+                                <a id="en">English</a>
+                            </button></li>
+                            <li role="none"><button role="menuitem" class="theme">
+                                <a id="ja">Japanese (日本語)</a>
+                            </button></li>
+                        </ul>
+                        <script>
+                            let langToggle = document.getElementById("language-toggle");
+                            let langList = document.getElementById("language-list");
+                            langToggle.addEventListener("click", (event) => {
+                                langList.style.display = langList.style.display == "block" ? "none" : "block";
+                            });
+                            let selectedLang = document.getElementById("{{ language }}");
+                            if (selectedLang) {
+                                selectedLang.parentNode.classList.add("theme-selected");
+                            }
+
+                            // The path to the root, taking the current
+                            // language into account.
+                            {{#if (eq language "ja")}}
+                            let full_path_to_root = "{{ path_to_root }}";
+                            {{else}}
+                            let full_path_to_root = "{{ path_to_root }}../";
+                            {{/if}}
+                            // The page path (mdbook only gives us
+                            // access to the path to the Markdown file).
+                            let path = "{{ path }}".replace(/\.md$/, ".html");
+                            for (let lang of langList.querySelectorAll("a")) {
+                                if (lang.id == "ja") {
+                                    lang.href = `${full_path_to_root}${path}`;
+                                } else {
+                                    lang.href = `${full_path_to_root}${lang.id}/${path}`;
+                                }
+                            }
+
+                            // When the user clicks a list item, the page jump is performed, just like clicking the internal <a> tag.
+                            langList.querySelectorAll("li").forEach(function(li) {
+                            li.addEventListener("click", function(event) {
+                                event.preventDefault();
+
+                                let link = this.querySelector("a");
+                                if (link && window.location.href !== link.href) {
+                                window.location.href = link.href;
+                                }
+                            });
+                            });
+                        </script>
+{{!-- END: https://github.com/google/comprehensive-rust --}}
+
                         {{#if search_enabled}}
                         <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
                             <i class="fa fa-search"></i>
                         </button>
                         {{/if}}
+
                         {{#if print_enable}}
                         <a href="{{ path_to_root }}print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
@@ -213,7 +290,6 @@
                             <i id="git-edit-button" class="fa fa-edit"></i>
                         </a>
                         {{/if}}
-
                     </div>
                 </div>
 

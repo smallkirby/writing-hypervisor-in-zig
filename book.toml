@@ -15,7 +15,7 @@ extra-watch-dirs = ["po"]
 
 [output.html]
 git-repository-url = "https://github.com/smallkirby/writing-hypervisor-in-zig"
-additional-css = ["theme/pagetoc.css", "theme/custom.css"]
+additional-css = ["theme/pagetoc.css", "theme/custom.css", "theme/language-picker.css"]
 additional-js = ["theme/pagetoc.js", "theme/mermaid.min.js", "theme/mermaid-init.js"]
 default-theme = "navy"
 site-url = "/"
