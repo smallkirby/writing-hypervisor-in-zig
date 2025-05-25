@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Writing Hypervisor in Zig\n"
-"POT-Creation-Date: 2025-05-25T15:14:43+09:00\n"
-"PO-Revision-Date: 2025-05-25 15:01+0900\n"
+"POT-Creation-Date: 2025-05-25T16:26:27+09:00\n"
+"PO-Revision-Date: 2025-05-25 16:45+0900\n"
 "Last-Translator: wataru <ssmallkirby@gmail.com>\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -18,7 +18,7 @@ msgstr "Summary"
 
 #: src/SUMMARY.md:3
 msgid "Writing Hypervisor in Zig 環境構築"
-msgstr "Writing Hypervisor in Zig 環境構築"
+msgstr "Writing Hypervisor in Zig Setup"
 
 #: src/SUMMARY.md:6
 msgid "Bootloader"
@@ -34,23 +34,23 @@ msgstr "Logging"
 
 #: src/SUMMARY.md:10
 msgid "カーネルのパース"
-msgstr "カーネルのパース"
+msgstr "Parsing Kernel"
 
 #: src/SUMMARY.md:11
 msgid "簡易ページテーブル"
-msgstr "簡易ページテーブル"
+msgstr "Simple Page Table"
 
 #: src/SUMMARY.md:12 src/bootloader/load_kernel.md:1 src/vmm/linux_boot.md:448
 msgid "カーネルのロード"
-msgstr "カーネルのロード"
+msgstr "Loading Kernel"
 
 #: src/SUMMARY.md:13
 msgid "メモリマップとお片付け"
-msgstr "メモリマップとお片付け"
+msgstr "Memory Map and Cleanup"
 
 #: src/SUMMARY.md:14 src/bootloader/jump_to_ymir.md:1
 msgid "カーネルの起動"
-msgstr "カーネルの起動"
+msgstr "Booting Kernel"
 
 #: src/SUMMARY.md:16
 msgid "Ymir Kernel"
@@ -58,15 +58,15 @@ msgstr "Ymir Kernel"
 
 #: src/SUMMARY.md:18
 msgid "シリアル出力"
-msgstr "シリアル出力"
+msgstr "Serial Output"
 
 #: src/SUMMARY.md:19
 msgid "ビット演算とテスト"
-msgstr "ビット演算とテスト"
+msgstr "Bit Operations and Testing"
 
 #: src/SUMMARY.md:20 src/kernel/serial_logsystem.md:1
 msgid "シリアルログシステム"
-msgstr "シリアルログシステム"
+msgstr "Serial Log System"
 
 #: src/SUMMARY.md:21
 msgid "GDT"
@@ -145,7 +145,7 @@ msgstr "I/O"
 
 #: src/SUMMARY.md:41 src/vmm/intr_injection.md:1
 msgid "割り込みの注入"
-msgstr "割り込みの注入"
+msgstr "Interrupt Injection"
 
 #: src/SUMMARY.md:42 src/vmm/initramfs.md:1
 msgid "initramfs"
@@ -166,10 +166,11 @@ msgid ""
 "低いレベルで動作するベアメタル Hypervisor を実装するにあたり、ブートローダ・"
 "カーネル・VMM の各コンポーネントをイチから組み立てていきます。"
 msgstr ""
-"**Writing Hypervisor in Zig** は [Zig](https://ziglang.org/) 言語を使いフルス"
-"クラッチで Type-1 Hypervisor を実装しようというブログシリーズです。 OS よりも"
-"低いレベルで動作するベアメタル Hypervisor を実装するにあたり、ブートローダ・"
-"カーネル・VMM の各コンポーネントをイチから組み立てていきます。"
+"**Writing Hypervisor in Zig** is a blog series where we implement a Type-1 "
+"hypervisor from scratch using the [Zig](https://ziglang.org/) language. In "
+"order to implement a bare-metal Hypervisor that runs at a lower level than "
+"an operating system, we will build the bootloader, kernel, and VMM "
+"components from scratch."
 
 #: src/intro.md:11
 msgid ""
@@ -177,55 +178,58 @@ msgid ""
 "64 (x86-64) CPU で動作し、Intel VT-x によるハードウェア仮想化支援機能を活用し"
 "ます。 Ymir は以下の特徴を持ちます:"
 msgstr ""
-"本シリーズでは **Ymir** という名前の Hypervisor を実装します。 Ymir は Intel "
-"64 (x86-64) CPU で動作し、Intel VT-x によるハードウェア仮想化支援機能を活用し"
-"ます。 Ymir は以下の特徴を持ちます:"
+"This series implements a Hypervisor named **Ymir**. Ymir runs on Intel 64 "
+"(x86-64) CPUs and takes advantage of hardware virtualization support "
+"provided by Intel VT-x. Ymir has the following features:"
 
 #: src/intro.md:15
 msgid "**Type-1 Hypervisor**: OS に一切依存しません"
-msgstr "**Type-1 Hypervisor**: OS に一切依存しません"
+msgstr "**Type-1 Hypervisor**: No dependency on OS"
 
 #: src/intro.md:16
 msgid ""
 "**Linux をブート可能**: Linux カーネルをブートするにに必要十分な機能を実装し"
 "ます"
 msgstr ""
-"**Linux をブート可能**: Linux カーネルをブートするにに必要十分な機能を実装し"
-"ます"
+"**Can boot Linux**: Ymir implements enough functionality to boot the Linux "
+"kernel"
 
 #: src/intro.md:17
 msgid "**フルスクラッチ**: ライブラリなどの依存が一切ありません"
-msgstr "**フルスクラッチ**: ライブラリなどの依存が一切ありません"
+msgstr "**Written from Scratch**: No dependence on libraries, etc."
 
 #: src/intro.md:18
 msgid ""
 "**Thin Hypervisor**: 必要な場合のみゲストに介入し、それ以外はパススルーします"
 msgstr ""
-"**Thin Hypervisor**: 必要な場合のみゲストに介入し、それ以外はパススルーします"
+"**Thin Hypervisor**: Ymir intervenes with a guest only when necessary, "
+"otherwise pass-through everything"
 
 #: src/intro.md:20
 msgid "実装や説明を簡単にするため、Ymir は以下のような制約を持ちます:"
-msgstr "実装や説明を簡単にするため、Ymir は以下のような制約を持ちます:"
+msgstr "For the simplicity, Ymir has the following constraints:"
 
 #: src/intro.md:22
 msgid "SMP (Symmetric Multi-Processing) はサポートしません"
-msgstr "SMP (Symmetric Multi-Processing) はサポートしません"
+msgstr "SMP (Symmetric Multi-Processing) is not supported"
 
 #: src/intro.md:23
 msgid "QEMU での開発を想定しており、実機での動作は確認していません"
-msgstr "QEMU での開発を想定しており、実機での動作は確認していません"
+msgstr ""
+"Development on QEMU is expected, and Ymir has not been tested on actual "
+"devices."
 
 #: src/intro.md:24
 msgid "実機で動かすには多少の修正が必要になるはずです"
-msgstr "実機で動かすには多少の修正が必要になるはずです"
+msgstr "It should require some modification to run on a real machine."
 
 #: src/intro.md:25
 msgid "APIC はサポートしません"
-msgstr "APIC はサポートしません"
+msgstr "APIC is not supported"
 
 #: src/intro.md:26
 msgid "シングルゲストのみをサポートします"
-msgstr "シングルゲストのみをサポートします"
+msgstr "Multiple guest VM at a time is not supported"
 
 #: src/intro.md:28
 msgid ""
@@ -234,70 +238,72 @@ msgid ""
 "際にコードを書いていくことで、最終的に Linux をブートすることができる "
 "Hypervisor が完成します:"
 msgstr ""
-"本シリーズは全部で 30 程度のチャプターから構成されており、 各チャプターはとあ"
-"るテーマの概念的な説明と実装の両方を含んでいます。 各チャプターを読みながら実"
-"際にコードを書いていくことで、最終的に Linux をブートすることができる "
-"Hypervisor が完成します:"
+"The series consists of about 30 chapters in total, each containing both "
+"conceptual and implementation explanations of a topic. By reading the "
+"chapters and writing the actual code, you will finally impuement a "
+"hypervisor that can boot Linux:"
 
 #: src/intro.md:34
 msgid "対象読者"
-msgstr "対象読者"
+msgstr "Intended Reader"
 
 #: src/intro.md:36
 msgid "本シリーズは以下のような読者を想定しています:"
-msgstr "本シリーズは以下のような読者を想定しています:"
+msgstr "This series is intended for the following readers:."
 
 #: src/intro.md:38
 msgid "OS に対するある程度の理解がある、または自分で調べる意欲がある"
-msgstr "OS に対するある程度の理解がある、または自分で調べる意欲がある"
+msgstr ""
+"Some understanding of the OS or willingness to investigate on their own"
 
 #: src/intro.md:39
 msgid ""
 "x86-64 アーキテクチャにある程度の理解がある、またはマニュアルを読んで調べるこ"
 "とができる"
 msgstr ""
-"x86-64 アーキテクチャにある程度の理解がある、またはマニュアルを読んで調べるこ"
-"とができる"
+"Some understanding of the x86-64 architecture or willingness to read and "
+"examine manuals"
 
 #: src/intro.md:40
 msgid ""
 "Zig 言語に興味がある、使ったことがある、またはリファレンスを読んで調べる意欲"
 "がある"
 msgstr ""
-"Zig 言語に興味がある、使ったことがある、またはリファレンスを読んで調べる意欲"
-"がある"
+"Interest in, experience with, or willingness to study through references to "
+"the Zig language"
 
 #: src/intro.md:41
 msgid "フルスクラッチで低レイヤなコードを書きたい"
-msgstr "フルスクラッチで低レイヤなコードを書きたい"
+msgstr "Willingness to write a low-level code from scratch"
 
 #: src/intro.md:42
 msgid "Intel VT-x をサポートする CPU を持っている"
-msgstr "Intel VT-x をサポートする CPU を持っている"
+msgstr "CPU that supports Intel VT-x"
 
 #: src/intro.md:44
 msgid "逆に、以下のような人には向いていません:"
-msgstr "逆に、以下のような人には向いていません:"
+msgstr "On the other hand, this blog is not suitable for those who:"
 
 #: src/intro.md:46
 msgid "マイナー言語なんて使いたくない"
-msgstr "マイナー言語なんて使いたくない"
+msgstr "don't want to use a non-popular language"
 
 #: src/intro.md:47
 msgid "絶対に自分で言語や CPU のリファレンスを調べたくない"
-msgstr "絶対に自分で言語や CPU のリファレンスを調べたくない"
+msgstr "Never want to look up a language or CPU reference on your own"
 
 #: src/intro.md:48
 msgid "簡単のための機能削減や多少の厳密性の犠牲を許容できない"
-msgstr "簡単のための機能削減や多少の厳密性の犠牲を許容できない"
+msgstr ""
+"Cannot tolerate feature reductions for simplicity or sacrifice of some rigor"
 
 #: src/intro.md:49
 msgid "Intel 64 の CPU を持っていない"
-msgstr "Intel 64 の CPU を持っていない"
+msgstr "don't have Intel 64 CPU"
 
 #: src/intro.md:51
 msgid "進め方"
-msgstr "進め方"
+msgstr "How to Read"
 
 #: src/intro.md:53
 msgid ""
@@ -305,9 +311,9 @@ msgid ""
 "ターはそれまでのチャプターに対する依存を持っており、既に登場したコードは実装"
 "されたものとして扱います。"
 msgstr ""
-"本シリーズはチャプター1から順に読み進めていくことを想定しています。 各チャプ"
-"ターはそれまでのチャプターに対する依存を持っており、既に登場したコードは実装"
-"されたものとして扱います。"
+"This series is intended to be read in order from Chapter 1. Each chapter has "
+"dependencies on the previous chapters, and code that has already appeared is "
+"treated as implemented."
 
 #: src/intro.md:56
 msgid ""
@@ -318,12 +324,12 @@ msgid ""
 "Zig の略です。 チャプター内で省略された箇所やスニペットでは分かりにくかった箇"
 "所は、対応するブランチを参照することで確認することができます。"
 msgstr ""
-"本シリーズは実際に手を動かしてコードを書いていくことが強く推奨されます。 リ"
-"ファレンス実装である Ymir は [Github で公開](https://github.com/smallkirby/"
-"ymir) されています。 各チャプターにおける最終的なコードは上記リポジトリの "
-"`whiz-*` というブランチに対応しています。 `whiz` は Writing Hypervisor in "
-"Zig の略です。 チャプター内で省略された箇所やスニペットでは分かりにくかった箇"
-"所は、対応するブランチを参照することで確認することができます。"
+"It is strongly recommended that you actually wr te the code in this series "
+"by your own. The reference implementation, Ymir, is available [on Github]"
+"(https://github.com/smallkirby/ymir). The final code for each chapter "
+"corresponds to the `whiz-*` branch in the above repository. `whiz` stands "
+"for Writing Hypervisor in Zig. You can refer to the corresponding branch to "
+"see what was omitted in the chapter or what was not clear in the snippet."
 
 #: src/intro.md:62
 msgid ""
@@ -332,26 +338,26 @@ msgid ""
 "修正は全てのブランチには反映されず最も新しい `whiz-*` および `master` ブラン"
 "チにのみ反映されることに注意してください。"
 msgstr ""
-"なお、本シリーズで実装する `whiz-*` ブランチの Ymir は簡単のために `master` "
-"ブランチの Ymir から一部機能が削減・簡略化されている可能性があります。 また、"
-"修正は全てのブランチには反映されず最も新しい `whiz-*` および `master` ブラン"
-"チにのみ反映されることに注意してください。"
+"Note that code in the `whiz-*` branch may have some features reduced or "
+"simplified from the one in the `master` branch for simplicity. Also note "
+"that the fixes will not be applied to all branches, but only to the most "
+"recent `whiz-*` and `master` branches."
 
 #: src/intro.md:66
 msgid "記法について"
-msgstr "記法について"
+msgstr "Notations"
 
 #: src/intro.md:68
 msgid "コードのスニペットは以下のようなコードブロックで提示されます:"
-msgstr "コードのスニペットは以下のようなコードブロックで提示されます:"
+msgstr "A snippet of code is presented in a code block like:"
 
 #: src/intro.md:74
 msgid ""
 "ファイル名を持つコードブロックは、そのファイルに対して新たに追加されるコード"
 "を意味します。 このような場合 `...` は既存のコードを省略するのに使われます:"
 msgstr ""
-"ファイル名を持つコードブロックは、そのファイルに対して新たに追加されるコード"
-"を意味します。 このような場合 `...` は既存のコードを省略するのに使われます:"
+"A code block with a file name means new code to be added for that file. In "
+"such cases `... ` is used to omit existing code:"
 
 #: src/intro.md:85
 msgid ""
@@ -359,9 +365,8 @@ msgid ""
 "であることを意味します。 このようなコードはチャプターの終了時に削除されるべき"
 "です:"
 msgstr ""
-"ファイル名に `.tmp.` が含まれるコードは、実験等のために一時的に追加するコード"
-"であることを意味します。 このようなコードはチャプターの終了時に削除されるべき"
-"です:"
+"Codes with `.tmp.` in the filename mean that they are added temporarily for "
+"experimentation. Such code should be removed at the end of the chapter:"
 
 #: src/intro.md:92
 msgid ""
@@ -369,45 +374,44 @@ msgid ""
 "す。 例として、以下のような構造体のフィールドは `.one` または `Some.one` のよ"
 "うに表記します:"
 msgstr ""
-"Zig の `struct` や `enum` のフィールドは、本文中で `.field` のように表記しま"
-"す。 例として、以下のような構造体のフィールドは `.one` または `Some.one` のよ"
-"うに表記します:"
+"Zig's `struct` and `enum` fields are denoted in the text as `.field`. As an "
+"example, the following structure fields is denoted as `.one` or `Some.one`:"
 
 #: src/intro.md:102
 msgid ""
 "レジスタ等において、Nビット目からMビット目を表す場合には `Register[M:N]` のよ"
 "うに表記します。 この際、Mビット目を含むことに注意してください。"
 msgstr ""
-"レジスタ等において、Nビット目からMビット目を表す場合には `Register[M:N]` のよ"
-"うに表記します。 この際、Mビット目を含むことに注意してください。"
+"For registers, the N-th through M-th bits are represented as `Register[M:"
+"N]`. In this case, note that the M-th bit is included."
 
 #: src/intro.md:105
 msgid "改善・修正"
-msgstr "改善・修正"
+msgstr "Contributions"
 
 #: src/intro.md:107
 msgid "以下のような場合には、筆者に対して更新をリクエストしてください:"
-msgstr "以下のような場合には、筆者に対して更新をリクエストしてください:"
+msgstr "Please request an update from the author if you"
 
 #: src/intro.md:109
 msgid "説明に技術的な誤りがある"
-msgstr "説明に技術的な誤りがある"
+msgstr "Found a technical error in the description"
 
 #: src/intro.md:110
 msgid "分かりにくい表現がある"
-msgstr "分かりにくい表現がある"
+msgstr "Found an expression that is difficult to understand"
 
 #: src/intro.md:111
 msgid "誤字・脱字等を見つけた"
-msgstr "誤字・脱字等を見つけた"
+msgstr "Found typo or omissions"
 
 #: src/intro.md:112
 msgid "提示されたコードが動かない、または分かりにくい"
-msgstr "提示されたコードが動かない、または分かりにくい"
+msgstr "Found that code presented does not work or is difficult to understand"
 
 #: src/intro.md:113
 msgid "本シリーズでは扱っていない内容を新たに扱ってほしい"
-msgstr "本シリーズでは扱っていない内容を新たに扱ってほしい"
+msgstr "Like to see new content that is still not covered in this series"
 
 #: src/intro.md:115
 msgid ""
@@ -416,10 +420,9 @@ msgid ""
 "建てる必要はありません。 リクエストの大小や内容の正誤に関わらず修正依頼やリク"
 "エスト等を歓迎します。"
 msgstr ""
-"更新リクエストは [GitHub](https://github.com/smallkirby/writing-hypervisor-"
-"in-zig) の Issue や Pull Request で受け付けています。 PR を作る前に Issue を"
-"建てる必要はありません。 リクエストの大小や内容の正誤に関わらず修正依頼やリク"
-"エスト等を歓迎します。"
+"You can request by creating Issue or Pull Request on [GitHub](https://github."
+"com/smallkirby/writing-hypervisor-in-zig). It is not necessary to create an "
+"Issue before creating a PR. We welcome any kind of requests and fixes."
 
 #: src/intro.md:119 src/bootloader/hello_uefi.md:355
 #: src/bootloader/uefi_log.md:387 src/kernel/pic.md:582
@@ -437,16 +440,17 @@ msgid ""
 "\\<Chapter\\>.\\<Section\\>.\\<Subsection\\>\"_ と表記します。 SDM から抜粋し"
 "た画像は全て [© Intel Corporation](https://www.intel.com/) に帰属します。"
 msgstr ""
-"本シリーズにおける主な参考文献は [Intel® 64 and IA-32 Architectures Software "
-"Developer Manuals](https://www.intel.com/content/www/us/en/developer/"
-"articles/technical/intel-sdm.html) です。 以降は **SDM** と略して表記しま"
-"す。 SDM から抜粋した画像については、キャプションに _\"SDM Vol.\\<Volume\\> "
-"\\<Chapter\\>.\\<Section\\>.\\<Subsection\\>\"_ と表記します。 SDM から抜粋し"
-"た画像は全て [© Intel Corporation](https://www.intel.com/) に帰属します。"
+"The primary reference in this series is [Intel® 64 and IA-32 Architectures "
+"Software Developer Manuals](https://www.intel.com/content/www/us/en/"
+"developer/articles/technical/intel-sdm.html), hereafter abbreviated as "
+"**SDM**. For images taken from the SDM, the caption should read _\"SDM Vol."
+"\\<Volume\\> \\<Chapter\\>. \\<Section\\>. \\<Subsection\\>\"_. All images "
+"extracted from SDM are the property of [© Intel Corporation](https://www."
+"intel.com/)."
 
 #: src/intro.md:126
 msgid "SDM 以外には、以下の情報を参考にしています:"
-msgstr "SDM 以外には、以下の情報を参考にしています:"
+msgstr "Other than SDM, the following information is available for reference:"
 
 #: src/intro.md:128 src/bootloader/hello_uefi.md:43
 msgid "[BitVisor](https://www.bitvisor.org/)"
@@ -512,27 +516,27 @@ msgstr "[Writing OS in Rust](https://os.phil-opp.com)"
 
 #: src/intro.md:138
 msgid "その他局所的に参考にした情報については各ページに記載します。"
-msgstr "その他局所的に参考にした情報については各ページに記載します。"
+msgstr "Other referenced information is provided on each page."
 
 #: src/intro.md:140 src/license.md:1
 msgid "ライセンス"
-msgstr "ライセンス"
+msgstr "License"
 
 #: src/intro.md:142
 msgid "[ライセンス](./license.md) を参照してください。"
-msgstr "[ライセンス](./license.md) を参照してください。"
+msgstr "See [License](./license.md)."
 
 #: src/intro.md:144
 msgid "プライバシー"
-msgstr "プライバシー"
+msgstr "Privacy"
 
 #: src/intro.md:146
 msgid ""
 "本ウェブサイトは Google Analytics を利用してアクセス解析をしています。 無効化"
 "するには、ブラウザの設定から本サイトのクッキーを無効化してください。"
 msgstr ""
-"本ウェブサイトは Google Analytics を利用してアクセス解析をしています。 無効化"
-"するには、ブラウザの設定から本サイトのクッキーを無効化してください。"
+"This website uses Google Analytics for access analysis. You can disable "
+"cookies for this site in your browser settings."
 
 #: src/intro.md:149
 msgid "Changelog"
@@ -552,11 +556,11 @@ msgstr "2024.11.17"
 
 #: src/intro.md:153
 msgid "公開"
-msgstr "公開"
+msgstr "Published"
 
 #: src/setup.md:1
 msgid "環境構築"
-msgstr "環境構築"
+msgstr "Setup"
 
 #: src/setup.md:3
 msgid ""
@@ -564,37 +568,37 @@ msgid ""
 "す。 これらは推奨される環境であり、以下の条件を満たさない場合でも開発ができる"
 "可能性はあります。 お使いの環境に合わせて適宜読みかえてください。"
 msgstr ""
-"本チャプターでは、Ymir Hypervisor の開発に必要な環境の構築について説明しま"
-"す。 これらは推奨される環境であり、以下の条件を満たさない場合でも開発ができる"
-"可能性はあります。 お使いの環境に合わせて適宜読みかえてください。"
+"This chapter describes the environment required to develop Ymir hypervisor. "
+"These are the recommended environments, but you can develop on other "
+"environment as far as requirements are satisfied. Please read accordingly to "
+"your own environment."
 
 #: src/setup.md:7
 msgid "想定する環境"
-msgstr "想定する環境"
+msgstr "Expected Environment"
 
 #: src/setup.md:9
 msgid "以下の環境における開発を想定しています:"
-msgstr "以下の環境における開発を想定しています:"
+msgstr "Development on the below environment is expected:"
 
 #: src/setup.md:11
 msgid ""
 "[Intel VT-x](https://en.wikipedia.org/wiki/X86_virtualization) がサポートされ"
 "ている x64 (Intel64) アーキテクチャ"
 msgstr ""
-"[Intel VT-x](https://en.wikipedia.org/wiki/X86_virtualization) がサポートされ"
-"ている x64 (Intel64) アーキテクチャ"
+"x64 (Intel64) architecture with [Intel VT-x](https://en.wikipedia.org/wiki/"
+"X86_virtualization) support"
 
 #: src/setup.md:12
 msgid "Nested Virtualization がサポートされているVMM"
-msgstr "Nested Virtualization がサポートされているVMM"
+msgstr "VMM that supports nested virtualization"
 
 #: src/setup.md:13
 msgid ""
 "Linux であれば QEMU/KVM が Nested Virtualization をサポートしていて、CPUをパ"
 "ススルーできる"
 msgstr ""
-"Linux であれば QEMU/KVM が Nested Virtualization をサポートしていて、CPUをパ"
-"ススルーできる"
+"On Linux, QEMU/KVM supports nested virtualization and can pass-through CPU"
 
 #: src/setup.md:14
 msgid "Zig 0.13.0"
@@ -602,7 +606,7 @@ msgstr "Zig 0.13.0"
 
 #: src/setup.md:16
 msgid "筆者は以下の環境での動作を確認しています:"
-msgstr "筆者は以下の環境での動作を確認しています:"
+msgstr "The author has tested in the following environment:."
 
 #: src/setup.md:18
 msgid "12th Gen Intel(R) Core(TM) i9-12900"
@@ -624,11 +628,10 @@ msgid ""
 "virtualbox.org/) でも [VMWare](https://www.vmware.com/) でも問題ない可能性は"
 "ありますが、本シリーズでは QEMU/KVM の使用を想定します。"
 msgstr ""
-"CPU に関しては、最近の Intel Core シリーズであればほぼ確実に VT-x がサポート"
-"されていると思われます。 実装は仮想環境上で行うため、必然的に Nested "
-"Virtualization ができる環境が必要になります。 [VirtualBox](https://www."
-"virtualbox.org/) でも [VMWare](https://www.vmware.com/) でも問題ない可能性は"
-"ありますが、本シリーズでは QEMU/KVM の使用を想定します。"
+"As for CPUs, recent Intel Core series are almost certain to support VT-x. "
+"Since we write and test Ymir in a VM, nestd virtualization is required. "
+"Although [VirtualBox](https://www.virtualbox.org/) or [VMWare](https://www."
+"vmware.com/) may work fine, we assume the use of QEMU/KVM in this series."
 
 #: src/setup.md:26
 msgid ""
@@ -636,9 +639,9 @@ msgid ""
 "ドで確認することができます。 なお、CPU 自体が VT-x をサポートしていても BIOS "
 "で無効化されている場合があることに注意してください:"
 msgstr ""
-"お使いの CPU が VT-x による仮想化支援をサポートしているかどうかは以下のコマン"
-"ドで確認することができます。 なお、CPU 自体が VT-x をサポートしていても BIOS "
-"で無効化されている場合があることに注意してください:"
+"You can check if your CPU supports virtualization by VT-x with the following "
+"command. Note that even if the CPU itself supports VT-x, it may be disabled "
+"in the BIOS:"
 
 #: src/setup.md:33
 msgid "Zig"
@@ -651,18 +654,18 @@ msgid ""
 "ん。 0.13.0 以降のバージョンがリリースされた場合も多少の修正で動くはずです"
 "が、本シリーズでは執筆時点の最新バージョンである 0.13.0 を使用します。"
 msgstr ""
-"本シリーズでは、[Zig](https://ziglang.org/download/) 0.13.0 を使用します。 "
-"Zig はまだ 1.0 に到達していない言語であるため後方互換性が保証されていませ"
-"ん。 0.13.0 以降のバージョンがリリースされた場合も多少の修正で動くはずです"
-"が、本シリーズでは執筆時点の最新バージョンである 0.13.0 を使用します。"
+"This series uses [Zig](https://ziglang.org/download/) 0.13.0. Zig is a "
+"language that has not yet reached 1.0, so backward compatibility is not "
+"guaranteed. Versions after 0.13.0 may work with some modifications, but this "
+"series focuses only on 0.13.0, the latest version at the time of writing."
 
 #: src/setup.md:39
 msgid ""
 "Zig には公式のバージョンマネージャが存在しません。 以下のどちらかの方法で "
 "Zig 0.13.0 をインストールしてください。"
 msgstr ""
-"Zig には公式のバージョンマネージャが存在しません。 以下のどちらかの方法で "
-"Zig 0.13.0 をインストールしてください。"
+"There is no official version manager for Zig. Please install Zig 0.13.0 in "
+"either of the following ways."
 
 #: src/setup.md:42
 msgid ""
@@ -671,18 +674,15 @@ msgid ""
 "com/tristanisham/zvm) があります。 GitHub の README から環境に合った方法で "
 "zvm をインストールした後、以下のコマンドで 0.13.0 をインストールします:"
 msgstr ""
-"1つ目がサードパーティ製のバージョンマネージャを使う方法です。 サードパーティ"
-"製の Zig バージョンマネージャのひとつに [tristanisham/zvm](https://github."
-"com/tristanisham/zvm) があります。 GitHub の README から環境に合った方法で "
-"zvm をインストールした後、以下のコマンドで 0.13.0 をインストールします:"
+"First, you can use a third-party version manager. I prefer using "
+"[tristanisham/zvm](https://github.com/tristanisham/zvm). After installing "
+"zvm following the iREADME, install Zig 0.13.0 with the following command:"
 
 #: src/setup.md:51
 msgid ""
 "zvm にこだわる必要はないため、お好みのバージョンマネージャ[^1] を使ってくださ"
 "い。"
-msgstr ""
-"zvm にこだわる必要はないため、お好みのバージョンマネージャ[^1] を使ってくださ"
-"い。"
+msgstr "No need to stick with zvm. Use the version manager[^1] of your choice."
 
 #: src/setup.md:53
 msgid ""
@@ -690,9 +690,9 @@ msgid ""
 "ziglang.org/download/)から 0.13.0 のバイナリをダウンロードし、パスが通ってい"
 "るディレクトリに配置してください。"
 msgstr ""
-"2つ目が公式のリリースページを使う方法です。 Zig の[リリースページ](https://"
-"ziglang.org/download/)から 0.13.0 のバイナリをダウンロードし、パスが通ってい"
-"るディレクトリに配置してください。"
+"The second way is to use the official release page. Download the 0.13.0 "
+"binary from Zig's [release page](https://ziglang.org/download/) and place it "
+"in an arbitrary directory in PATH."
 
 #: src/setup.md:56
 msgid "Language Server"
@@ -704,23 +704,23 @@ msgid ""
 "ます。 様々なエディタで利用可能な拡張が存在するため、[Zigのツールガイド]"
 "(https://ziglang.org/learn/tools/)に従って環境をセットアップしてください。"
 msgstr ""
-"Zig の language server である [ZLS](https://github.com/zigtools/zls) を使用し"
-"ます。 様々なエディタで利用可能な拡張が存在するため、[Zigのツールガイド]"
-"(https://ziglang.org/learn/tools/)に従って環境をセットアップしてください。"
+"We use [ZLS](https://github.com/zigtools/zls), Zig's language server. There "
+"are extensions available for various editors, so follow the [Zig's Tool "
+"Guide](https://ziglang.org/learn/tools/) to set up for your environment."
 
 #: src/setup.md:61
-msgid ""
-"\\[!WARNING\\] ZLS と Zig のバージョン 利用する Zig と ZLS のバージョンは必ず"
-"一致させてください[^2]。"
-msgstr ""
-"\\[!WARNING\\] ZLS と Zig のバージョン 利用する Zig と ZLS のバージョンは必ず"
-"一致させてください[^2]。"
+msgid "\\[!WARNING\\] ZLS と Zig のバージョン"
+msgstr "\\[!WARNING\\] Version Consistency between ZLS and Zig"
 
-#: src/setup.md:64
+#: src/setup.md:63
+msgid "利用する Zig と ZLS のバージョンは必ず一致させてください[^2]。"
+msgstr "You have to make sure that the version of Zig and ZLS is same[^2]。"
+
+#: src/setup.md:65
 msgid "OVMF"
 msgstr "OVMF"
 
-#: src/setup.md:66
+#: src/setup.md:67
 msgid ""
 "[OVMF](https://github.com/tianocore/tianocore.github.io/wiki/OVMF) は VM 上"
 "で UEFI をサポートするプロジェクト[^3]です。 QEMU ではデフォルトで [SeaBIOS]"
@@ -730,47 +730,45 @@ msgid ""
 "[Long Mode](https://en.wikipedia.org/wiki/Long_mode) で実行することが可能にな"
 "ります。"
 msgstr ""
-"[OVMF](https://github.com/tianocore/tianocore.github.io/wiki/OVMF) は VM 上"
-"で UEFI をサポートするプロジェクト[^3]です。 QEMU ではデフォルトで [SeaBIOS]"
-"(https://www.seabios.org/SeaBIOS) と呼ばれるレガシーBIOSが使われますが、本シ"
-"リーズでは OVMF を使って起動します。 使用する OVMF は、x64 アーキテクチャの "
-"64bit モード起動をする `X64` ビルドを利用します。 これにより、ブートローダを "
-"[Long Mode](https://en.wikipedia.org/wiki/Long_mode) で実行することが可能にな"
-"ります。"
+"[OVMF](https://github.com/tianocore/tianocore.github.io/wiki/OVMF) is a "
+"project[^3] that supports UEFI on VMs. QEMU uses a legacy BIOS called "
+"[SeaBIOS](https://www.seabios.org/SeaBIOS) by default, but the bootloader in "
+"this blog expects to run on UEFI. We use a `X64` build of OVMF, that boots "
+"in 64-bit mode. This allows the bootloader to start running in [Long Mode]"
+"(https://en.wikipedia.org/wiki/Long_mode)."
 
-#: src/setup.md:71
+#: src/setup.md:72
 msgid "Ubuntu を使っている場合には以下のコマンドでインストールできます:"
-msgstr "Ubuntu を使っている場合には以下のコマンドでインストールできます:"
+msgstr "Ubuntu users can install it with the following command:"
 
-#: src/setup.md:77
+#: src/setup.md:78
 msgid ""
 "他の OS やパッケージマネージャを利用している場合には、それぞれの方法でインス"
 "トールしてください。 また、ソースコードからのビルドも可能です。 その場合には "
 "TianoCore の [GitHub Wiki](https://github.com/tianocore/tianocore.github.io/"
 "wiki/How-to-build-OVMF) の手順に従ってください。"
 msgstr ""
-"他の OS やパッケージマネージャを利用している場合には、それぞれの方法でインス"
-"トールしてください。 また、ソースコードからのビルドも可能です。 その場合には "
-"TianoCore の [GitHub Wiki](https://github.com/tianocore/tianocore.github.io/"
-"wiki/How-to-build-OVMF) の手順に従ってください。"
-
-#: src/setup.md:81
-msgid ""
-"例として、他には [zigup](https://github.com/marler8997/zigup) があります。"
-msgstr ""
-"例として、他には [zigup](https://github.com/marler8997/zigup) があります。"
+"If you are using another OS or package manager, please install using their "
+"appropriate methods. You can also build from source code. In that case, "
+"follow the instructions in TianoCore's [GitHub Wiki](https://github.com/"
+"tianocore/tianocore.github.io/wiki/How-to-build-OVMF)."
 
 #: src/setup.md:82
 msgid ""
+"例として、他には [zigup](https://github.com/marler8997/zigup) があります。"
+msgstr "Another example is [zigup](https://github.com/marler8997/zigup)."
+
+#: src/setup.md:83
+msgid ""
 "バージョンを一致させないと ZLS が正常に動作しません (e.g. [\"ZLS not pulling "
 "in information from dependencies\"](https://ziggit.dev/t/zls-not-pulling-in-"
 "information-from-dependencies/4179))"
 msgstr ""
-"バージョンを一致させないと ZLS が正常に動作しません (e.g. [\"ZLS not pulling "
-"in information from dependencies\"](https://ziggit.dev/t/zls-not-pulling-in-"
-"information-from-dependencies/4179))"
+"ZLS will not work properly when used with inconsistent version of Zig (e.g. "
+"[“ZLS not pulling in information from dependencies”](https://ziggit.dev/t/"
+"zls-not-pulling-in-information- from-dependencies/4179))"
 
-#: src/setup.md:83
+#: src/setup.md:84
 msgid ""
 "[Open Virtual Machine Firmware (OVMF) Status Report](https://access.redhat."
 "com/articles/1434903)"
@@ -30127,15 +30125,15 @@ msgstr ""
 
 #: src/acknowledgement.md:1
 msgid "謝辞"
-msgstr "謝辞"
+msgstr "Acknowledgment"
 
 #: src/acknowledgement.md:3
 msgid ""
 "_Writing Hypervisor in Zig_ は以下の方の協力のもと執筆されました。 この場を借"
 "りて感謝の意を表します。"
 msgstr ""
-"_Writing Hypervisor in Zig_ は以下の方の協力のもと執筆されました。 この場を借"
-"りて感謝の意を表します。"
+"_Writing Hypervisor in Zig_ was written with the help of the following "
+"people. We would like to take this opportunity to express my appreciation."
 
 #: src/acknowledgement.md:6
 msgid "Authors"
@@ -30159,7 +30157,7 @@ msgstr "Special Thanks"
 
 #: src/acknowledgement.md:16
 msgid "乾パン"
-msgstr "乾パン"
+msgstr "Kanpan"
 
 #: src/acknowledgement.md:18
 msgid "![乾パン](./assets/smallkirby/kanpan.jpg)"
@@ -30171,26 +30169,27 @@ msgid ""
 "creativecommons.org/publicdomain/zero/1.0/) のもとで配布し、 全ての著作権と関"
 "連する権利を放棄します。"
 msgstr ""
-"本サイトのコンテンツは以下に示す例外を除いて全て [CC0 1.0 Universal](https://"
-"creativecommons.org/publicdomain/zero/1.0/) のもとで配布し、 全ての著作権と関"
-"連する権利を放棄します。"
+"All content on this site is distributed under [CC0 1.0 Universal](https://"
+"creativecommons.org/publicdomain/zero/1.0/) with the following exceptions, "
+"and all copyright and related rights are disclaimed."
 
 #: src/license.md:8
 msgid "以下のコンテンツは例外として CC0 1.0 Universal が適用されません:"
-msgstr "以下のコンテンツは例外として CC0 1.0 Universal が適用されません:"
+msgstr "CC0 1.0 Universal does not apply to the following content:"
 
 #: src/license.md:10
 msgid ""
 "`/assets/sdm` 以下で配布される画像: © Intel Corporation. All rights reserved."
 msgstr ""
-"`/assets/sdm` 以下で配布される画像: © Intel Corporation. All rights reserved."
+"Images distributed unde `/assets/sdm`: © Intel Corporation. All rights "
+"reserved."
 
 #: src/license.md:11
 msgid ""
 "`/assets/linux` 以下で配布される画像: © Copyright The kernel development "
 "community."
 msgstr ""
-"`/assets/linux` 以下で配布される画像: © Copyright The kernel development "
+"Images distributed under `/assets/linux`: © Copyright The kernel development "
 "community."
 
 #: src/license.md:12
@@ -30198,8 +30197,8 @@ msgid ""
 "`/assets/smallkirby` 以下で配布される画像: [smallkirby](https://github.com/"
 "smallkirby). All rights reserved."
 msgstr ""
-"`/assets/smallkirby` 以下で配布される画像: [smallkirby](https://github.com/"
-"smallkirby). All rights reserved."
+"Images distributed under `/assets/smallkirby`: [smallkirby](https://github."
+"com/smallkirby). All rights reserved."
 
 #: src/license.md:16
 msgid ""
@@ -30207,6 +30206,7 @@ msgid ""
 "License](https://opensource.org/license/mit) で配布されます。 ただし、本サイ"
 "トに掲載しているコードのスニペットは CC0 1.0 Universal のもとで配布します。"
 msgstr ""
-"リファレンス実装である [Ymir](https://github.com/smallkirby/ymir) は [MIT "
-"License](https://opensource.org/license/mit) で配布されます。 ただし、本サイ"
-"トに掲載しているコードのスニペットは CC0 1.0 Universal のもとで配布します。"
+"The reference implementation, [Ymir](https://github.com/smallkirby/ymir), is "
+"distributed under the [MIT License](https://opensource.org/license/mit). "
+"However, snippets of code used in this blog are distributed under CC0 1.0 "
+"Universal."

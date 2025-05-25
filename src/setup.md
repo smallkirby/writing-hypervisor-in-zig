@@ -59,6 +59,7 @@ Zig の language server である [ZLS](https://github.com/zigtools/zls) を使�
 様々なエディタで利用可能な拡張が存在するため、[Zigのツールガイド](https://ziglang.org/learn/tools/)に従って環境をセットアップしてください。
 
 > [!WARNING] ZLS と Zig のバージョン
+>
 > 利用する Zig と ZLS のバージョンは必ず一致させてください[^2]。
 
 ## OVMF
