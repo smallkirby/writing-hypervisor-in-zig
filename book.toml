@@ -11,6 +11,7 @@ src = "src"
 create-missing = false
 build-dir = "book"
 use-default-preprocessors = true
+extra-watch-dirs = ["po"]
 
 [output.html]
 git-repository-url = "https://github.com/smallkirby/writing-hypervisor-in-zig"
@@ -46,3 +47,7 @@ renderer = ["html"]
 
 [preprocessor.mermaid]
 command = "mdbook-mermaid"
+
+[preprocessor.gettext]
+before = ["admonish"]
+after = ["links"]
