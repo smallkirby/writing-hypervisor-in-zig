@@ -7,6 +7,7 @@
 本チャプターでは必要最低限なページテーブルの操作を実装していきます。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-surtr-simple_pg`](https://github.com/smallkirby/ymir/tree/whiz-surtr-simple_pg) ブランチにあります。
 
 ## Table of Contents
@@ -20,6 +21,7 @@
 
 `arch` ディレクトリの中に `x86` ディレクトリを作成し、以下のような構造にします:
 
+<!-- i18n:skip -->
 ```bash
 > tree ./surtr
 ./surtr
@@ -37,6 +39,7 @@
 
 `/arch.zig` では以下のようにターゲットとなるアーキテクチャに応じて `arch` 以下のコードを export します:
 
+<!-- i18n:skip -->
 ```surtr/arch.zig
 const builtin = @import("builtin");
 pub usingnamespace switch (builtin.target.cpu.arch) {
@@ -49,7 +52,7 @@ pub usingnamespace switch (builtin.target.cpu.arch) {
 今回は `x86_64` で固定ですが、他のアーキにも対応するようにした場合ターゲットに応じて変化します。
 コンパイル時に決定する値であるため、この`switch`文もコンパイル時に評価され、対応するアーキのルートファイルが export されます。
 
-> [!INFO] usingnamespace
+> [!INFO]
 >
 > [usingnamespace](https://ziglang.org/documentation/master/#usingnamespace) は、指定した構造体のフィールド全てを現在のスコープに持ってきてくれる機能です。
 > 今回の場合、単純に `@import("arch/x86/arch.zig")` すると以下のように利用側で一段余計なフィールドを指定する必要があります:
@@ -83,6 +86,7 @@ pub usingnamespace switch (builtin.target.cpu.arch) {
 今回はページテーブルを実装したいため、 `arch/x86/page.zig` を作成したあと、
 `arch/x86/arch.zig` から `page.zig` を export します。
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/arch.zig
 pub const page = @import("page.zig");
 ```
@@ -100,8 +104,9 @@ pub const page = @import("page.zig");
 現在 Surtr は `main()` の最後に無限ループをするようになっているため、その間にGDBでアタッチします:
 
 <details>
-<summary>メモリマップの確認</summary>
+<summary>Memory Map</summary>
 
+<!-- i18n:skip -->
 ```sh
 gef> target remote:1234
 gef> vmmap
@@ -161,6 +166,7 @@ UEFI が用意してくれたページテーブルは仮想アドレスと物理
 上の画像から分かるとおり、4つのエントリはどれも同じような構造を持っています[^1]。
 そこで、以下のように `EntryBase()` という、型を返す関数を定義し、それを使って4つのエントリを定義します:
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/page.zig
 const TableLevel = enum { lv4, lv3, lv2, lv1 };
 
@@ -228,6 +234,7 @@ C++ でいうところのテンプレートのインスタンス化のような�
 
 この構造体に、エントリが指し示す1レベル下のページテーブルの物理アドレス、またはページの物理アドレスを取得するための関数を追加します:
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/page.zig
 pub const Phys = u64;
 pub const Virt = u64;
@@ -247,6 +254,7 @@ pub inline fn address(self: Self) Phys {
 続いて、ページテーブルエントリを作成する関数を定義します。
 ページをマップするエントリを作成する場合には簡単です:
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/page.zig
 pub fn newMapPage(phys: Phys, present: bool) Self {
     if (level == .lv4) @compileError("Lv4 entry cannot map a page");
@@ -269,6 +277,7 @@ pub fn newMapPage(phys: Phys, present: bool) Self {
 そのためには、「自分よりも1レベル低いエントリの型」を定義してあげる必要があります。
 `BaseType()`が返す構造体に以下の定数を持たせましょう:
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/page.zig
 const LowerType = switch (level) {
     .lv4 => Lv3Entry,
@@ -282,6 +291,7 @@ const LowerType = switch (level) {
 `Lv1Entry` よりも下のエントリは存在しないため、`Lv1Entry` の場合は空の構造体を返します。
 これを用いると、ページテーブルを参照するエントリを作成する関数は以下のようになります:
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/page.zig
 pub fn newMapTable(table: [*]LowerType, present: bool) Self {
     if (level == .lv1) @compileError("Lv1 entry cannot reference a page table");
@@ -313,6 +323,7 @@ Surtr では、4KiB ページのみをサポートすることにします。
 
 まずは各レベルのページテーブルを取得する関数です:
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/page.zig
 const page_mask_4k: u64 = 0xFFF;
 const num_table_entries: usize = 512;
@@ -343,6 +354,7 @@ fn getLv1Table(lv1_paddr: Phys) []Lv1Entry {
 続いて、指定された仮想アドレスに対応するページテーブルエントリを取得する関数を実装します。
 この関数は仮想アドレスとページテーブルの物理アドレスを受取ります:
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/page.zig
 fn getEntry(T: type, vaddr: Virt, paddr: Phys) *T {
     const table = getTable(T, paddr);
@@ -377,6 +389,7 @@ fn getLv1Entry(addr: Virt, lv1tbl_paddr: Phys) *Lv1Entry {
 これで、仮想アドレスからページテーブルエントリを取得する準備がほぼ整いました。
 ヘルパー関数として CR3 レジスタを取得する取得するラッパーを `asm.zig` に追加します:
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/asm.zig
 pub inline fn readCr3() u64 {
     var cr3: u64 = undefined;
@@ -390,6 +403,7 @@ pub inline fn readCr3() u64 {
 
 最後に、4KiB ページをマップする関数を次に示します。
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/page.zig
 const am = @import("asm.zig");
 
@@ -454,6 +468,7 @@ Lv1 にまでたどり着いたら、事前に定義した `newMapPage()` を使
 
 新たにページテーブルを確保する関数 `allocateNewTable()` は以下のように実装されています:
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/page.zig
 pub const kib = 1024;
 pub const page_size_4k = 4 * kib;
@@ -489,6 +504,7 @@ Ymir は自身の新しいページテーブルを作成するまではこの領
 実際に適当な仮想アドレスをマップできることを確認してみましょう。
 `boot.zig` で以下のように適当なアドレスをマップします:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const arch = @import("arch.zig");
 
@@ -505,6 +521,7 @@ arch.page.map4kTo(
 
 実行すると以下のようになります:
 
+<!-- i18n:skip -->
 ```txt
 [DEBUG] (surtr): Kernel ELF information:
   Entry Point         : 0x10012B0
@@ -531,6 +548,7 @@ CR0  - 0000000080010033, CR2 - 000000001FC01FF8, CR3 - 000000001FC01000
 オフセットの `0xFF8` は指定した仮想アドレス `0xFFFF_FFFF_DEAD_0000` に対応するテーブル内のエントリのオフセットです。
 [gef](https://github.com/bata24/gef) の `vmmap` コマンドで Lv4 テーブルの様子を見てみます:
 
+<!-- i18n:skip -->
 ```txt
 Virtual address start-end              Physical address start-end             Total size   Page size   Count  Flags
 ...
@@ -548,6 +566,7 @@ Lv4 テーブルが存在するページの属性を変更するためには、�
 Lv4 テーブル自体を書き込み可能にするためには、Lv4 テーブル自体をコピーするしかありません。
 以下のような関数を定義し、Lv4 テーブルを書き込み可能にします:
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/page.zig
 pub fn setLv4Writable(bs: *BootServices) PageError!void {
     var new_lv4ptr: [*]Lv4Entry = undefined;
@@ -564,6 +583,7 @@ pub fn setLv4Writable(bs: *BootServices) PageError!void {
 
 また、ヘルパー関数 `loadCr3()` を追加します:
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/asm.zig
 pub inline fn loadCr3(cr3: u64) void {
     asm volatile (
@@ -581,6 +601,7 @@ CR3 のリロードは全ての TLB をフラッシュするため、以降は�
 
 `boot.zig` で 4KiB ページをマップする前に Lv4 テーブルを書き込み可能にしてみましょう:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 arch.page.setLv4Writable(boot_service) catch |err| {
     log.err("Failed to set page table writable: {?}", .{err});
@@ -592,6 +613,7 @@ log.debug("Set page table writable.", .{});
 実行すると今度はページフォルトが起きずに正常に hlt ループまで実行されるはずです。
 この時点でのページテーブルを見ると以下のようになっています:
 
+<!-- i18n:skip -->
 ```txt
 Virtual address start-end              Physical address start-end             Total size   Page size   Count  Flags
 0x0000000000000000-0x0000000000200000  0x0000000000000000-0x0000000000200000  0x200000     0x200000    1      [RWX KERN ACCESSED DIRTY]
