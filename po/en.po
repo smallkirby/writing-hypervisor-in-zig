@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Writing Hypervisor in Zig\n"
-"POT-Creation-Date: 2025-05-25T16:26:27+09:00\n"
-"PO-Revision-Date: 2025-05-25 16:45+0900\n"
+"POT-Creation-Date: 2025-05-25T20:03:47+09:00\n"
+"PO-Revision-Date: 2025-05-25 20:04+0900\n"
 "Last-Translator: wataru <ssmallkirby@gmail.com>\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -159,7 +159,29 @@ msgstr "VMCALL"
 msgid "謝辞 ライセンス"
 msgstr "謝辞 ライセンス"
 
-#: src/intro.md:8
+#: src/intro.md:12
+msgid "[Japanese](/index.md)"
+msgstr ""
+
+#: src/intro.md:13
+msgid "[English (WIP)](/en/index.md)"
+msgstr ""
+
+#: src/intro.md:15
+msgid ""
+"**You can switch the language by clicking the earth icon on the top right "
+"corner of the page.**"
+msgstr ""
+
+#: src/intro.md:17
+msgid ""
+"Note that Japanese version is original and all other versions can be "
+"outdated. When you see Japanese sentences in translated versions, it means "
+"the translation is not yet available. Please request a translation at the "
+"GitHub repository, or contribute to the translation if you can."
+msgstr ""
+
+#: src/intro.md:23
 msgid ""
 "**Writing Hypervisor in Zig** は [Zig](https://ziglang.org/) 言語を使いフルス"
 "クラッチで Type-1 Hypervisor を実装しようというブログシリーズです。 OS よりも"
@@ -172,7 +194,7 @@ msgstr ""
 "an operating system, we will build the bootloader, kernel, and VMM "
 "components from scratch."
 
-#: src/intro.md:11
+#: src/intro.md:26
 msgid ""
 "本シリーズでは **Ymir** という名前の Hypervisor を実装します。 Ymir は Intel "
 "64 (x86-64) CPU で動作し、Intel VT-x によるハードウェア仮想化支援機能を活用し"
@@ -182,11 +204,11 @@ msgstr ""
 "(x86-64) CPUs and takes advantage of hardware virtualization support "
 "provided by Intel VT-x. Ymir has the following features:"
 
-#: src/intro.md:15
+#: src/intro.md:30
 msgid "**Type-1 Hypervisor**: OS に一切依存しません"
 msgstr "**Type-1 Hypervisor**: No dependency on OS"
 
-#: src/intro.md:16
+#: src/intro.md:31
 msgid ""
 "**Linux をブート可能**: Linux カーネルをブートするにに必要十分な機能を実装し"
 "ます"
@@ -194,44 +216,44 @@ msgstr ""
 "**Can boot Linux**: Ymir implements enough functionality to boot the Linux "
 "kernel"
 
-#: src/intro.md:17
+#: src/intro.md:32
 msgid "**フルスクラッチ**: ライブラリなどの依存が一切ありません"
 msgstr "**Written from Scratch**: No dependence on libraries, etc."
 
-#: src/intro.md:18
+#: src/intro.md:33
 msgid ""
 "**Thin Hypervisor**: 必要な場合のみゲストに介入し、それ以外はパススルーします"
 msgstr ""
 "**Thin Hypervisor**: Ymir intervenes with a guest only when necessary, "
 "otherwise pass-through everything"
 
-#: src/intro.md:20
+#: src/intro.md:35
 msgid "実装や説明を簡単にするため、Ymir は以下のような制約を持ちます:"
 msgstr "For the simplicity, Ymir has the following constraints:"
 
-#: src/intro.md:22
+#: src/intro.md:37
 msgid "SMP (Symmetric Multi-Processing) はサポートしません"
 msgstr "SMP (Symmetric Multi-Processing) is not supported"
 
-#: src/intro.md:23
+#: src/intro.md:38
 msgid "QEMU での開発を想定しており、実機での動作は確認していません"
 msgstr ""
 "Development on QEMU is expected, and Ymir has not been tested on actual "
 "devices."
 
-#: src/intro.md:24
+#: src/intro.md:39
 msgid "実機で動かすには多少の修正が必要になるはずです"
 msgstr "It should require some modification to run on a real machine."
 
-#: src/intro.md:25
+#: src/intro.md:40
 msgid "APIC はサポートしません"
 msgstr "APIC is not supported"
 
-#: src/intro.md:26
+#: src/intro.md:41
 msgid "シングルゲストのみをサポートします"
 msgstr "Multiple guest VM at a time is not supported"
 
-#: src/intro.md:28
+#: src/intro.md:43
 msgid ""
 "本シリーズは全部で 30 程度のチャプターから構成されており、 各チャプターはとあ"
 "るテーマの概念的な説明と実装の両方を含んでいます。 各チャプターを読みながら実"
@@ -243,20 +265,20 @@ msgstr ""
 "chapters and writing the actual code, you will finally impuement a "
 "hypervisor that can boot Linux:"
 
-#: src/intro.md:34
+#: src/intro.md:49
 msgid "対象読者"
 msgstr "Intended Reader"
 
-#: src/intro.md:36
+#: src/intro.md:51
 msgid "本シリーズは以下のような読者を想定しています:"
 msgstr "This series is intended for the following readers:."
 
-#: src/intro.md:38
+#: src/intro.md:53
 msgid "OS に対するある程度の理解がある、または自分で調べる意欲がある"
 msgstr ""
 "Some understanding of the OS or willingness to investigate on their own"
 
-#: src/intro.md:39
+#: src/intro.md:54
 msgid ""
 "x86-64 アーキテクチャにある程度の理解がある、またはマニュアルを読んで調べるこ"
 "とができる"
@@ -264,7 +286,7 @@ msgstr ""
 "Some understanding of the x86-64 architecture or willingness to read and "
 "examine manuals"
 
-#: src/intro.md:40
+#: src/intro.md:55
 msgid ""
 "Zig 言語に興味がある、使ったことがある、またはリファレンスを読んで調べる意欲"
 "がある"
@@ -272,40 +294,40 @@ msgstr ""
 "Interest in, experience with, or willingness to study through references to "
 "the Zig language"
 
-#: src/intro.md:41
+#: src/intro.md:56
 msgid "フルスクラッチで低レイヤなコードを書きたい"
 msgstr "Willingness to write a low-level code from scratch"
 
-#: src/intro.md:42
+#: src/intro.md:57
 msgid "Intel VT-x をサポートする CPU を持っている"
 msgstr "CPU that supports Intel VT-x"
 
-#: src/intro.md:44
+#: src/intro.md:59
 msgid "逆に、以下のような人には向いていません:"
 msgstr "On the other hand, this blog is not suitable for those who:"
 
-#: src/intro.md:46
+#: src/intro.md:61
 msgid "マイナー言語なんて使いたくない"
 msgstr "don't want to use a non-popular language"
 
-#: src/intro.md:47
+#: src/intro.md:62
 msgid "絶対に自分で言語や CPU のリファレンスを調べたくない"
 msgstr "Never want to look up a language or CPU reference on your own"
 
-#: src/intro.md:48
+#: src/intro.md:63
 msgid "簡単のための機能削減や多少の厳密性の犠牲を許容できない"
 msgstr ""
 "Cannot tolerate feature reductions for simplicity or sacrifice of some rigor"
 
-#: src/intro.md:49
+#: src/intro.md:64
 msgid "Intel 64 の CPU を持っていない"
 msgstr "don't have Intel 64 CPU"
 
-#: src/intro.md:51
+#: src/intro.md:66
 msgid "進め方"
 msgstr "How to Read"
 
-#: src/intro.md:53
+#: src/intro.md:68
 msgid ""
 "本シリーズはチャプター1から順に読み進めていくことを想定しています。 各チャプ"
 "ターはそれまでのチャプターに対する依存を持っており、既に登場したコードは実装"
@@ -315,7 +337,7 @@ msgstr ""
 "dependencies on the previous chapters, and code that has already appeared is "
 "treated as implemented."
 
-#: src/intro.md:56
+#: src/intro.md:71
 msgid ""
 "本シリーズは実際に手を動かしてコードを書いていくことが強く推奨されます。 リ"
 "ファレンス実装である Ymir は [Github で公開](https://github.com/smallkirby/"
@@ -331,7 +353,7 @@ msgstr ""
 "for Writing Hypervisor in Zig. You can refer to the corresponding branch to "
 "see what was omitted in the chapter or what was not clear in the snippet."
 
-#: src/intro.md:62
+#: src/intro.md:77
 msgid ""
 "なお、本シリーズで実装する `whiz-*` ブランチの Ymir は簡単のために `master` "
 "ブランチの Ymir から一部機能が削減・簡略化されている可能性があります。 また、"
@@ -343,15 +365,15 @@ msgstr ""
 "that the fixes will not be applied to all branches, but only to the most "
 "recent `whiz-*` and `master` branches."
 
-#: src/intro.md:66
+#: src/intro.md:81
 msgid "記法について"
 msgstr "Notations"
 
-#: src/intro.md:68
+#: src/intro.md:83
 msgid "コードのスニペットは以下のようなコードブロックで提示されます:"
 msgstr "A snippet of code is presented in a code block like:"
 
-#: src/intro.md:74
+#: src/intro.md:89
 msgid ""
 "ファイル名を持つコードブロックは、そのファイルに対して新たに追加されるコード"
 "を意味します。 このような場合 `...` は既存のコードを省略するのに使われます:"
@@ -359,7 +381,7 @@ msgstr ""
 "A code block with a file name means new code to be added for that file. In "
 "such cases `... ` is used to omit existing code:"
 
-#: src/intro.md:85
+#: src/intro.md:100
 msgid ""
 "ファイル名に `.tmp.` が含まれるコードは、実験等のために一時的に追加するコード"
 "であることを意味します。 このようなコードはチャプターの終了時に削除されるべき"
@@ -368,7 +390,7 @@ msgstr ""
 "Codes with `.tmp.` in the filename mean that they are added temporarily for "
 "experimentation. Such code should be removed at the end of the chapter:"
 
-#: src/intro.md:92
+#: src/intro.md:107
 msgid ""
 "Zig の `struct` や `enum` のフィールドは、本文中で `.field` のように表記しま"
 "す。 例として、以下のような構造体のフィールドは `.one` または `Some.one` のよ"
@@ -377,7 +399,7 @@ msgstr ""
 "Zig's `struct` and `enum` fields are denoted in the text as `.field`. As an "
 "example, the following structure fields is denoted as `.one` or `Some.one`:"
 
-#: src/intro.md:102
+#: src/intro.md:117
 msgid ""
 "レジスタ等において、Nビット目からMビット目を表す場合には `Register[M:N]` のよ"
 "うに表記します。 この際、Mビット目を含むことに注意してください。"
@@ -385,35 +407,35 @@ msgstr ""
 "For registers, the N-th through M-th bits are represented as `Register[M:"
 "N]`. In this case, note that the M-th bit is included."
 
-#: src/intro.md:105
+#: src/intro.md:120
 msgid "改善・修正"
 msgstr "Contributions"
 
-#: src/intro.md:107
+#: src/intro.md:122
 msgid "以下のような場合には、筆者に対して更新をリクエストしてください:"
 msgstr "Please request an update from the author if you"
 
-#: src/intro.md:109
+#: src/intro.md:124
 msgid "説明に技術的な誤りがある"
 msgstr "Found a technical error in the description"
 
-#: src/intro.md:110
+#: src/intro.md:125
 msgid "分かりにくい表現がある"
 msgstr "Found an expression that is difficult to understand"
 
-#: src/intro.md:111
+#: src/intro.md:126
 msgid "誤字・脱字等を見つけた"
 msgstr "Found typo or omissions"
 
-#: src/intro.md:112
+#: src/intro.md:127
 msgid "提示されたコードが動かない、または分かりにくい"
 msgstr "Found that code presented does not work or is difficult to understand"
 
-#: src/intro.md:113
+#: src/intro.md:128
 msgid "本シリーズでは扱っていない内容を新たに扱ってほしい"
 msgstr "Like to see new content that is still not covered in this series"
 
-#: src/intro.md:115
+#: src/intro.md:130
 msgid ""
 "更新リクエストは [GitHub](https://github.com/smallkirby/writing-hypervisor-"
 "in-zig) の Issue や Pull Request で受け付けています。 PR を作る前に Issue を"
@@ -424,14 +446,14 @@ msgstr ""
 "com/smallkirby/writing-hypervisor-in-zig). It is not necessary to create an "
 "Issue before creating a PR. We welcome any kind of requests and fixes."
 
-#: src/intro.md:119 src/bootloader/hello_uefi.md:355
+#: src/intro.md:134 src/bootloader/hello_uefi.md:366
 #: src/bootloader/uefi_log.md:387 src/kernel/pic.md:582
 #: src/vmm/vmentry_vmexit.md:635 src/vmm/ept.md:756 src/vmm/linux_boot.md:712
 #: src/vmm/io.md:723
 msgid "References"
 msgstr "References"
 
-#: src/intro.md:121
+#: src/intro.md:136
 msgid ""
 "本シリーズにおける主な参考文献は [Intel® 64 and IA-32 Architectures Software "
 "Developer Manuals](https://www.intel.com/content/www/us/en/developer/"
@@ -448,15 +470,15 @@ msgstr ""
 "extracted from SDM are the property of [© Intel Corporation](https://www."
 "intel.com/)."
 
-#: src/intro.md:126
+#: src/intro.md:141
 msgid "SDM 以外には、以下の情報を参考にしています:"
 msgstr "Other than SDM, the following information is available for reference:"
 
-#: src/intro.md:128 src/bootloader/hello_uefi.md:43
+#: src/intro.md:143 src/bootloader/hello_uefi.md:44
 msgid "[BitVisor](https://www.bitvisor.org/)"
 msgstr "[BitVisor](https://www.bitvisor.org/)"
 
-#: src/intro.md:129
+#: src/intro.md:144
 msgid ""
 "[ZystemOS/pluto: An x86 kernel written in Zig](https://github.com/ZystemOS/"
 "pluto)"
@@ -464,7 +486,7 @@ msgstr ""
 "[ZystemOS/pluto: An x86 kernel written in Zig](https://github.com/ZystemOS/"
 "pluto)"
 
-#: src/intro.md:130
+#: src/intro.md:145
 msgid ""
 "[AndreaOrru/zen : Experimental operating system written in Zig](https://"
 "github.com/AndreaOrru/zen)"
@@ -472,7 +494,7 @@ msgstr ""
 "[AndreaOrru/zen : Experimental operating system written in Zig](https://"
 "github.com/AndreaOrru/zen)"
 
-#: src/intro.md:131
+#: src/intro.md:146
 msgid ""
 "[nuta/resea: A microkernel-based hackable operating system.](https://github."
 "com/nuta/resea)"
@@ -480,7 +502,7 @@ msgstr ""
 "[nuta/resea: A microkernel-based hackable operating system.](https://github."
 "com/nuta/resea)"
 
-#: src/intro.md:132
+#: src/intro.md:147
 msgid ""
 "[ハイパーバイザの作り方](https://syuu1228.github.io/"
 "howto_implement_hypervisor/)"
@@ -488,11 +510,11 @@ msgstr ""
 "[ハイパーバイザの作り方](https://syuu1228.github.io/"
 "howto_implement_hypervisor/)"
 
-#: src/intro.md:133
+#: src/intro.md:148
 msgid "[ゼロからの OS 自作入門](https://zero.osdev.jp/)"
 msgstr "[ゼロからの OS 自作入門](https://zero.osdev.jp/)"
 
-#: src/intro.md:134
+#: src/intro.md:149
 msgid ""
 "[5 Days to Virtualization: A Series on Hypervisor Development - Reverse "
 "Engineering](https://revers.engineering/7-days-to-virtualization-a-series-on-"
@@ -502,7 +524,7 @@ msgstr ""
 "Engineering](https://revers.engineering/7-days-to-virtualization-a-series-on-"
 "hypervisor-development/)"
 
-#: src/intro.md:135
+#: src/intro.md:150
 msgid ""
 "[Hypervisor From Scratch - Rayanfam Blog](https://rayanfam.com/topics/"
 "hypervisor-from-scratch-part-1/)"
@@ -510,27 +532,27 @@ msgstr ""
 "[Hypervisor From Scratch - Rayanfam Blog](https://rayanfam.com/topics/"
 "hypervisor-from-scratch-part-1/)"
 
-#: src/intro.md:136
+#: src/intro.md:151
 msgid "[Writing OS in Rust](https://os.phil-opp.com)"
 msgstr "[Writing OS in Rust](https://os.phil-opp.com)"
 
-#: src/intro.md:138
+#: src/intro.md:153
 msgid "その他局所的に参考にした情報については各ページに記載します。"
 msgstr "Other referenced information is provided on each page."
 
-#: src/intro.md:140 src/license.md:1
+#: src/intro.md:155 src/license.md:1
 msgid "ライセンス"
 msgstr "License"
 
-#: src/intro.md:142
+#: src/intro.md:157
 msgid "[ライセンス](./license.md) を参照してください。"
 msgstr "See [License](./license.md)."
 
-#: src/intro.md:144
+#: src/intro.md:159
 msgid "プライバシー"
 msgstr "Privacy"
 
-#: src/intro.md:146
+#: src/intro.md:161
 msgid ""
 "本ウェブサイトは Google Analytics を利用してアクセス解析をしています。 無効化"
 "するには、ブラウザの設定から本サイトのクッキーを無効化してください。"
@@ -538,23 +560,23 @@ msgstr ""
 "This website uses Google Analytics for access analysis. You can disable "
 "cookies for this site in your browser settings."
 
-#: src/intro.md:149
+#: src/intro.md:164
 msgid "Changelog"
 msgstr "Changelog"
 
-#: src/intro.md:151
+#: src/intro.md:166
 msgid "Date"
 msgstr "Date"
 
-#: src/intro.md:151
+#: src/intro.md:166
 msgid "Log"
 msgstr "Log"
 
-#: src/intro.md:153
+#: src/intro.md:168
 msgid "2024.11.17"
 msgstr "2024.11.17"
 
-#: src/intro.md:153
+#: src/intro.md:168
 msgid "公開"
 msgstr "Published"
 
@@ -709,8 +731,8 @@ msgstr ""
 "Guide](https://ziglang.org/learn/tools/) to set up for your environment."
 
 #: src/setup.md:61
-msgid "\\[!WARNING\\] ZLS と Zig のバージョン"
-msgstr "\\[!WARNING\\] Version Consistency between ZLS and Zig"
+msgid "\\[!WARNING\\]"
+msgstr ""
 
 #: src/setup.md:63
 msgid "利用する Zig と ZLS のバージョンは必ず一致させてください[^2]。"
@@ -785,24 +807,26 @@ msgid ""
 "作させます。 まだ起動するだけで何もしないアプリケーションですが、次チャプター"
 "以降で実装する Surtr の基礎となる部分です。"
 msgstr ""
-"本チャプターからは Ymir のブートローダにあたる **Surtr** の実装を始めていきま"
-"す。 Surtr は UEFI アプリケーションとして 64bit モードで動作します。 本チャプ"
-"ターでは最初に hypervisor の分類と Ymir の全体構成について確認します。 その"
-"後、QEMU 上で動作する UEFI アプリケーションの雛形を作成し、実際に QEMU 上で動"
-"作させます。 まだ起動するだけで何もしないアプリケーションですが、次チャプター"
-"以降で実装する Surtr の基礎となる部分です。"
+"In this chapter, we will start implementing **Surtr**, the bootloader of "
+"Ymir. Surtr runs as a UEFI application in 64-bit mode. We will first review "
+"the classification of hypervisors and the overall structure of Ymir. After "
+"that, we will create a template for a UEFI application to run on QEMU. "
+"Although it is still an application that *just runs*, we can learn the basis "
+"for Surtr, which we will implement in the next chapters and beyond."
 
 #: src/bootloader/hello_uefi.md:9
-msgid ""
-"\\[!IMPORTANT\\] 本チャプターの最終コードは [`whiz-surtr-hello_uefi`]"
-"(https://github.com/smallkirby/ymir/tree/whiz-surtr-hello_uefi) ブランチにあ"
-"ります。"
+msgid "\\[!IMPORTANT\\]"
 msgstr ""
-"\\[!IMPORTANT\\] 本チャプターの最終コードは [`whiz-surtr-hello_uefi`]"
-"(https://github.com/smallkirby/ymir/tree/whiz-surtr-hello_uefi) ブランチにあ"
-"ります。"
 
-#: src/bootloader/hello_uefi.md:12 src/bootloader/uefi_log.md:10
+#: src/bootloader/hello_uefi.md:11
+msgid ""
+"本チャプターの最終コードは [`whiz-surtr-hello_uefi`](https://github.com/"
+"smallkirby/ymir/tree/whiz-surtr-hello_uefi) ブランチにあります。"
+msgstr ""
+"Source code for this chapter is in [`whiz-surtr-hello_uefi`](https://github."
+"com/smallkirby/ymir/tree/whiz-surtr-hello_uefi) branch."
+
+#: src/bootloader/hello_uefi.md:13 src/bootloader/uefi_log.md:10
 #: src/bootloader/parse_kernel.md:12 src/bootloader/simple_pg.md:12
 #: src/bootloader/load_kernel.md:10 src/bootloader/cleanup_memmap.md:12
 #: src/bootloader/jump_to_ymir.md:7 src/kernel/serial_output.md:15
@@ -818,43 +842,43 @@ msgstr ""
 msgid "Table of Contents"
 msgstr "Table of Contents"
 
-#: src/bootloader/hello_uefi.md:14
+#: src/bootloader/hello_uefi.md:15
 msgid "[Hypervisor の種類](#hypervisor-の種類)"
 msgstr "[Hypervisor の種類](#hypervisor-の種類)"
 
-#: src/bootloader/hello_uefi.md:15
+#: src/bootloader/hello_uefi.md:16
 msgid "[Type-1 Hypervisor](#type-1-hypervisor)"
 msgstr "[Type-1 Hypervisor](#type-1-hypervisor)"
 
-#: src/bootloader/hello_uefi.md:16
+#: src/bootloader/hello_uefi.md:17
 msgid "[Type-2 Hypervisor](#type-2-hypervisor)"
 msgstr "[Type-2 Hypervisor](#type-2-hypervisor)"
 
-#: src/bootloader/hello_uefi.md:17
+#: src/bootloader/hello_uefi.md:18
 msgid "[Surtr Bootloader](#surtr-bootloader)"
 msgstr "[Surtr Bootloader](#surtr-bootloader)"
 
-#: src/bootloader/hello_uefi.md:18
+#: src/bootloader/hello_uefi.md:19
 msgid "[UEFI アプリの作成](#uefi-アプリの作成)"
 msgstr "[UEFI アプリの作成](#uefi-アプリの作成)"
 
-#: src/bootloader/hello_uefi.md:19
+#: src/bootloader/hello_uefi.md:20
 msgid "[ビルドスクリプトの設定](#ビルドスクリプトの設定)"
 msgstr "[ビルドスクリプトの設定](#ビルドスクリプトの設定)"
 
-#: src/bootloader/hello_uefi.md:20
+#: src/bootloader/hello_uefi.md:21
 msgid "[エントリポイントの作成](#エントリポイントの作成)"
 msgstr "[エントリポイントの作成](#エントリポイントの作成)"
 
-#: src/bootloader/hello_uefi.md:21
+#: src/bootloader/hello_uefi.md:22
 msgid "[QEMU で実行するための設定](#qemu-で実行するための設定)"
 msgstr "[QEMU で実行するための設定](#qemu-で実行するための設定)"
 
-#: src/bootloader/hello_uefi.md:22
+#: src/bootloader/hello_uefi.md:23
 msgid "[実行](#実行)"
 msgstr "[実行](#実行)"
 
-#: src/bootloader/hello_uefi.md:23 src/bootloader/uefi_log.md:18
+#: src/bootloader/hello_uefi.md:24 src/bootloader/uefi_log.md:18
 #: src/bootloader/parse_kernel.md:19 src/bootloader/simple_pg.md:18
 #: src/bootloader/load_kernel.md:18 src/bootloader/jump_to_ymir.md:16
 #: src/kernel/serial_output.md:24 src/kernel/bit_and_test.md:20
@@ -869,25 +893,26 @@ msgstr "[実行](#実行)"
 msgid "[まとめ](#まとめ)"
 msgstr "[まとめ](#まとめ)"
 
-#: src/bootloader/hello_uefi.md:24 src/bootloader/uefi_log.md:19
+#: src/bootloader/hello_uefi.md:25 src/bootloader/uefi_log.md:19
 #: src/kernel/pic.md:33 src/vmm/vmentry_vmexit.md:23 src/vmm/ept.md:22
 #: src/vmm/linux_boot.md:26 src/vmm/io.md:21
 msgid "[References](#references)"
 msgstr "[References](#references)"
 
-#: src/bootloader/hello_uefi.md:26
+#: src/bootloader/hello_uefi.md:27
 msgid "Hypervisor の種類"
-msgstr "Hypervisor の種類"
+msgstr "Type of Hypervisor"
 
-#: src/bootloader/hello_uefi.md:28
+#: src/bootloader/hello_uefi.md:29
 msgid "Hypervisor には大きく分けて Type-1 と Type-2 の2種類があります。"
-msgstr "Hypervisor には大きく分けて Type-1 と Type-2 の2種類があります。"
+msgstr ""
+"Hypervisors can be broadly classified into two types: Type-1 and Type-2."
 
-#: src/bootloader/hello_uefi.md:30
+#: src/bootloader/hello_uefi.md:31
 msgid "Type-1 Hypervisor"
 msgstr "Type-1 Hypervisor"
 
-#: src/bootloader/hello_uefi.md:32
+#: src/bootloader/hello_uefi.md:33
 msgid ""
 "Type-1 Hypervisor はベアメタルで動作する hypervisor です。 ハードウェアに直接"
 "アクセスできる一方、裏を返すと低レベルなリソース管理をする必要があります。 "
@@ -897,31 +922,31 @@ msgid ""
 "で動かすんですけどね...)。 Type-1 に分類される主な hypervisor には以下のもの"
 "があります:"
 msgstr ""
-"Type-1 Hypervisor はベアメタルで動作する hypervisor です。 ハードウェアに直接"
-"アクセスできる一方、裏を返すと低レベルなリソース管理をする必要があります。 "
-"Type-2 と比較すると、より VM に特化したリソース管理ができたり、 Context "
-"Switch を挟まない分リソースアクセスの速度が早いという利点があります。 Ymir "
-"も Type-1 に分類され、ハードウェア上で直接動作します (本シリーズでは QEMU 上"
-"で動かすんですけどね...)。 Type-1 に分類される主な hypervisor には以下のもの"
-"があります:"
+"Type-1 Hypervisor is a hypervisor that runs on bare metal. While it provides "
+"direct access to hardware, it requires low-level resource management. "
+"Compared to Type-2, Type-1 hypervisors have the advantage of more VM-"
+"specific resource management and faster resource access speeds since it has "
+"no need to do a context switch. Ymir is also classified as Type-1 and runs "
+"directly on hardware (though in this series, it runs on QEMU...). "
+"Hypervisors classified as Type-1 are as follows:"
 
-#: src/bootloader/hello_uefi.md:40
+#: src/bootloader/hello_uefi.md:41
 msgid "VMWare ESXi"
 msgstr "VMWare ESXi"
 
-#: src/bootloader/hello_uefi.md:41
+#: src/bootloader/hello_uefi.md:42
 msgid "Microsoft Hyper-V"
 msgstr "Microsoft Hyper-V"
 
-#: src/bootloader/hello_uefi.md:42
+#: src/bootloader/hello_uefi.md:43
 msgid "Linux KVM[^1]"
 msgstr "Linux KVM[^1]"
 
-#: src/bootloader/hello_uefi.md:45
+#: src/bootloader/hello_uefi.md:46
 msgid "Type-2 Hypervisor"
 msgstr "Type-2 Hypervisor"
 
-#: src/bootloader/hello_uefi.md:47
+#: src/bootloader/hello_uefi.md:48
 msgid ""
 "Type-2 Hypervisor はホストOS上で動作する hypervisor です。 ハードウェアリソー"
 "スにアクセスする場合にはホストOSを経由する必要があるため、Type-1 に比べてオー"
@@ -929,29 +954,29 @@ msgid ""
 "は、Type-1 と比較して実装が容易であるとも言えます。 Type-2 に分類される主な "
 "hypervisor には以下のものがあります:"
 msgstr ""
-"Type-2 Hypervisor はホストOS上で動作する hypervisor です。 ハードウェアリソー"
-"スにアクセスする場合にはホストOSを経由する必要があるため、Type-1 に比べてオー"
-"バーヘッドが発生します。低レベルなリソース管理はOSに任せられるという観点で"
-"は、Type-1 と比較して実装が容易であるとも言えます。 Type-2 に分類される主な "
-"hypervisor には以下のものがあります:"
+"Type-2 Hypervisor is a hypervisor that runs on the host OS. It requires "
+"access to hardware resources via the host OS, which incurs more overhead "
+"than Type-1. It can be said to be easier to implement than Type-1 in that "
+"low-level resource management can be left to the OS. Hypervisors classified "
+"as Type-2 include the following:"
 
-#: src/bootloader/hello_uefi.md:51
+#: src/bootloader/hello_uefi.md:52
 msgid "Oracle VirtualBox"
 msgstr "Oracle VirtualBox"
 
-#: src/bootloader/hello_uefi.md:52
+#: src/bootloader/hello_uefi.md:53
 msgid "VMWare Workstation"
 msgstr "VMWare Workstation"
 
-#: src/bootloader/hello_uefi.md:53
+#: src/bootloader/hello_uefi.md:54
 msgid "QEMU"
 msgstr "QEMU"
 
-#: src/bootloader/hello_uefi.md:55
+#: src/bootloader/hello_uefi.md:56
 msgid "Surtr Bootloader"
 msgstr "Surtr Bootloader"
 
-#: src/bootloader/hello_uefi.md:57
+#: src/bootloader/hello_uefi.md:58
 msgid ""
 "本シリーズで実装する hypervisor は Type-1 です。ベアメタルで動きます。 動作す"
 "る上で OS に依存することができません。 そのため、必然的に**OSが提供する機能を"
@@ -959,29 +984,30 @@ msgid ""
 "最終的な目的であるため、 一般的なOSが提供する機能を全て実装することはしません"
 "が、以下のような基本的な機能は実装します:"
 msgstr ""
-"本シリーズで実装する hypervisor は Type-1 です。ベアメタルで動きます。 動作す"
-"る上で OS に依存することができません。 そのため、必然的に**OSが提供する機能を"
-"実装する必要があります**。 本シリーズではゲストOSとして Linux を動かすことが"
-"最終的な目的であるため、 一般的なOSが提供する機能を全て実装することはしません"
-"が、以下のような基本的な機能は実装します:"
-
-#: src/bootloader/hello_uefi.md:63
-msgid "ブートローダ"
-msgstr "ブートローダ"
+"The hypervisor implemented in this series is Type-1. It runs on bare metal. "
+"It cannot depend on the OS for its operations. Therefore, it must "
+"necessarily **implement the functions provided by the OS**. Since the "
+"ultimate goal of this series is to run Linux as a guest OS, we will not "
+"implement all the functions provided by common OS, but will implement the "
+"following basic functions:"
 
 #: src/bootloader/hello_uefi.md:64
-msgid "メモリ管理"
-msgstr "メモリ管理"
+msgid "ブートローダ"
+msgstr "Bootloader"
 
 #: src/bootloader/hello_uefi.md:65
-msgid "シリアル通信"
-msgstr "シリアル通信"
+msgid "メモリ管理"
+msgstr "Memory management"
 
 #: src/bootloader/hello_uefi.md:66
+msgid "シリアル通信"
+msgstr "Serial communication"
+
+#: src/bootloader/hello_uefi.md:67
 msgid "割り込み"
-msgstr "割り込み"
+msgstr "Interrupts and exceptions"
 
-#: src/bootloader/hello_uefi.md:68
+#: src/bootloader/hello_uefi.md:69
 msgid ""
 "このうち、ブートローダの部分を **Surtr**[^2] と呼ぶことにします。 また、それ"
 "以外のカーネル部分を **Ymir**[^3] と呼びます。 Ymir の中でも、一般的な OS が"
@@ -989,17 +1015,17 @@ msgid ""
 "VMM** と呼び分けます。 本チャプターからは Surtr を実装して Ymir Kernel がブー"
 "トするところまでをひとつの目標とします。"
 msgstr ""
-"このうち、ブートローダの部分を **Surtr**[^2] と呼ぶことにします。 また、それ"
-"以外のカーネル部分を **Ymir**[^3] と呼びます。 Ymir の中でも、一般的な OS が"
-"提供する機能の部分を **Ymir Kernel**、仮想化機能を提供する部分を **Ymir "
-"VMM** と呼び分けます。 本チャプターからは Surtr を実装して Ymir Kernel がブー"
-"トするところまでをひとつの目標とします。"
+"We will call the bootloader part **Surtr**[^2]. The rest of the kernel part "
+"is called **Ymir**[^3]. Within Ymir, the part that provides general OS "
+"functions is called **Ymir Kernel**, and the part that provides "
+"virtualization functions is called **Ymir VMM**. The goal of several chaptes "
+"is to implement Surtr and boot Ymir Kernel."
 
-#: src/bootloader/hello_uefi.md:73
+#: src/bootloader/hello_uefi.md:74
 msgid "UEFI アプリの作成"
-msgstr "UEFI アプリの作成"
+msgstr "Creating UEFI application"
 
-#: src/bootloader/hello_uefi.md:75
+#: src/bootloader/hello_uefi.md:76
 msgid ""
 "それでは早速 Surtr の実装を始めていきましょう。 本シリーズではファームウェア"
 "として [UEFI](https://ja.wikipedia.org/wiki/"
@@ -1007,13 +1033,12 @@ msgid ""
 "(https://en.wikipedia.org/wiki/BIOS) は使いませんが、本文中では UEFI のことを"
 "指して BIOS と呼称することもあります。"
 msgstr ""
-"それでは早速 Surtr の実装を始めていきましょう。 本シリーズではファームウェア"
-"として [UEFI](https://ja.wikipedia.org/wiki/"
-"Unified_Extensible_Firmware_Interface) を採用します。 [レガシー BIOS]"
-"(https://en.wikipedia.org/wiki/BIOS) は使いませんが、本文中では UEFI のことを"
-"指して BIOS と呼称することもあります。"
+"Let's get started with mplemening Surtr. In this series, we will use [UEFI]"
+"(https://ja.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface) as the "
+"firmware. [Legacy BIOS](https://en.wikipedia.org/wiki/BIOS) will not be used "
+"in this blog."
 
-#: src/bootloader/hello_uefi.md:79
+#: src/bootloader/hello_uefi.md:80
 msgid ""
 "Zig は x64 UEFI プラットフォームを [Tier-2 サポート](https://ziglang.org/"
 "download/0.13.0/release-notes.html)しています。 一般的な CPU の Linux / "
@@ -1024,171 +1049,128 @@ msgid ""
 "プリが必要とする構造体や定数なども Zig の標準ライブラリ内に含まれているため、"
 "非常に楽に開発することができます。"
 msgstr ""
-"Zig は x64 UEFI プラットフォームを [Tier-2 サポート](https://ziglang.org/"
-"download/0.13.0/release-notes.html)しています。 一般的な CPU の Linux / "
-"macOS / Windows などは Tier-1 サポートです。 Tier-1 と Tier-2 には、自動テス"
-"トが実行されていなかったり、 一部テストが無効化されていたりするなどの違いがあ"
-"りますが、一般的な機能は問題なく使えるという印象です。 そのため、**普通のネイ"
-"ティブアプリをビルドするのと同様にして UEFI アプリを作成できます**。 UEFI ア"
-"プリが必要とする構造体や定数なども Zig の標準ライブラリ内に含まれているため、"
-"非常に楽に開発することができます。"
+"Zig has [Tier-2 support](https://ziglang.org/download/0.13.0/release-notes."
+"html) for x64 UEFI platforms. Linux / macOS / Windows on common CPUs are "
+"Tier-1 supported. There are some differences between Tier-1 and Tier-2, such "
+"as automated tests not being run and some tests being disabled, but my "
+"impression is that general functionality can be used without problems. Thus, "
+"you can create a UEFI app just as you would build a \"normal\" native app. "
+"The structures and constants required by UEFI apps are included in Zig's "
+"standard libraries, making development very easy."
 
-#: src/bootloader/hello_uefi.md:86
+#: src/bootloader/hello_uefi.md:87
 msgid "ビルドスクリプトの設定"
-msgstr "ビルドスクリプトの設定"
+msgstr "Configure Build Script"
 
-#: src/bootloader/hello_uefi.md:88
+#: src/bootloader/hello_uefi.md:89
 msgid ""
 "まずは Zig プロジェクトを作成します。 [開発構築のチャプター](../setup.md) を"
 "参考に Zig をインストールした後、以下のコマンドでプロジェクトを作成してくださ"
 "い:"
 msgstr ""
-"まずは Zig プロジェクトを作成します。 [開発構築のチャプター](../setup.md) を"
-"参考に Zig をインストールした後、以下のコマンドでプロジェクトを作成してくださ"
-"い:"
+"First, create a Zig project. After installing Zig referring to [setup "
+"chapters](. /setup.md), and then create a project with the following "
+"commands:"
 
-#: src/bootloader/hello_uefi.md:97
+#: src/bootloader/hello_uefi.md:98
 msgid "以下のようなプロジェクト構成になります:"
-msgstr "以下のようなプロジェクト構成になります:"
-
-#: src/bootloader/hello_uefi.md:108
-msgid ""
-"`build.zig`[^4]: ビルドスクリプト。Zig ではプロジェクトのビルド設定自体を "
-"Zig で記述します。"
-msgstr ""
-"`build.zig`[^4]: ビルドスクリプト。Zig ではプロジェクトのビルド設定自体を "
-"Zig で記述します。"
+msgstr "The project structure will be as follows:"
 
 #: src/bootloader/hello_uefi.md:109
 msgid ""
-"`build.zig.zon`: 依存関係を [ZON](https://zig.news/edyu/zig-package-manager-"
-"wtf-is-zon-558e) という形式で記述します。Surtr/Ymir は依存を全く持たないた"
-"め、必要ありません。"
+"`build.zig`[^4]: ビルドスクリプト。Zig ではプロジェクトのビルド設定自体を "
+"Zig で記述します。"
 msgstr ""
-"`build.zig.zon`: 依存関係を [ZON](https://zig.news/edyu/zig-package-manager-"
-"wtf-is-zon-558e) という形式で記述します。Surtr/Ymir は依存を全く持たないた"
-"め、必要ありません。"
+"`build.zig`[^4]: Build script. Zig describes the project build configuration "
+"itself in Zig."
 
 #: src/bootloader/hello_uefi.md:110
+msgid ""
+"`build.zig.zon`: 依存関係を [ZON](https://zig.news/edyu/zig-package-manager-"
+"wtf-is-zon-558e) という形式で記述します。Surtr/Ymir は依存を全く持たないた"
+"め、必要ありません。"
+msgstr ""
+"`build.zig.zon`: Describe dependencies in the form of [ZON format](https://"
+"zig.news/edyu/zig-package-manager-wtf-is-zon-558e). Surtr and Ymir has no "
+"dependencies at all and the file is therefore not required."
+
+#: src/bootloader/hello_uefi.md:111
 msgid "`src`: ソースディレクトリ。"
-msgstr "`src`: ソースディレクトリ。"
+msgstr "`src`: Source directory."
 
-#: src/bootloader/hello_uefi.md:112
+#: src/bootloader/hello_uefi.md:113
 msgid ""
 "本シリーズでは、デフォルトのプロジェクト構成から少し変更して以下のような構成"
 "にします:"
 msgstr ""
-"本シリーズでは、デフォルトのプロジェクト構成から少し変更して以下のような構成"
-"にします:"
+"In this blog, we will make a slight change from the default project "
+"structure to the following:"
 
-#: src/bootloader/hello_uefi.md:122
+#: src/bootloader/hello_uefi.md:123
 msgid ""
 "`src`の代わりに Surtr と Ymir 用のソースディレクトリをそれぞれ用意していま"
 "す。 まずは`build.zig`に Surtr 用の設定を記述します:"
 msgstr ""
-"`src`の代わりに Surtr と Ymir 用のソースディレクトリをそれぞれ用意していま"
-"す。 まずは`build.zig`に Surtr 用の設定を記述します:"
+"Instead of `src`, we created source directories for Surtr and Ymir, "
+"respectively. First, write the configuration for Surtr in `build.zig`:"
 
-#: src/bootloader/hello_uefi.md:125
-msgid ""
-"```build.zig\n"
-"const std = @import(\"std\");\n"
-"\n"
-"pub fn build(b: *std.Build) void {\n"
-"    const optimize = b.standardOptimizeOption(.{});\n"
-"\n"
-"    // Surtr Executable\n"
-"    const surtr = b.addExecutable(.{\n"
-"        .name = \"BOOTX64.EFI\",\n"
-"        .root_source_file = b.path(\"surtr/boot.zig\"),\n"
-"        .target = b.resolveTargetQuery(.{\n"
-"            .cpu_arch = .x86_64,\n"
-"            .os_tag = .uefi,\n"
-"        }),\n"
-"        .optimize = optimize,\n"
-"        .linkage = .static,\n"
-"    });\n"
-"    b.installArtifact(surtr);\n"
-"}\n"
-"```"
-msgstr ""
-"```build.zig\n"
-"const std = @import(\"std\");\n"
-"\n"
-"pub fn build(b: *std.Build) void {\n"
-"    const optimize = b.standardOptimizeOption(.{});\n"
-"\n"
-"    // Surtr Executable\n"
-"    const surtr = b.addExecutable(.{\n"
-"        .name = \"BOOTX64.EFI\",\n"
-"        .root_source_file = b.path(\"surtr/boot.zig\"),\n"
-"        .target = b.resolveTargetQuery(.{\n"
-"            .cpu_arch = .x86_64,\n"
-"            .os_tag = .uefi,\n"
-"        }),\n"
-"        .optimize = optimize,\n"
-"        .linkage = .static,\n"
-"    });\n"
-"    b.installArtifact(surtr);\n"
-"}\n"
-"```"
-
-#: src/bootloader/hello_uefi.md:146
+#: src/bootloader/hello_uefi.md:148
 msgid ""
 "`b.standardOptimizeOption` はデフォルトの最適化オプションを取得する関数で"
 "す。 最適化レベルはコマンドラインから指定でき、デフォルトでは `Debug` が設定"
 "されます。 利用可能な最適化レベルは以下の4つです:"
 msgstr ""
-"`b.standardOptimizeOption` はデフォルトの最適化オプションを取得する関数で"
-"す。 最適化レベルはコマンドラインから指定でき、デフォルトでは `Debug` が設定"
-"されます。 利用可能な最適化レベルは以下の4つです:"
-
-#: src/bootloader/hello_uefi.md:150
-msgid "最適化レベル"
-msgstr "最適化レベル"
-
-#: src/bootloader/hello_uefi.md:150 src/bootloader/load_kernel.md:29
-#: src/bootloader/load_kernel.md:39
-msgid "説明"
-msgstr "説明"
+"`b.standardOptimizeOption` is a function to get the default optimization "
+"option. The optimization level can be specified from the command line and "
+"defaults to `Debug`. There are four optimization levels available:"
 
 #: src/bootloader/hello_uefi.md:152
+msgid "最適化レベル"
+msgstr "Optimization Level"
+
+#: src/bootloader/hello_uefi.md:152 src/bootloader/load_kernel.md:29
+#: src/bootloader/load_kernel.md:39
+msgid "説明"
+msgstr "Description"
+
+#: src/bootloader/hello_uefi.md:154
 msgid "`Debug`"
 msgstr "`Debug`"
 
-#: src/bootloader/hello_uefi.md:152
+#: src/bootloader/hello_uefi.md:154
 msgid "デフォルト。未定義動作(UD)に対するチェックが付与されます。"
-msgstr "デフォルト。未定義動作(UD)に対するチェックが付与されます。"
+msgstr "Default level. A check for undefined behavior (UD) is inserted."
 
-#: src/bootloader/hello_uefi.md:153
+#: src/bootloader/hello_uefi.md:155
 msgid "`ReleaseFast`"
 msgstr "`ReleaseFast`"
 
-#: src/bootloader/hello_uefi.md:153
+#: src/bootloader/hello_uefi.md:155
 msgid ""
 "最もアグレッシブに最適化します。未定義動作(UD)に対するチェックが行われませ"
 "ん。"
 msgstr ""
-"最もアグレッシブに最適化します。未定義動作(UD)に対するチェックが行われませ"
-"ん。"
+"Most aggressive optimization. No checks are made for undefined behavior (UD)."
 
-#: src/bootloader/hello_uefi.md:154
+#: src/bootloader/hello_uefi.md:156
 msgid "`ReleaseSafe`"
 msgstr "`ReleaseSafe`"
 
-#: src/bootloader/hello_uefi.md:154
+#: src/bootloader/hello_uefi.md:156
 msgid "最適化を行いますが、未定義動作(UD)に対するチェックが付与されます。"
-msgstr "最適化を行いますが、未定義動作(UD)に対するチェックが付与されます。"
+msgstr ""
+"Optimization is performed, but a check for undefined behavior (UD) is "
+"performed."
 
-#: src/bootloader/hello_uefi.md:155
+#: src/bootloader/hello_uefi.md:157
 msgid "`ReleaseSmall`"
 msgstr "`ReleaseSmall`"
 
-#: src/bootloader/hello_uefi.md:155
-msgid "生成されるバイナリサイズが小さくなるように最適化します。"
-msgstr "生成されるバイナリサイズが小さくなるように最適化します。"
-
 #: src/bootloader/hello_uefi.md:157
+msgid "生成されるバイナリサイズが小さくなるように最適化します。"
+msgstr "Optimize for smaller binary size."
+
+#: src/bootloader/hello_uefi.md:159
 msgid ""
 "`b.addExecutable` で実行可能ファイルを追加します。 `.name`で出力名を指定しま"
 "す。 `.root_source_file`でエントリポイントとなるソースファイルを指定します。 "
@@ -1199,16 +1181,17 @@ msgid ""
 "をターゲットとします。 ベアメタルで動くブートローダでありライブラリの動的ロー"
 "ドの仕組みは持っていないため、`.linkage`には`.static`を指定します。"
 msgstr ""
-"`b.addExecutable` で実行可能ファイルを追加します。 `.name`で出力名を指定しま"
-"す。 `.root_source_file`でエントリポイントとなるソースファイルを指定します。 "
-"**Zig では、Cのようにコンパイルするファイルやインクルードするファイルを全て指"
-"定する必要はありません**。 `.root_source_file`で指定したファイルから参照され"
-"るファイルを自動的にビルドツリーの中に含めてくれます。 `.target`にはコンパイ"
-"ルターゲットを指定します。 今回は x64 アーキテクチャの UEFI プラットフォーム"
-"をターゲットとします。 ベアメタルで動くブートローダでありライブラリの動的ロー"
-"ドの仕組みは持っていないため、`.linkage`には`.static`を指定します。"
+"Add an executable with `b.addExecutable()`. Specify the output name with `."
+"name`. Specify the source file to be the entry point with `."
+"root_source_file`. **Zig does not require you to specify all the files to "
+"compile or include as you do in C**. It will automatically include in the "
+"build tree the files referenced by the file specified in `."
+"root_source_file`. Specify the compile target in `.target`. In this case, "
+"out target is x64 architecture & UEFI platform. Since this is a bare-metal "
+"bootloader and does not have a dynamic loading mechanism for libraries, `."
+"linkage` should be `.static`."
 
-#: src/bootloader/hello_uefi.md:166
+#: src/bootloader/hello_uefi.md:168
 msgid ""
 "最後に、`b.installArtifact()` で Surtr を `install` ターゲットに追加します。 "
 "Zig のビルドは `zig build <target>` コマンドで実行します。 この際、`<target>`"
@@ -1216,113 +1199,67 @@ msgid ""
 "す。 `installArtifact()`は、この `install` ターゲットに artifact を追加するも"
 "のです。"
 msgstr ""
-"最後に、`b.installArtifact()` で Surtr を `install` ターゲットに追加します。 "
-"Zig のビルドは `zig build <target>` コマンドで実行します。 この際、`<target>`"
-"を省略するとデフォルトのターゲットである `install` ターゲットが実行されま"
-"す。 `installArtifact()`は、この `install` ターゲットに artifact を追加するも"
-"のです。"
+"Finally, add Surtr to the `install` target with `b.installArtifact()`. You "
+"can build it with `zig build <target>` command. If you omit `<target>`, the "
+"default target `install` is executed. The `installArtifact()` adds an "
+"artifact to this `install` target."
 
-#: src/bootloader/hello_uefi.md:171
-msgid ""
-"\\[!TIP\\] .static のような記法について `.static` は冗長に書くと `std."
-"builtin.LinkMode.static` という `enum` の値です。 Zig では、関数の引数など値"
-"の型が確定している場合に `enum` の型を省略できます。 そのため、本シリーズでは"
-"多くのコードでFQDNを省略して記述しています。 VSCode + ZLS でも、ピリオドをタ"
-"イプした時点で可能な`enum`値が補完されます。"
+#: src/bootloader/hello_uefi.md:173
+msgid "\\[!TIP\\]"
 msgstr ""
-"\\[!TIP\\] .static のような記法について `.static` は冗長に書くと `std."
-"builtin.LinkMode.static` という `enum` の値です。 Zig では、関数の引数など値"
-"の型が確定している場合に `enum` の型を省略できます。 そのため、本シリーズでは"
-"多くのコードでFQDNを省略して記述しています。 VSCode + ZLS でも、ピリオドをタ"
-"イプした時点で可能な`enum`値が補完されます。"
 
-#: src/bootloader/hello_uefi.md:177
+#: src/bootloader/hello_uefi.md:175
 msgid ""
-"また、`addExecutable()` の引数である `.{...}` は構造体を意味します。 Zig で"
-"は `Struct {}` のようにして構造体のインスタンスを生成しますが、ここでも型が確"
-"定している場合には構造体名を省略することができます。"
+"`.static` は冗長に書くと `std.builtin.LinkMode.static` という `enum` の値で"
+"す。 Zig では、関数の引数など値の型が確定している場合に `enum` の型を省略でき"
+"ます。 そのため、本シリーズでは多くのコードでFQDNを省略して記述しています。 "
+"VSCode + ZLS でも、ピリオドをタイプした時点で可能な`enum`値が補完されます。"
 msgstr ""
-"また、`addExecutable()` の引数である `.{...}` は構造体を意味します。 Zig で"
-"は `Struct {}` のようにして構造体のインスタンスを生成しますが、ここでも型が確"
-"定している場合には構造体名を省略することができます。"
+"`.static` is an abbreviation for  `std.builtin.LinkMode.static`. Zig allows "
+"you to omit the type name of `enum` if the type of the value is known, such "
+"as function arguments. For this reason, many codes in this blog are written "
+"without FQDN. VSCode + ZLS also completes possible `enum` values when you "
+"just type a period."
 
 #: src/bootloader/hello_uefi.md:180
+msgid ""
+"また、`addExecutable()` の引数である `.{...}` は構造体を意味します。 Zig で"
+"は `Struct {}` のようにして構造体のインスタンスを生成しますが、ここでも型が確"
+"定している場合には構造体名を省略することができます。"
+msgstr ""
+"Also, `. {...} `, the argument of `addExecutable()`, is a structure. You "
+"instantiates the structure like `Struct {}`, but again, the structure name "
+"can be omitted if the type is known."
+
+#: src/bootloader/hello_uefi.md:183
 msgid "エントリポイントの作成"
-msgstr "エントリポイントの作成"
+msgstr "Defining an Entry Point"
 
-#: src/bootloader/hello_uefi.md:182
+#: src/bootloader/hello_uefi.md:185
 msgid "次に、`surtr/boot.zig` にエントリポイントを作成します:"
-msgstr "次に、`surtr/boot.zig` にエントリポイントを作成します:"
+msgstr "Next, create an entry point in `surtr/boot.zig`:"
 
-#: src/bootloader/hello_uefi.md:184
-msgid ""
-"```surtr/boot.zig\n"
-"const std = @import(\"std\");\n"
-"const uefi = std.os.uefi;\n"
-"\n"
-"pub fn main() uefi.Status {\n"
-"    while (true)\n"
-"        asm volatile (\"hlt\");\n"
-"\n"
-"    return .success;\n"
-"}\n"
-"```"
-msgstr ""
-"```surtr/boot.zig\n"
-"const std = @import(\"std\");\n"
-"const uefi = std.os.uefi;\n"
-"\n"
-"pub fn main() uefi.Status {\n"
-"    while (true)\n"
-"        asm volatile (\"hlt\");\n"
-"\n"
-"    return .success;\n"
-"}\n"
-"```"
-
-#: src/bootloader/hello_uefi.md:196
+#: src/bootloader/hello_uefi.md:200
 msgid ""
 "返り値の型は `std.os.uefi.Status` にします。`return`では、前述したようにFQDN"
 "を省略しています。 単純に`hlt`ループするだけの何もしないUEFIアプリです。"
 msgstr ""
-"返り値の型は `std.os.uefi.Status` にします。`return`では、前述したようにFQDN"
-"を省略しています。 単純に`hlt`ループするだけの何もしないUEFIアプリです。"
+"The return type should be `std.os.uefi.Status`. In the `return`, the FQDN is "
+"omitted as described above. This is a UEFI app that does nothing but simply "
+"loop `hlt`."
 
-#: src/bootloader/hello_uefi.md:199
+#: src/bootloader/hello_uefi.md:203
 msgid "QEMU で実行するための設定"
-msgstr "QEMU で実行するための設定"
+msgstr "Configuration to Run on QEMU"
 
-#: src/bootloader/hello_uefi.md:201
+#: src/bootloader/hello_uefi.md:205
 msgid ""
 "この UEFI アプリを QEMU 上で実行します。 `build.zig`に以下の設定を追記します:"
 msgstr ""
-"この UEFI アプリを QEMU 上で実行します。 `build.zig`に以下の設定を追記します:"
+"Let's run this UEFI app on QEMU. Add the following settings to the `build."
+"zig`:"
 
-#: src/bootloader/hello_uefi.md:204
-msgid ""
-"```build.zig\n"
-"// EFI directory\n"
-"const out_dir_name = \"img\";\n"
-"const install_surtr = b.addInstallFile(\n"
-"    surtr.getEmittedBin(),\n"
-"    b.fmt(\"{s}/efi/boot/{s}\", .{ out_dir_name, surtr.name }),\n"
-");\n"
-"install_surtr.step.dependOn(&surtr.step);\n"
-"b.getInstallStep().dependOn(&install_surtr.step);\n"
-"```"
-msgstr ""
-"```build.zig\n"
-"// EFI directory\n"
-"const out_dir_name = \"img\";\n"
-"const install_surtr = b.addInstallFile(\n"
-"    surtr.getEmittedBin(),\n"
-"    b.fmt(\"{s}/efi/boot/{s}\", .{ out_dir_name, surtr.name }),\n"
-");\n"
-"install_surtr.step.dependOn(&surtr.step);\n"
-"b.getInstallStep().dependOn(&install_surtr.step);\n"
-"```"
-
-#: src/bootloader/hello_uefi.md:215
+#: src/bootloader/hello_uefi.md:220
 msgid ""
 "Zig ではビルド生成物はデフォルトで `zig-out` というディレクトリに出力されます"
 "[^5]。 `addInstallFile()`によって、生成した `BOOTX64.EFI.efi` を `zig-out/"
@@ -1332,157 +1269,102 @@ msgid ""
 "てこのコピー処理を実行するように宣言しています。 これにより、`zig build` した"
 "ときに Surtr のビルドと生成物のコピー処理が行われるようになります。"
 msgstr ""
-"Zig ではビルド生成物はデフォルトで `zig-out` というディレクトリに出力されます"
-"[^5]。 `addInstallFile()`によって、生成した `BOOTX64.EFI.efi` を `zig-out/"
-"img/efi/boot/BOOTX64.EFI` にコピーします。 `install_surtr.step.dependOn()`で"
-"は、このコピー処理を行う前に Surtr のビルドを行うように依存関係を宣言していま"
-"す。 また、続く `dependOn()` ではデフォルトの `install` ターゲットの依存とし"
-"てこのコピー処理を実行するように宣言しています。 これにより、`zig build` した"
-"ときに Surtr のビルドと生成物のコピー処理が行われるようになります。"
+"Zig outputs the build product to the directory `zig-out` by default[^5]. "
+"`addInstallFile()` copies the generated `BOOTX64.EFI.efi` to `zig-out/img/"
+"efi/boot/BOOTX64.EFI`. In `install_surtr.step.dependOn()`, a dependency is "
+"declared to build Surtr before this copy. The following `dependOn()` "
+"declares the copy operation to be performed as a dependency of the default "
+"`install` target. This ensures that when you `zig build`, the build of Surtr "
+"and copying of the product will be performed."
 
-#: src/bootloader/hello_uefi.md:221
+#: src/bootloader/hello_uefi.md:226
 msgid "続いて、QEMUを実行するための設定を追記します:"
-msgstr "続いて、QEMUを実行するための設定を追記します:"
+msgstr "Then, add following settings to run QEMU:"
 
-#: src/bootloader/hello_uefi.md:223
-msgid ""
-"```build.zig\n"
-"const qemu_args = [_][]const u8{\n"
-"    \"qemu-system-x86_64\",\n"
-"    \"-m\",\n"
-"    \"512M\",\n"
-"    \"-bios\",\n"
-"    \"/usr/share/ovmf/OVMF.fd\",\n"
-"    \"-drive\",\n"
-"    b.fmt(\"file=fat:rw:{s}/{s},format=raw\", .{ b.install_path, "
-"out_dir_name }),\n"
-"    \"-nographic\",\n"
-"    \"-serial\",\n"
-"    \"mon:stdio\",\n"
-"    \"-no-reboot\",\n"
-"    \"-enable-kvm\",\n"
-"    \"-cpu\",\n"
-"    \"host\",\n"
-"    \"-s\",\n"
-"};\n"
-"const qemu_cmd = b.addSystemCommand(&qemu_args);\n"
-"qemu_cmd.step.dependOn(b.getInstallStep());\n"
-"\n"
-"const run_qemu_cmd = b.step(\"run\", \"Run QEMU\");\n"
-"run_qemu_cmd.dependOn(&qemu_cmd.step);\n"
-"```"
-msgstr ""
-"```build.zig\n"
-"const qemu_args = [_][]const u8{\n"
-"    \"qemu-system-x86_64\",\n"
-"    \"-m\",\n"
-"    \"512M\",\n"
-"    \"-bios\",\n"
-"    \"/usr/share/ovmf/OVMF.fd\",\n"
-"    \"-drive\",\n"
-"    b.fmt(\"file=fat:rw:{s}/{s},format=raw\", .{ b.install_path, "
-"out_dir_name }),\n"
-"    \"-nographic\",\n"
-"    \"-serial\",\n"
-"    \"mon:stdio\",\n"
-"    \"-no-reboot\",\n"
-"    \"-enable-kvm\",\n"
-"    \"-cpu\",\n"
-"    \"host\",\n"
-"    \"-s\",\n"
-"};\n"
-"const qemu_cmd = b.addSystemCommand(&qemu_args);\n"
-"qemu_cmd.step.dependOn(b.getInstallStep());\n"
-"\n"
-"const run_qemu_cmd = b.step(\"run\", \"Run QEMU\");\n"
-"run_qemu_cmd.dependOn(&qemu_cmd.step);\n"
-"```"
-
-#: src/bootloader/hello_uefi.md:248
+#: src/bootloader/hello_uefi.md:254
 msgid ""
 "QEMUに渡すオプションを指定しています。 オプションの意味は以下のとおりです:"
 msgstr ""
-"QEMUに渡すオプションを指定しています。 オプションの意味は以下のとおりです:"
-
-#: src/bootloader/hello_uefi.md:251
-msgid ""
-"`-m 512M`: メモリを512MBに設定します。これより少なくても多くてもおそらく動き"
-"ます。"
-msgstr ""
-"`-m 512M`: メモリを512MBに設定します。これより少なくても多くてもおそらく動き"
-"ます。"
-
-#: src/bootloader/hello_uefi.md:252
-msgid ""
-"`-bios /usr/share/ovmf/OVMF.fd`: OVMFをFWとして指定します。 `apt`でインストー"
-"ルした場合にはこのパスになります。 自前でビルドした場合には、生成されたバイナ"
-"リのパスを指定してください。"
-msgstr ""
-"`-bios /usr/share/ovmf/OVMF.fd`: OVMFをFWとして指定します。 `apt`でインストー"
-"ルした場合にはこのパスになります。 自前でビルドした場合には、生成されたバイナ"
-"リのパスを指定してください。"
-
-#: src/bootloader/hello_uefi.md:255
-msgid ""
-"`-drive file=...`: ハードドライブの設定をします。 QEMU では [VVFAT (Virtual "
-"FAT filesystem)](https://en.wikibooks.org/wiki/QEMU/Devices/Storage) という仮"
-"想ドライブによってホストのディレクトリをそのままゲストにドライブとして渡すこ"
-"とができるため、それを利用しています。"
-msgstr ""
-"`-drive file=...`: ハードドライブの設定をします。 QEMU では [VVFAT (Virtual "
-"FAT filesystem)](https://en.wikibooks.org/wiki/QEMU/Devices/Storage) という仮"
-"想ドライブによってホストのディレクトリをそのままゲストにドライブとして渡すこ"
-"とができるため、それを利用しています。"
+"It defines options to be passed to QEMU. The meanings of the options are as "
+"follows:"
 
 #: src/bootloader/hello_uefi.md:257
-msgid "`-nographic`: グラフィカルモードを無効にします。"
-msgstr "`-nographic`: グラフィカルモードを無効にします。"
+msgid ""
+"`-m 512M`: メモリを512MBに設定します。これより少なくても多くてもおそらく動き"
+"ます。"
+msgstr ""
+"`-m 512M`: Set the memory to 512 MB. It will probably work with less or more "
+"than this."
 
 #: src/bootloader/hello_uefi.md:258
 msgid ""
-"`-serial mon:stdio`: シリアル通信を標準入出力に設定します。 ターミナルからの"
-"入力はシリアル入力としてゲストに渡され、逆にシリアル出力はターミナルに出力さ"
-"れます。"
+"`-bios /usr/share/ovmf/OVMF.fd`: OVMFをFWとして指定します。 `apt`でインストー"
+"ルした場合にはこのパスになります。 自前でビルドした場合には、生成されたバイナ"
+"リのパスを指定してください。"
 msgstr ""
-"`-serial mon:stdio`: シリアル通信を標準入出力に設定します。 ターミナルからの"
-"入力はシリアル入力としてゲストに渡され、逆にシリアル出力はターミナルに出力さ"
-"れます。"
-
-#: src/bootloader/hello_uefi.md:260
-msgid "`-enable-kvm`: バックエンドに KVM を使用します。"
-msgstr "`-enable-kvm`: バックエンドに KVM を使用します。"
+"`-bios /usr/share/ovmf/OVMF.fd`: Specify OVMF as FW. If you installed it "
+"with `apt`, the path becomes like this. If you built it by yourself, specify "
+"the path to the generated binary."
 
 #: src/bootloader/hello_uefi.md:261
-msgid "`-cpu host`: ホストのCPUをパススルーします。"
-msgstr "`-cpu host`: ホストのCPUをパススルーします。"
+msgid ""
+"`-drive file=...`: ハードドライブの設定をします。 QEMU では [VVFAT (Virtual "
+"FAT filesystem)](https://en.wikibooks.org/wiki/QEMU/Devices/Storage) という仮"
+"想ドライブによってホストのディレクトリをそのままゲストにドライブとして渡すこ"
+"とができるため、それを利用しています。"
+msgstr ""
+"`-drive file=...`: Configure hard drive settings. QEMU uses a virtual drive "
+"called [VVFAT (Virtual FAT filesystem)](https://en.wikibooks.org/wiki/QEMU/"
+"Devices/Storage) to pass the host directory to the guest."
 
-#: src/bootloader/hello_uefi.md:262
-msgid "`-s`: GDB サーバを起動してポート`1234`でリッスンさせます。"
-msgstr "`-s`: GDB サーバを起動してポート`1234`でリッスンさせます。"
+#: src/bootloader/hello_uefi.md:263
+msgid "`-nographic`: グラフィカルモードを無効にします。"
+msgstr "`-nographic`: Disable graphical mode."
 
 #: src/bootloader/hello_uefi.md:264
 msgid ""
-"`b.step()`によって、新しいビルドターゲットを追加しています。 これにより `zig "
-"build run` とすることで、その依存として設定した上記のQEMUコマンドが実行されま"
-"す。"
+"`-serial mon:stdio`: シリアル通信を標準入出力に設定します。 ターミナルからの"
+"入力はシリアル入力としてゲストに渡され、逆にシリアル出力はターミナルに出力さ"
+"れます。"
 msgstr ""
-"`b.step()`によって、新しいビルドターゲットを追加しています。 これにより `zig "
-"build run` とすることで、その依存として設定した上記のQEMUコマンドが実行されま"
-"す。"
+"`-serial mon:stdio`: Sets serial communication as standard input/output. "
+"Input from the terminal is passed to the guest as serial input, and "
+"conversely, serial output is written to the terminal."
+
+#: src/bootloader/hello_uefi.md:266
+msgid "`-enable-kvm`: バックエンドに KVM を使用します。"
+msgstr "`-enable-kvm`: Use KVM as the backend."
 
 #: src/bootloader/hello_uefi.md:267
-msgid "実行"
-msgstr "実行"
+msgid "`-cpu host`: ホストのCPUをパススルーします。"
+msgstr "`-cpu host`: Pass-through host CPU."
 
-#: src/bootloader/hello_uefi.md:269
-msgid "それでは、実際にビルドして QEMU で実行してみましょう:"
-msgstr "それでは、実際にビルドして QEMU で実行してみましょう:"
+#: src/bootloader/hello_uefi.md:268
+msgid "`-s`: GDB サーバを起動してポート`1234`でリッスンさせます。"
+msgstr "`-s`: Start the GDB server and make it listen on port `1234`."
+
+#: src/bootloader/hello_uefi.md:270
+msgid ""
+"`b.step()`によって、新しいビルドターゲットを追加しています。 これにより `zig "
+"build run` とすることで、その依存として設定した上記のQEMUコマンドが実行されま"
+"す。"
+msgstr ""
+"A new build target is added by `b.step()`. This will cause `zig build run` "
+"to execute the above QEMU command that you set as its dependency."
+
+#: src/bootloader/hello_uefi.md:273
+msgid "実行"
+msgstr "Run on QEMU"
 
 #: src/bootloader/hello_uefi.md:275
-msgid "以下のように、QEMU が起動し先に進まなければOKです:"
-msgstr "以下のように、QEMU が起動し先に進まなければOKです:"
+msgid "それでは、実際にビルドして QEMU で実行してみましょう:"
+msgstr "Now, let's actually build the app and run it on QEMU:"
 
 #: src/bootloader/hello_uefi.md:282
+msgid "以下のように、QEMU が起動し先に進まなければOKです:"
+msgstr "It's okay if QEMU starts and does not proceed as shown below:"
+
+#: src/bootloader/hello_uefi.md:290
 msgid ""
 "[HLT](https://www.felixcloutier.com/x86/hlt) 命令によってCPUが停止しているこ"
 "とを確認してみましょう。 生成された UEFI アプリをディスアセンブルしてみると、"
@@ -1492,61 +1374,56 @@ msgstr ""
 "とを確認してみましょう。 生成された UEFI アプリをディスアセンブルしてみると、"
 "`.text`セクションは以下のようになっています。とても小さいです:"
 
-#: src/bootloader/hello_uefi.md:294
-msgid "# 0x2000\n"
-msgstr "# 0x2000\n"
-
-#: src/bootloader/hello_uefi.md:295
-msgid "# 0x2008\n"
-msgstr "# 0x2008\n"
-
-#: src/bootloader/hello_uefi.md:308
+#: src/bootloader/hello_uefi.md:317
 msgid ""
 "`+1036`の位置に`hlt`命令が、`+1037`の位置に`hlt`にジャンプするコードがありま"
 "す。 続いて、QEMU の起動中に `Ctrl+A C` をタイプして [QEMU monitor](https://"
 "qemu-project.gitlab.io/qemu/system/monitor.html) を起動し、レジスタの値を見て"
 "みます:"
 msgstr ""
-"`+1036`の位置に`hlt`命令が、`+1037`の位置に`hlt`にジャンプするコードがありま"
-"す。 続いて、QEMU の起動中に `Ctrl+A C` をタイプして [QEMU monitor](https://"
-"qemu-project.gitlab.io/qemu/system/monitor.html) を起動し、レジスタの値を見て"
-"みます:"
+"There is a `hlt` instruction at `+1036` and code to jump to `hlt` at the "
+"`+1037`. Then, while QEMU is running, type `Ctrl+A C` to open [QEMU monitor]"
+"(https://qemu-project.gitlab.io/qemu/system/monitor.html) and look at the "
+"register values:"
 
-#: src/bootloader/hello_uefi.md:337
+#: src/bootloader/hello_uefi.md:347
 msgid ""
 "RIP が `000000001e235037` になっていることがわかります。 下 3nibble[^nibble] "
 "が先程見たアセンブリの `jmp` 命令のアドレスと一致しているため、意図したとおり"
 "にループされていることがわかりますね (このアプリがロードされたベースアドレス"
 "がどうやら `0x1E235000` だったようです)。"
 msgstr ""
-"RIP が `000000001e235037` になっていることがわかります。 下 3nibble[^nibble] "
-"が先程見たアセンブリの `jmp` 命令のアドレスと一致しているため、意図したとおり"
-"にループされていることがわかりますね (このアプリがロードされたベースアドレス"
-"がどうやら `0x1E235000` だったようです)。"
+"You can see that the RIP is `000000001e235037`. You can see that the bottom "
+"3nibble[^nibble] matches the address of the `jmp` instruction in the "
+"assembly we just looked at. So it is looping as intended (the base address "
+"this app was loaded was apparently `0x1E235000`)."
 
-#: src/bootloader/hello_uefi.md:341
-msgid ""
-"\\[!Note\\] レジスタ値からわかること `info registers`の結果からだけでも、いく"
-"つかのことが分かります。 例えば、UEFI が [GDT](../kernel/gdt.md) や [IDT](../"
-"kernel/interrupt.md) の設定を既に済ませてくれているようです。 また、CR3 が設"
-"定されていることからも UEFI が [ページング](./simple_pg.md) を有効化してくれ"
-"ているようです。 現在のページテーブルは仮想アドレスと物理アドレスがダイレクト"
-"マップされているであろうことが推測できます。 気になる人は CR3 を辿ってページ"
-"テーブルを探索してみるのも良いかもしれません。 自力でやらずとも、GDB拡張であ"
-"る [gef](https://github.com/bata24/gef) の `vmmap` コマンドを使うと簡単にメモ"
-"リマップを一覧できます。"
+#: src/bootloader/hello_uefi.md:351
+msgid "\\[!Note\\]"
 msgstr ""
-"\\[!Note\\] レジスタ値からわかること `info registers`の結果からだけでも、いく"
-"つかのことが分かります。 例えば、UEFI が [GDT](../kernel/gdt.md) や [IDT](../"
-"kernel/interrupt.md) の設定を既に済ませてくれているようです。 また、CR3 が設"
-"定されていることからも UEFI が [ページング](./simple_pg.md) を有効化してくれ"
-"ているようです。 現在のページテーブルは仮想アドレスと物理アドレスがダイレクト"
-"マップされているであろうことが推測できます。 気になる人は CR3 を辿ってページ"
-"テーブルを探索してみるのも良いかもしれません。 自力でやらずとも、GDB拡張であ"
-"る [gef](https://github.com/bata24/gef) の `vmmap` コマンドを使うと簡単にメモ"
-"リマップを一覧できます。"
 
-#: src/bootloader/hello_uefi.md:349 src/bootloader/uefi_log.md:380
+#: src/bootloader/hello_uefi.md:353
+msgid ""
+"`info registers`の結果からだけでも、いくつかのことが分かります。 例えば、"
+"UEFI が [GDT](../kernel/gdt.md) や [IDT](../kernel/interrupt.md) の設定を既に"
+"済ませてくれているようです。 また、CR3 が設定されていることからも UEFI が "
+"[ページング](./simple_pg.md) を有効化してくれているようです。 現在のページ"
+"テーブルは仮想アドレスと物理アドレスがダイレクトマップされているであろうこと"
+"が推測できます。 気になる人は CR3 を辿ってページテーブルを探索してみるのも良"
+"いかもしれません。 自力でやらずとも、GDB拡張である [gef](https://github.com/"
+"bata24/gef) の `vmmap` コマンドを使うと簡単にメモリマップを一覧できます。"
+msgstr ""
+"The results of `info registers` alone can tell us several things. For "
+"example, if UEFI is not using [GDT](./kernel/gdt.md) and [IDT](./kernel/"
+"interrupt.md) have already been set. The fact that CR3 is set also indicates "
+"that UEFI has already enabled [paging](. /simple_pg.md). We can assume that "
+"the current page table would be a direct map of virtual and physical "
+"addresses. If you are curious, you may want to explore the page table by "
+"following CR3. Even if you don't do it by yourself, you can easily list the "
+"memory map by using the `vmmap` command of [gef](https://github.com/bata24/"
+"gef) GDB extension."
+
+#: src/bootloader/hello_uefi.md:360 src/bootloader/uefi_log.md:380
 #: src/bootloader/parse_kernel.md:321 src/bootloader/simple_pg.md:608
 #: src/bootloader/load_kernel.md:324 src/bootloader/jump_to_ymir.md:409
 #: src/kernel/serial_output.md:382 src/kernel/bit_and_test.md:257
@@ -1559,9 +1436,9 @@ msgstr ""
 #: src/vmm/cpuid.md:526 src/vmm/msr.md:432 src/vmm/cr.md:619 src/vmm/io.md:635
 #: src/vmm/intr_injection.md:463 src/vmm/initramfs.md:199 src/vmm/vmcall.md:129
 msgid "まとめ"
-msgstr "まとめ"
+msgstr "Summary"
 
-#: src/bootloader/hello_uefi.md:351
+#: src/bootloader/hello_uefi.md:362
 msgid ""
 "本チャプターでは Surtr ブートローダを実装する準備として UEFI アプリの雛形を作"
 "成しました。 実装したアプリは HLT ループをするだけのものでしたが、QEMU "
@@ -1569,18 +1446,18 @@ msgid ""
 "ました。 ずっと無言でループされても面白くないため、次のチャプターでは Surtr "
 "に出力機能を追加し何か喋らせてみます。"
 msgstr ""
-"本チャプターでは Surtr ブートローダを実装する準備として UEFI アプリの雛形を作"
-"成しました。 実装したアプリは HLT ループをするだけのものでしたが、QEMU "
-"monitor の結果から意図したとおりに HLT と JMP を繰り返していることが確認でき"
-"ました。 ずっと無言でループされても面白くないため、次のチャプターでは Surtr "
-"に出力機能を追加し何か喋らせてみます。"
+"In this chapter, we created a UEFI app skeleton in preparation for "
+"implementing the Surtr bootloader. The app just repeats HLT loop. QEMU "
+"monitor confirmed that the HLT and JMP were repeating as intended. Since it "
+"is not interesting to loop silently all the time, in the next chapter, we "
+"will add an output function to Surtr to make it speak something."
 
-#: src/bootloader/hello_uefi.md:357
+#: src/bootloader/hello_uefi.md:368
 msgid "[ssstoyama/bootloader_zig](https://github.com/ssstoyama/bootloader_zig)"
 msgstr ""
 "[ssstoyama/bootloader_zig](https://github.com/ssstoyama/bootloader_zig)"
 
-#: src/bootloader/hello_uefi.md:358 src/bootloader/uefi_log.md:389
+#: src/bootloader/hello_uefi.md:369 src/bootloader/uefi_log.md:389
 msgid ""
 "[フルスクラッチで作る!UEFIベアメタルプログラミング](http://yuma.ohgami.jp/"
 "UEFI-Bare-Metal-Programming/index.html)"
@@ -1588,33 +1465,34 @@ msgstr ""
 "[フルスクラッチで作る!UEFIベアメタルプログラミング](http://yuma.ohgami.jp/"
 "UEFI-Bare-Metal-Programming/index.html)"
 
-#: src/bootloader/hello_uefi.md:359
+#: src/bootloader/hello_uefi.md:370
 msgid "[bata24/gef](https://github.com/bata24/gef)"
 msgstr "[bata24/gef](https://github.com/bata24/gef)"
 
-#: src/bootloader/hello_uefi.md:361
+#: src/bootloader/hello_uefi.md:372
 msgid ""
 "KVM はホストOSである Linux とやり取りするため一見すると Type-2 のようにも思え"
 "ますが、 Linuxと同じ最低レイヤで動作するということを考えれば、Type-1 に分類さ"
 "れることが多いのも納得ですね。"
 msgstr ""
-"KVM はホストOSである Linux とやり取りするため一見すると Type-2 のようにも思え"
-"ますが、 Linuxと同じ最低レイヤで動作するということを考えれば、Type-1 に分類さ"
-"れることが多いのも納得ですね。"
+"At first glance, KVM may seem to be Type-2 since it interacts with Linux "
+"(the host OS), but considering that it operates at the same lowest layer as "
+"Linux, it makes sense that it is often classified as Type-1."
 
-#: src/bootloader/hello_uefi.md:363
+#: src/bootloader/hello_uefi.md:374
 msgid ""
 "Surtr は北欧神話における火の巨人です。 神話中でも多くは語られず、最終戦争であ"
 "るラグナロクの際に暴れまわって世界を滅ぼすくらいしか登場しません。 原初の巨人"
 "である Ymir よりも先に存在していたという不思議な存在です。 Ymir よりも先に存"
 "在していたという理由でブートローダの名前に採用しています。"
 msgstr ""
-"Surtr は北欧神話における火の巨人です。 神話中でも多くは語られず、最終戦争であ"
-"るラグナロクの際に暴れまわって世界を滅ぼすくらいしか登場しません。 原初の巨人"
-"である Ymir よりも先に存在していたという不思議な存在です。 Ymir よりも先に存"
-"在していたという理由でブートローダの名前に採用しています。"
+"Surtr is a fire giant in Norse mythology. Not much is said about them in the "
+"mythology, and they appear only in the final war, Ragnarok, when they "
+"rampage and destroy the world. It is a mysterious being that existed before "
+"Ymir, the primordial Titan. It has been adopted as the name of the "
+"bootloader for the reason that it existed before Ymir."
 
-#: src/bootloader/hello_uefi.md:367
+#: src/bootloader/hello_uefi.md:378
 msgid ""
 "Ymir は北欧神話における原初の巨人です。 世界が生まれる前に溶けた霜から生ま"
 "れ、一緒に生まれたアウズンブラという牛の乳を飲んで育ちます。 全能神であるオー"
@@ -1623,26 +1501,27 @@ msgid ""
 "えから、ゲストOSをホストする hypervisor (のカーネル部分)の名前に採用していま"
 "す。"
 msgstr ""
-"Ymir は北欧神話における原初の巨人です。 世界が生まれる前に溶けた霜から生ま"
-"れ、一緒に生まれたアウズンブラという牛の乳を飲んで育ちます。 全能神であるオー"
-"ディンは Ymir の子孫にあたりますが、Ymir はオーディンによって殺されてその死骸"
-"から世界が作られました。 原初の存在であり Ymir から世界が生まれたという言い伝"
-"えから、ゲストOSをホストする hypervisor (のカーネル部分)の名前に採用していま"
-"す。"
+"Ymir is the primordial giant in Norse mythology. He was born from the frost "
+"that melted before the world was born, and grew up drinking the milk of a "
+"cow named Ausumbra, with whom he was born. Odin, the Almighty God, is a "
+"descendant of Ymir, who was killed by Odin and the world was created from "
+"his corpse. The name of the hypervisor (the kernel part of the hypervisor) "
+"that hosts a guest OS is taken from the legend that the world was born from "
+"Ymir."
 
-#: src/bootloader/hello_uefi.md:371
+#: src/bootloader/hello_uefi.md:382
 msgid "[Zig Build System](https://ziglang.org/learn/build-system/)"
 msgstr "[Zig Build System](https://ziglang.org/learn/build-system/)"
 
-#: src/bootloader/hello_uefi.md:372
+#: src/bootloader/hello_uefi.md:383
 msgid "コマンドラインオプションから出力ディレクトリはオーバーライドできます。"
-msgstr "コマンドラインオプションから出力ディレクトリはオーバーライドできます。"
+msgstr "The output directory can be overridden from command line options."
 
-#: src/bootloader/hello_uefi.md:373
+#: src/bootloader/hello_uefi.md:384
 msgid ""
 "8bit ごとの単位を byte と呼ぶように、4bit ごとの単位を nibble と呼びます。"
 msgstr ""
-"8bit ごとの単位を byte と呼ぶように、4bit ごとの単位を nibble と呼びます。"
+"As each 8-bit unit is called a byte, each 4-bit unit is called a nibble."
 
 #: src/bootloader/uefi_log.md:1
 msgid "UEFI でログ出力"
@@ -30210,3 +30089,156 @@ msgstr ""
 "distributed under the [MIT License](https://opensource.org/license/mit). "
 "However, snippets of code used in this blog are distributed under CC0 1.0 "
 "Universal."
+
+#~ msgid ""
+#~ "```surtr/boot.zig\n"
+#~ "const std = @import(\"std\");\n"
+#~ "const uefi = std.os.uefi;\n"
+#~ "\n"
+#~ "pub fn main() uefi.Status {\n"
+#~ "    while (true)\n"
+#~ "        asm volatile (\"hlt\");\n"
+#~ "\n"
+#~ "    return .success;\n"
+#~ "}\n"
+#~ "```"
+#~ msgstr ""
+#~ "```surtr/boot.zig\n"
+#~ "const std = @import(\"std\");\n"
+#~ "const uefi = std.os.uefi;\n"
+#~ "\n"
+#~ "pub fn main() uefi.Status {\n"
+#~ "    while (true)\n"
+#~ "        asm volatile (\"hlt\");\n"
+#~ "\n"
+#~ "    return .success;\n"
+#~ "}\n"
+#~ "```"
+
+#~ msgid ""
+#~ "```build.zig\n"
+#~ "// EFI directory\n"
+#~ "const out_dir_name = \"img\";\n"
+#~ "const install_surtr = b.addInstallFile(\n"
+#~ "    surtr.getEmittedBin(),\n"
+#~ "    b.fmt(\"{s}/efi/boot/{s}\", .{ out_dir_name, surtr.name }),\n"
+#~ ");\n"
+#~ "install_surtr.step.dependOn(&surtr.step);\n"
+#~ "b.getInstallStep().dependOn(&install_surtr.step);\n"
+#~ "```"
+#~ msgstr ""
+#~ "```build.zig\n"
+#~ "// EFI directory\n"
+#~ "const out_dir_name = \"img\";\n"
+#~ "const install_surtr = b.addInstallFile(\n"
+#~ "    surtr.getEmittedBin(),\n"
+#~ "    b.fmt(\"{s}/efi/boot/{s}\", .{ out_dir_name, surtr.name }),\n"
+#~ ");\n"
+#~ "install_surtr.step.dependOn(&surtr.step);\n"
+#~ "b.getInstallStep().dependOn(&install_surtr.step);\n"
+#~ "```"
+
+#~ msgid ""
+#~ "```build.zig\n"
+#~ "const qemu_args = [_][]const u8{\n"
+#~ "    \"qemu-system-x86_64\",\n"
+#~ "    \"-m\",\n"
+#~ "    \"512M\",\n"
+#~ "    \"-bios\",\n"
+#~ "    \"/usr/share/ovmf/OVMF.fd\",\n"
+#~ "    \"-drive\",\n"
+#~ "    b.fmt(\"file=fat:rw:{s}/{s},format=raw\", .{ b.install_path, "
+#~ "out_dir_name }),\n"
+#~ "    \"-nographic\",\n"
+#~ "    \"-serial\",\n"
+#~ "    \"mon:stdio\",\n"
+#~ "    \"-no-reboot\",\n"
+#~ "    \"-enable-kvm\",\n"
+#~ "    \"-cpu\",\n"
+#~ "    \"host\",\n"
+#~ "    \"-s\",\n"
+#~ "};\n"
+#~ "const qemu_cmd = b.addSystemCommand(&qemu_args);\n"
+#~ "qemu_cmd.step.dependOn(b.getInstallStep());\n"
+#~ "\n"
+#~ "const run_qemu_cmd = b.step(\"run\", \"Run QEMU\");\n"
+#~ "run_qemu_cmd.dependOn(&qemu_cmd.step);\n"
+#~ "```"
+#~ msgstr ""
+#~ "```build.zig\n"
+#~ "const qemu_args = [_][]const u8{\n"
+#~ "    \"qemu-system-x86_64\",\n"
+#~ "    \"-m\",\n"
+#~ "    \"512M\",\n"
+#~ "    \"-bios\",\n"
+#~ "    \"/usr/share/ovmf/OVMF.fd\",\n"
+#~ "    \"-drive\",\n"
+#~ "    b.fmt(\"file=fat:rw:{s}/{s},format=raw\", .{ b.install_path, "
+#~ "out_dir_name }),\n"
+#~ "    \"-nographic\",\n"
+#~ "    \"-serial\",\n"
+#~ "    \"mon:stdio\",\n"
+#~ "    \"-no-reboot\",\n"
+#~ "    \"-enable-kvm\",\n"
+#~ "    \"-cpu\",\n"
+#~ "    \"host\",\n"
+#~ "    \"-s\",\n"
+#~ "};\n"
+#~ "const qemu_cmd = b.addSystemCommand(&qemu_args);\n"
+#~ "qemu_cmd.step.dependOn(b.getInstallStep());\n"
+#~ "\n"
+#~ "const run_qemu_cmd = b.step(\"run\", \"Run QEMU\");\n"
+#~ "run_qemu_cmd.dependOn(&qemu_cmd.step);\n"
+#~ "```"
+
+#~ msgid "# 0x2000\n"
+#~ msgstr "# 0x2000\n"
+
+#~ msgid "# 0x2008\n"
+#~ msgstr "# 0x2008\n"
+
+#~ msgid ""
+#~ "```build.zig\n"
+#~ "const std = @import(\"std\");\n"
+#~ "\n"
+#~ "pub fn build(b: *std.Build) void {\n"
+#~ "    const optimize = b.standardOptimizeOption(.{});\n"
+#~ "\n"
+#~ "    // Surtr Executable\n"
+#~ "    const surtr = b.addExecutable(.{\n"
+#~ "        .name = \"BOOTX64.EFI\",\n"
+#~ "        .root_source_file = b.path(\"surtr/boot.zig\"),\n"
+#~ "        .target = b.resolveTargetQuery(.{\n"
+#~ "            .cpu_arch = .x86_64,\n"
+#~ "            .os_tag = .uefi,\n"
+#~ "        }),\n"
+#~ "        .optimize = optimize,\n"
+#~ "        .linkage = .static,\n"
+#~ "    });\n"
+#~ "    b.installArtifact(surtr);\n"
+#~ "}\n"
+#~ "```"
+#~ msgstr ""
+#~ "```build.zig\n"
+#~ "const std = @import(\"std\");\n"
+#~ "\n"
+#~ "pub fn build(b: *std.Build) void {\n"
+#~ "    const optimize = b.standardOptimizeOption(.{});\n"
+#~ "\n"
+#~ "    // Surtr Executable\n"
+#~ "    const surtr = b.addExecutable(.{\n"
+#~ "        .name = \"BOOTX64.EFI\",\n"
+#~ "        .root_source_file = b.path(\"surtr/boot.zig\"),\n"
+#~ "        .target = b.resolveTargetQuery(.{\n"
+#~ "            .cpu_arch = .x86_64,\n"
+#~ "            .os_tag = .uefi,\n"
+#~ "        }),\n"
+#~ "        .optimize = optimize,\n"
+#~ "        .linkage = .static,\n"
+#~ "    });\n"
+#~ "    b.installArtifact(surtr);\n"
+#~ "}\n"
+#~ "```"
+
+#~ msgid "\\[!WARNING\\] ZLS と Zig のバージョン"
+#~ msgstr "\\[!WARNING\\] Version Consistency between ZLS and Zig"

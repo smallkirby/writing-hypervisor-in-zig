@@ -7,6 +7,7 @@ Surtr は UEFI アプリケーションとして 64bit モードで動作しま�
 まだ起動するだけで何もしないアプリケーションですが、次チャプター以降で実装する Surtr の基礎となる部分です。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-surtr-hello_uefi`](https://github.com/smallkirby/ymir/tree/whiz-surtr-hello_uefi) ブランチにあります。
 
 ## Table of Contents
@@ -112,6 +113,7 @@ zig init
 `src`の代わりに Surtr と Ymir 用のソースディレクトリをそれぞれ用意しています。
 まずは`build.zig`に Surtr 用の設定を記述します:
 
+<!-- i18n:skip -->
 ```build.zig
 const std = @import("std");
 
@@ -158,7 +160,8 @@ Zig のビルドは `zig build <target>` コマンドで実行します。
 この際、`<target>`を省略するとデフォルトのターゲットである `install` ターゲットが実行されます。
 `installArtifact()`は、この `install` ターゲットに artifact を追加するものです。
 
-> [!TIP] .static のような記法について
+> [!TIP]
+>
 > `.static` は冗長に書くと `std.builtin.LinkMode.static` という `enum` の値です。
 > Zig では、関数の引数など値の型が確定している場合に `enum` の型を省略できます。
 > そのため、本シリーズでは多くのコードでFQDNを省略して記述しています。
@@ -171,6 +174,7 @@ Zig のビルドは `zig build <target>` コマンドで実行します。
 
 次に、`surtr/boot.zig` にエントリポイントを作成します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const std = @import("std");
 const uefi = std.os.uefi;
@@ -191,6 +195,7 @@ pub fn main() uefi.Status {
 この UEFI アプリを QEMU 上で実行します。
 `build.zig`に以下の設定を追記します:
 
+<!-- i18n:skip -->
 ```build.zig
 // EFI directory
 const out_dir_name = "img";
@@ -210,6 +215,7 @@ Zig ではビルド生成物はデフォルトで `zig-out` というディレ�
 
 続いて、QEMUを実行するための設定を追記します:
 
+<!-- i18n:skip -->
 ```build.zig
 const qemu_args = [_][]const u8{
     "qemu-system-x86_64",
@@ -258,12 +264,14 @@ QEMU では [VVFAT (Virtual FAT filesystem)](https://en.wikibooks.org/wiki/QEMU/
 
 それでは、実際にビルドして QEMU で実行してみましょう:
 
+<!-- i18n:skip -->
 ```sh
 zig build run -Doptimize=Debug
 ```
 
 以下のように、QEMU が起動し先に進まなければOKです:
 
+<!-- i18n:skip -->
 ```txt
 BdsDxe: loading Boot0001 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1,0x1)/Ata(Primary,Master,0x0)
 BdsDxe: starting Boot0001 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1,0x1)/Ata(Primary,Master,0x0)
@@ -272,6 +280,7 @@ BdsDxe: starting Boot0001 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 [HLT](https://www.felixcloutier.com/x86/hlt) 命令によってCPUが停止していることを確認してみましょう。
 生成された UEFI アプリをディスアセンブルしてみると、`.text`セクションは以下のようになっています。とても小さいです:
 
+<!-- i18n:skip -->
 ```S
 > objdump -D ./zig-out/img/efi/boot/BOOTX64.EFI | less
 
@@ -298,6 +307,7 @@ BdsDxe: starting Boot0001 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x
 `+1036`の位置に`hlt`命令が、`+1037`の位置に`hlt`にジャンプするコードがあります。
 続いて、QEMU の起動中に `Ctrl+A C` をタイプして [QEMU monitor](https://qemu-project.gitlab.io/qemu/system/monitor.html) を起動し、レジスタの値を見てみます:
 
+<!-- i18n:skip -->
 ```txt
 BdsDxe: loading Boot0001 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1,0x1)/Ata(Primary,Master,0x0)
 BdsDxe: starting Boot0001 "UEFI QEMU HARDDISK QM00001 " from PciRoot(0x0)/Pci(0x1,0x1)/Ata(Primary,Master,0x0)
@@ -328,7 +338,8 @@ RIP が `000000001e235037` になっていることがわかります。
 下 3nibble[^nibble] が先程見たアセンブリの `jmp` 命令のアドレスと一致しているため、意図したとおりにループされていることがわかりますね
 (このアプリがロードされたベースアドレスがどうやら `0x1E235000` だったようです)。
 
-> [!Note] レジスタ値からわかること
+> [!Note]
+>
 > `info registers`の結果からだけでも、いくつかのことが分かります。
 > 例えば、UEFI が [GDT](../kernel/gdt.md) や [IDT](../kernel/interrupt.md) の設定を既に済ませてくれているようです。
 > また、CR3 が設定されていることからも UEFI が [ページング](./simple_pg.md) を有効化してくれているようです。

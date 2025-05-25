@@ -5,6 +5,7 @@
 
 <br>
 
+<!-- i18n:skip -->
 > [!NOTE]
 > **This blog series has been translated to the following languages:**
 >

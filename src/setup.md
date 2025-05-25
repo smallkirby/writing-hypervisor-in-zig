@@ -58,7 +58,7 @@ Zig の[リリースページ](https://ziglang.org/download/)から 0.13.0 の�
 Zig の language server である [ZLS](https://github.com/zigtools/zls) を使用します。
 様々なエディタで利用可能な拡張が存在するため、[Zigのツールガイド](https://ziglang.org/learn/tools/)に従って環境をセットアップしてください。
 
-> [!WARNING] ZLS と Zig のバージョン
+> [!WARNING]
 >
 > 利用する Zig と ZLS のバージョンは必ず一致させてください[^2]。
 
