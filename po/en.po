@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Writing Hypervisor in Zig\n"
-"POT-Creation-Date: 2025-05-25T20:03:47+09:00\n"
-"PO-Revision-Date: 2025-05-25 20:04+0900\n"
+"POT-Creation-Date: 2025-05-25T20:07:18+09:00\n"
+"PO-Revision-Date: 2025-05-25 20:08+0900\n"
 "Last-Translator: wataru <ssmallkirby@gmail.com>\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -844,39 +844,39 @@ msgstr "Table of Contents"
 
 #: src/bootloader/hello_uefi.md:15
 msgid "[Hypervisor の種類](#hypervisor-の種類)"
-msgstr "[Hypervisor の種類](#hypervisor-の種類)"
+msgstr ""
 
 #: src/bootloader/hello_uefi.md:16
 msgid "[Type-1 Hypervisor](#type-1-hypervisor)"
-msgstr "[Type-1 Hypervisor](#type-1-hypervisor)"
+msgstr ""
 
 #: src/bootloader/hello_uefi.md:17
 msgid "[Type-2 Hypervisor](#type-2-hypervisor)"
-msgstr "[Type-2 Hypervisor](#type-2-hypervisor)"
+msgstr ""
 
 #: src/bootloader/hello_uefi.md:18
 msgid "[Surtr Bootloader](#surtr-bootloader)"
-msgstr "[Surtr Bootloader](#surtr-bootloader)"
+msgstr ""
 
 #: src/bootloader/hello_uefi.md:19
 msgid "[UEFI アプリの作成](#uefi-アプリの作成)"
-msgstr "[UEFI アプリの作成](#uefi-アプリの作成)"
+msgstr ""
 
 #: src/bootloader/hello_uefi.md:20
 msgid "[ビルドスクリプトの設定](#ビルドスクリプトの設定)"
-msgstr "[ビルドスクリプトの設定](#ビルドスクリプトの設定)"
+msgstr ""
 
 #: src/bootloader/hello_uefi.md:21
 msgid "[エントリポイントの作成](#エントリポイントの作成)"
-msgstr "[エントリポイントの作成](#エントリポイントの作成)"
+msgstr ""
 
 #: src/bootloader/hello_uefi.md:22
 msgid "[QEMU で実行するための設定](#qemu-で実行するための設定)"
-msgstr "[QEMU で実行するための設定](#qemu-で実行するための設定)"
+msgstr ""
 
 #: src/bootloader/hello_uefi.md:23
 msgid "[実行](#実行)"
-msgstr "[実行](#実行)"
+msgstr ""
 
 #: src/bootloader/hello_uefi.md:24 src/bootloader/uefi_log.md:18
 #: src/bootloader/parse_kernel.md:19 src/bootloader/simple_pg.md:18
@@ -891,13 +891,13 @@ msgstr "[実行](#実行)"
 #: src/vmm/cpuid.md:21 src/vmm/msr.md:18 src/vmm/cr.md:25 src/vmm/io.md:20
 #: src/vmm/intr_injection.md:19 src/vmm/initramfs.md:17 src/vmm/vmcall.md:18
 msgid "[まとめ](#まとめ)"
-msgstr "[まとめ](#まとめ)"
+msgstr ""
 
 #: src/bootloader/hello_uefi.md:25 src/bootloader/uefi_log.md:19
 #: src/kernel/pic.md:33 src/vmm/vmentry_vmexit.md:23 src/vmm/ept.md:22
 #: src/vmm/linux_boot.md:26 src/vmm/io.md:21
 msgid "[References](#references)"
-msgstr "[References](#references)"
+msgstr ""
 
 #: src/bootloader/hello_uefi.md:27
 msgid "Hypervisor の種類"
@@ -1416,7 +1416,7 @@ msgstr ""
 "The results of `info registers` alone can tell us several things. For "
 "example, if UEFI is not using [GDT](./kernel/gdt.md) and [IDT](./kernel/"
 "interrupt.md) have already been set. The fact that CR3 is set also indicates "
-"that UEFI has already enabled [paging](. /simple_pg.md). We can assume that "
+"that UEFI has already enabled [paging](./simple_pg.md). We can assume that "
 "the current page table would be a direct map of virtual and physical "
 "addresses. If you are curious, you may want to explore the page table by "
 "following CR3. Even if you don't do it by yourself, you can easily list the "
