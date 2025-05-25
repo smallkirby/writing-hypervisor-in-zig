@@ -5,6 +5,7 @@ Surtr の雛形ができたので、次にやりたいことはログ出力で�
 今回は UEFI の [Simple Text Output](https://uefi.org/specs/UEFI/2.9_A/12_Protocols_Console_Support.html) というプロトコルを利用してログを出力していきます。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-surtr-uefi_log`](https://github.com/smallkirby/ymir/tree/whiz-surtr-uefi_log) ブランチにあります。
 
 ## Table of Contents
@@ -21,6 +22,7 @@ UEFI では [EFI System Table](https://uefi.org/specs/UEFI/2.9_A/04_EFI_System_T
 System Table へのポインタは `std.os.uefi.system_table` に入っています。
 ここから Simple Output Protocol へのポインタを取得します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 var status: uefi.Status = undefined;
 
@@ -37,6 +39,7 @@ UCS-2 は1文字を2バイトで表現します。
 詳しいことは他の文献に譲るとして、ASCII文字の範囲内であれば `<8bit ASCII code> <0x00>` という2バイトで1文字が表されるという事実だけをここでは利用します。
 よって、`"Hello, world!"`という文字列は以下のようにして出力できます:
 
+<!-- i18n:skip -->
 ```zig
 for ("Hello, world!\n") |b| {
     con_out.outputString(&[_:0]u16{ b }).err() catch unreachable;
@@ -50,7 +53,8 @@ Zig において、文字列リテラルは `[N:0]const u8` という [Sentinel-
 `for`ループの中身の `&[_:0]u16{ b }` では `u8` 型の `b` を `u16` 型に変換しています。
 `[_:0]` と指定することで、最後に勝手に `0x00` が追加され、UCS-2 文字列として扱えるようになります。
 
-> [!INFO] Zig における配列
+> [!INFO]
+>
 > Zig において、配列の初期化は以下のように行います:
 >
 > ```zig
@@ -82,6 +86,7 @@ Zig では `std.log.info()` のような関数でログを出力できます。
 `surtr/log.zig` を作成し、ログ関数を実装します。
 `logFn` のシグネチャのとおりに関数を定義してあげます:
 
+<!-- i18n:skip -->
 ```surtr/log.zig
 fn log(
     comptime level: stdlog.Level,
@@ -100,7 +105,8 @@ fn log(
 }
 ```
 
-> [!INFO] 使わない変数
+> [!INFO]
+>
 > Zig では使われない変数がある状態ではコンパイルエラーになります。
 > 関数の引数などで使わない変数がある場合には `_` で明示的に使わないことを宣言する必要があります。
 > VSCode + ZLS を使っている場合、利用しない変数がある状態でセーブをすると自動的に `_` に変換してくれるので便利です。
@@ -109,6 +115,7 @@ fn log(
 `std.fmt.format()` はフォーマット文字列と引数から文字列を生成し、それを第1引数の`Writer`に書き込む関数です。
 `Writer`型は、以下のように定義します:
 
+<!-- i18n:skip -->
 ```surtr/log.zig
 const Writer = std.io.Writer(
     void,
@@ -124,6 +131,7 @@ Zig では関数が型を返すことができます。
 第2引数はこの`Writer`が返すエラー型です。エラーは返さないため、空のエラー型`LogError`を定義し、それを指定しておきます。
 最も重要な第3引数では実際に出力をする関数を指定します:
 
+<!-- i18n:skip -->
 ```surtr/log.zig
 fn writerFunction(_: void, bytes: []const u8) LogError!usize {
     for (bytes) |b| {
@@ -140,6 +148,7 @@ fn writerFunction(_: void, bytes: []const u8) LogError!usize {
 これで独自のログ関数を実装できました。
 あとは `std_options.logFn` にこの関数をセットしてオーバーライドしてあげるだけです:
 
+<!-- i18n:skip -->
 ```surtr/log.zig
 pub const default_log_options = std.Options{
     .logFn = log,
@@ -150,6 +159,7 @@ pub const default_log_options = std.Options{
 そのため、`default_log_options` 変数を `pub` 指定して `boot.zig` から触れるようにしています。
 `boot.zig` においてこの変数を参照し、 `std_options` 変数をオーバーライドします:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const blog = @import("log.zig");
 pub const std_options = blog.default_log_options;
@@ -163,6 +173,7 @@ pub const std_options = blog.default_log_options;
 `writerFunction()` で利用している `con_out` 変数を `log.zig` に渡してグローバル変数としてセットしてあげる必要があります。
 ログを出力する関数を用意します:
 
+<!-- i18n:skip -->
 ```surtr/log.zig
 const Sto = uefi.protocol.SimpleTextOutput;
 
@@ -177,6 +188,7 @@ pub fn init(out: *Sto) void {
 あとは先程取得した Simple Text Output Protocol のポインタを渡してあげればログが出力されるようになります。
 試しに以下のようなログ出力をしてみましょう:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const log = std.log;
 
@@ -186,7 +198,8 @@ log.info("Initialized bootloader log.", .{});
 
 QEMU を動かしてログが出力されるかどうかを確認してください。
 
-> [!INFO] unreachable
+> [!INFO]
+>
 > Zig において関数は [Error Union Type](https://ziglang.org/documentation/master/#Error-Union-Type) を返します。
 > この型は、エラー型と成功時の型の両方を合わせた `LogError!u32` のようなかたちをしています。
 > エラーとして任意の型を許容する場合には `!u32` のように書くこともできます。
@@ -217,6 +230,7 @@ QEMU を動かしてログが出力されるかどうかを確認してくださ
 
 Zig では**ログにスコープをもたせることができます**:
 
+<!-- i18n:skip -->
 ```zig
 const log = std.log.scoped(.hoge);
 log.info("Hello, from hoge scope", .{});
@@ -226,6 +240,7 @@ log.info("Hello, from hoge scope", .{});
 先程実装した `log()` 関数の第2引数ではこのスコープを受け取ることができます。
 スコープも一緒に出力してあげるように修正しましょう:
 
+<!-- i18n:skip -->
 ```surtr/log.zig
 fn log(
     comptime level: stdlog.Level,
@@ -250,6 +265,7 @@ Zig では配列を `++` 演算子で結合できるため、これを利用し�
 
 `boot.zig` では、スコープを `.surtr` として Surtr からの出力であることがわかりやすいようにします:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const log = std.log.scoped(.surtr);
 log.info("Hello, world!", .{});
@@ -257,6 +273,7 @@ log.info("Hello, world!", .{});
 
 以下のような出力になるはずです:
 
+<!-- i18n:skip -->
 ```txt
 (surtr): Hello, world!
 ```
@@ -270,6 +287,7 @@ Zig のログレベルは `std.log.Level` enum として定義されており、
 
 ここでは、分かりやすいようにログレベルも出力してみましょう:
 
+<!-- i18n:skip -->
 ```surtr/log.zig
 fn log(
     comptime level: stdlog.Level,
@@ -297,6 +315,7 @@ fn log(
 `level` に対応する文字列を生成し、スコープ文字列のように `fmt` と結合して出力しています。
 この状態でログを出力すると以下のようになるはずです:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] (surtr): Hello, world!
 ```
@@ -307,6 +326,7 @@ fn log(
 しかし、わざわざログレベルを変更するためにコードを書き換えるのはめんどうですね。
 ビルドスクリプトを変更し、ビルド時にログレベルを変更できるようにしましょう:
 
+<!-- i18n:skip -->
 ```build.zig
 // Options
 const s_log_level = b.option(
@@ -341,6 +361,7 @@ surtr.root_module.addOptions("option", options);
 
 ここで追加したオプションは、コード中で以下のように参照できます:
 
+<!-- i18n:skip -->
 ```surtr/log.zig
 const option = @import("option"); // build.zig で指定したオプション名
 const log_level = option.log_level;
@@ -349,6 +370,7 @@ const log_level = option.log_level;
 `log_level` はコンパイル時に決定する値として利用できます。
 この値を `std_options.log_level` にセットしてあげましょう:
 
+<!-- i18n:skip -->
 ```surtr/log.zig
 pub const default_log_options = std.Options{
     .log_level = switch (option.log_level) {
@@ -364,6 +386,7 @@ pub const default_log_options = std.Options{
 あとはビルド時にこのオプションを指定してあげれば、ログレベルが変更されます。
 試しに `log.info()` でログ出力するように指定してあげた上で、コンパイル時にログレベルとして `.warn` を指定してみましょう:
 
+<!-- i18n:skip -->
 ```bash
 zig build -Dlog_level=warn -Doptimize=Debug
 ```
