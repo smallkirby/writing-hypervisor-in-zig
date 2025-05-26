@@ -7,6 +7,7 @@
 このメモリマップはのちほど Ymir で使うことになるのに加え、Boot Services を終了させるためにも必要となります。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-surtr-cleanup_memmap`](https://github.com/smallkirby/ymir/tree/whiz-surtr-cleanup_memmap) ブランチにあります。
 
 ## Table of Contents
@@ -28,6 +29,7 @@ ELF ファイルを読み込んだのは:
 この内、2については Ymir の実行に必要なため残しておいて、1のみを片付けます。
 ヘッダ用の領域は [AllocatePool()](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#id16) で確保したため、対応する [FreePool()](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#efi-boot-services-freepool) で解放します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 status = boot_service.freePool(header_buffer);
 if (status != .Success) {
@@ -38,6 +40,7 @@ if (status != .Success) {
 
 続いて、開いていた Ymir の ELF ファイルを閉じます:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 status = kernel.close();
 if (status != .Success) {
@@ -48,6 +51,7 @@ if (status != .Success) {
 
 これで開いているファイルが存在しなくなったため、ルートディレクトリを閉じてあげます:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 status = root_dir.close();
 if (status != .Success) {
@@ -72,6 +76,7 @@ UEFI が提供するメモリマップ自体はただのバイナリデータで
 このファイルは、Ymir と Surtr で共通して利用するデータ構造を定義するのに使います。
 以下のようにメモリマップを定義します:
 
+<!-- i18n:skip -->
 ```surtr/defs.zig
 pub const MemoryMap = extern struct {
     /// Total buffer size prepared to store the memory map.
@@ -98,6 +103,7 @@ pub const MemoryMap = extern struct {
 ELF のセグメントヘッダをイテレートしたように、`MemoryDescriptor` も簡単にイテレートできると便利そうです。
 `MemoryMap` の情報をもとに `MemoryDescriptor` をイテレートする構造体を定義します:
 
+<!-- i18n:skip -->
 ```surtr/defs.zig
 pub const MemoryDescriptorIterator = struct {
     const Self = @This();
@@ -140,6 +146,7 @@ pub const MemoryDescriptorIterator = struct {
 
 `surtr/boot.zig` にメモリマップを取得するヘルパー関数を追加します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const map_buffer_size = page_size * 4;
 var map_buffer: [map_buffer_size]u8 = undefined;
@@ -164,6 +171,7 @@ status = getMemoryMap(&map, boot_service);
 
 続いて、実際にメモリマップを取得する関数を実装します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 fn getMemoryMap(map: *defs.MemoryMap, boot_services: *uefi.tables.BootServices) uefi.Status {
     return boot_services.getMemoryMap(
@@ -180,6 +188,7 @@ UEFI の Runtime Services が提供する、メモリマップを取得するた
 
 最後に、取得したメモリマップを表示します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 var map_iter = defs.MemoryDescriptorIterator.new(map);
 while (true) {
@@ -196,8 +205,9 @@ while (true) {
 実行すると、以下のようにメモリマップが表示されます。各メモリタイプの意味は[こちらのテーブル](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#memory-type-usage-before-exitbootservices)を参照してください:
 
 <details>
-<summary>UEFI メモリマップの確認</summary>
+<summary>Example UEFI Memory Map</summary>
 
+<!-- i18n:skip -->
 ```txt
 [DEBUG] (surtr): Memory Map (Physical): Buf=0x1FE91FA0, MapSize=0x1770, DescSize=0x30
 [DEBUG] (surtr):   0x0000000000000000 - 0x0000000000001000 : BootServicesCode
@@ -343,6 +353,7 @@ while (true) {
 UEFI に「おれは全部知ってるぞ」と教える必要があるということですね。
 そのために、この関数には先ほど取得したメモリマップのキーを渡します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 log.info("Exiting boot services.", .{});
 status = boot_service.exitBootServices(uefi.handle, map.map_key);
@@ -352,6 +363,7 @@ status = boot_service.exitBootServices(uefi.handle, map.map_key);
 取得したメモリマップ(のキー)が最新ではないと UEFI が判断すると、この関数はエラーを返します。
 その場合には、再度メモリマップを取得して自分は最新のメモリマップを知っているんだということを主張してあげる必要があります[^2]:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 if (status != .Success) {
     map.buffer_size = map_buffer.len;
