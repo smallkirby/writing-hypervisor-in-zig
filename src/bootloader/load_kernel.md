@@ -5,6 +5,7 @@
 本チャプターでは Ymir Kernel のELF ファイルをパースし、要求する仮想アドレスにカーネルをロードしていきます。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-surtr-load_kernel`](https://github.com/smallkirby/ymir/tree/whiz-surtr-load_kernel) ブランチにあります。
 
 ## Table of Contents
@@ -38,6 +39,7 @@ Ymir の仮想アドレスレイアウトは以下のようになります:
 
 これらのレイアウトを実現するため、以下のリンカスクリプトを用意します:
 
+<!-- i18n:skip -->
 ```ymir/linker.ld
 KERNEL_VADDR_BASE = 0xFFFFFFFF80000000;
 KERNEL_VADDR_TEXT = 0xFFFFFFFF80100000;
@@ -70,18 +72,20 @@ SECTIONS {
 このリンカスクリプトによって、全てのセクションは仮想アドレスの `0xFFFFFFFF80100000` 以降に配置されるようになります。
 また、それらのセクションは仮想アドレスから `0xFFFFFFFF80000000` を引いた物理アドレスにマップされます。
 
-> [!NOTE] 詳しくは...
+> [!NOTE]
 >
 > Ymir のリンカスクリプトとセグメント構成について、詳しくは [カーネルの起動](jump_to_ymir.md) のセクションで説明します。
 
 リンカスクリプトをビルドに含めるには、`build.zig` で以下のように指定します:
 
+<!-- i18n:skip -->
 ```build.zig
 ymir.linker_script = b.path("ymir/linker.ld");
 ```
 
 ビルドをして生成された ELF ファイルのセグメントを確認してみましょう:
 
+<!-- i18n:skip -->
 ```bash
 > readelf --segment ./zig-out/bin/ymir.elf
 
@@ -107,7 +111,7 @@ Program Headers:
 しかし、エントリポイントが `0xFFFFFFFF80100000` であることや、そのセグメントが物理アドレスの `0x100000` にマップされていることがわかります。
 意図したとおりに配置されているようですね。
 
-> [!WARNING] 本当に良いレイアウトは？
+> [!WARNING]
 >
 > Ymir では Linux に近いレイアウトを採用しました。
 > 特に理由はないですが、Linux をある程度触ったことがある人にとってはなんとなく直感的であるような気がしたからです。
@@ -127,6 +131,7 @@ Ymir カーネルのレイアウトが決まったので、今度はカーネル
 まずは ELF の **セグメントヘッダ (プログラムヘッダ)** のイテレータを作成します。
 Zig の標準ライブラリにはセグメントヘッダのイテレータが既に実装されているため、それを使います:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const Addr = elf.Elf64_Addr;
 var kernel_start_virt: Addr = std.math.maxInt(Addr);
@@ -140,6 +145,7 @@ var iter = elf_header.program_header_iterator(kernel);
 セグメントヘッダのイテレータは、`std.elf.Header.program_header_iterator()` で作成できます。
 このイテレータを使ってセグメントヘッダを辿り、カーネルが要求する最小・最大アドレスを計算します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 while (true) {
     const phdr = iter.next() catch |err| {
@@ -157,6 +163,7 @@ while (true) {
 
 続いて、必要なメモリサイズを計算します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const pages_4kib = (kernel_end_phys - kernel_start_phys + (page_size - 1)) / page_size;
 log.info("Kernel image: 0x{X:0>16} - 0x{X:0>16} (0x{X} pages)", .{ kernel_start_phys, kernel_end_phys, pages_4kib });
@@ -167,6 +174,7 @@ log.info("Kernel image: 0x{X:0>16} - 0x{X:0>16} (0x{X} pages)", .{ kernel_start_
 
 実行すると以下の出力になります:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] (surtr): Initialized bootloader log.
 [INFO ] (surtr): Got boot services.
@@ -183,6 +191,7 @@ log.info("Kernel image: 0x{X:0>16} - 0x{X:0>16} (0x{X} pages)", .{ kernel_start_
 
 最後に、計算したページ分だけメモリを確保してあげます。
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 status = boot_service.allocatePages(.AllocateAddress, .LoaderData, pages_4kib, @ptrCast(&kernel_start_phys));
 if (status != .Success) {
@@ -202,6 +211,7 @@ log.info("Allocated memory for kernel image @ 0x{X:0>16} ~ 0x{X:0>16}", .{ kerne
 カーネルが要求する"物理アドレス"にメモリを確保できたため、次は要求する"仮想アドレス"を確保した物理アドレスにマップします。
 [簡易ページテーブルのチャプター](simple_pg.md) で 4KiB ページをマップする関数を実装したため、それを使ってページをマップします:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 for (0..pages_4kib) |i| {
     arch.page.map4kTo(
@@ -222,6 +232,7 @@ log.info("Mapped memory for kernel image.", .{});
 
 実行してメモリマップを確認すると以下のようになります:
 
+<!-- i18n:skip -->
 ```txt
 Virtual address start-end              Physical address start-end             Total size   Page size   Count  Flags
 0x0000000000000000-0x0000000000200000  0x0000000000000000-0x0000000000200000  0x200000     0x200000    1      [RWX KERN ACCESSED DIRTY]
@@ -242,6 +253,7 @@ Virtual address start-end              Physical address start-end             To
 
 まずは、先ほど必要なメモリサイズを計算したときと同様にセグメントヘッダのイテレータを作成するところから始めます:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 log.info("Loading kernel image...", .{});
 iter = elf_header.program_header_iterator(kernel);
@@ -259,6 +271,7 @@ while (true) {
 ロードする必要があるのは、やはり `PT_LOAD` セグメントだけです。それ以外の場合にはスキップします。
 続いて、セグメントを FS からメモリに読み出します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 status = kernel.setPosition(phdr.p_offset);
 if (status != .Success) {
@@ -283,7 +296,7 @@ log.info(
 セグメントヘッダが要求する仮想アドレスに対して、セグメントをファイルから読み出します。
 とてもシンプルです。
 
-> [!NOTE] 仮想アドレスと物理アドレス
+> [!NOTE]
 >
 > ページング周りのコードを書く際は、仮想アドレスと物理アドレスを取り違えるミスをしやすいです。
 > しかし、**Surtr においては実はそこまで両者を意識する必要はありません**。
@@ -303,6 +316,7 @@ log.info(
 セグメントをロードする際に、`.bss` セクションのサイズだけメモリを確保し、ゼロで初期化する必要があります。
 既にメモリは確保してあるため、ここではゼロ初期化だけを行いましょう:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const zero_count = phdr.p_memsz - phdr.p_filesz;
 if (zero_count > 0) {

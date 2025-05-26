@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Writing Hypervisor in Zig\n"
-"POT-Creation-Date: 2025-05-26T00:00:38+09:00\n"
-"PO-Revision-Date: 2025-05-26 00:47+0900\n"
+"POT-Creation-Date: 2025-05-26T20:30:05+09:00\n"
+"PO-Revision-Date: 2025-05-26 20:59+0900\n"
 "Last-Translator: smallkirby <ssmallkirby@gmail.com>\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -730,7 +730,7 @@ msgstr ""
 "are extensions available for various editors, so follow the [Zig's Tool "
 "Guide](https://ziglang.org/learn/tools/) to set up for your environment."
 
-#: src/setup.md:61
+#: src/setup.md:61 src/bootloader/load_kernel.md:120
 msgid "\\[!WARNING\\]"
 msgstr ""
 
@@ -816,6 +816,7 @@ msgstr ""
 
 #: src/bootloader/hello_uefi.md:9 src/bootloader/uefi_log.md:7
 #: src/bootloader/parse_kernel.md:9 src/bootloader/simple_pg.md:9
+#: src/bootloader/load_kernel.md:7
 msgid "\\[!IMPORTANT\\]"
 msgstr ""
 
@@ -829,7 +830,7 @@ msgstr ""
 
 #: src/bootloader/hello_uefi.md:13 src/bootloader/uefi_log.md:11
 #: src/bootloader/parse_kernel.md:13 src/bootloader/simple_pg.md:13
-#: src/bootloader/load_kernel.md:10 src/bootloader/cleanup_memmap.md:12
+#: src/bootloader/load_kernel.md:11 src/bootloader/cleanup_memmap.md:12
 #: src/bootloader/jump_to_ymir.md:7 src/kernel/serial_output.md:15
 #: src/kernel/bit_and_test.md:11 src/kernel/serial_logsystem.md:11
 #: src/kernel/gdt.md:10 src/kernel/interrupt.md:15
@@ -881,7 +882,7 @@ msgstr ""
 
 #: src/bootloader/hello_uefi.md:24 src/bootloader/uefi_log.md:19
 #: src/bootloader/parse_kernel.md:20 src/bootloader/simple_pg.md:19
-#: src/bootloader/load_kernel.md:18 src/bootloader/jump_to_ymir.md:16
+#: src/bootloader/load_kernel.md:19 src/bootloader/jump_to_ymir.md:16
 #: src/kernel/serial_output.md:24 src/kernel/bit_and_test.md:20
 #: src/kernel/serial_logsystem.md:15 src/kernel/gdt.md:24
 #: src/kernel/interrupt.md:26 src/kernel/page_allocator.md:30
@@ -1129,8 +1130,8 @@ msgstr ""
 msgid "最適化レベル"
 msgstr "Optimization Level"
 
-#: src/bootloader/hello_uefi.md:152 src/bootloader/load_kernel.md:29
-#: src/bootloader/load_kernel.md:39
+#: src/bootloader/hello_uefi.md:152 src/bootloader/load_kernel.md:30
+#: src/bootloader/load_kernel.md:40
 msgid "説明"
 msgstr "Description"
 
@@ -1426,7 +1427,7 @@ msgstr ""
 
 #: src/bootloader/hello_uefi.md:360 src/bootloader/uefi_log.md:403
 #: src/bootloader/parse_kernel.md:339 src/bootloader/simple_pg.md:630
-#: src/bootloader/load_kernel.md:324 src/bootloader/jump_to_ymir.md:409
+#: src/bootloader/load_kernel.md:338 src/bootloader/jump_to_ymir.md:409
 #: src/kernel/serial_output.md:382 src/kernel/bit_and_test.md:257
 #: src/kernel/serial_logsystem.md:118 src/kernel/gdt.md:523
 #: src/kernel/interrupt.md:568 src/kernel/page_allocator.md:474
@@ -3317,51 +3318,49 @@ msgid ""
 "Kernel のELF ファイルをパースし、要求する仮想アドレスにカーネルをロードしてい"
 "きます。"
 msgstr ""
-"前チャプターでは 4KiB ページのマップができるようになりました。 ページ操作をで"
-"きるようにしたもともとの理由は、Ymir Kernel をロードする際に Ymir が要求する"
-"レイアウトに合わせて仮想アドレスをマップするためです。 本チャプターでは Ymir "
-"Kernel のELF ファイルをパースし、要求する仮想アドレスにカーネルをロードしてい"
-"きます。"
+"In the previous chapter, we implemented support for mapping 4KiB pages. The "
+"original motivation for enabling page operations was to map virtual "
+"addresses according to the layout required by the Ymir Kernel during its "
+"loading process. In this chapter, we'll parse the Ymir Kernel's ELF file and "
+"load it into memory at the virtual addresses it expects."
 
-#: src/bootloader/load_kernel.md:7
+#: src/bootloader/load_kernel.md:9
 msgid ""
-"\\[!IMPORTANT\\] 本チャプターの最終コードは [`whiz-surtr-load_kernel`]"
-"(https://github.com/smallkirby/ymir/tree/whiz-surtr-load_kernel) ブランチにあ"
-"ります。"
+"本チャプターの最終コードは [`whiz-surtr-load_kernel`](https://github.com/"
+"smallkirby/ymir/tree/whiz-surtr-load_kernel) ブランチにあります。"
 msgstr ""
-"\\[!IMPORTANT\\] 本チャプターの最終コードは [`whiz-surtr-load_kernel`]"
-"(https://github.com/smallkirby/ymir/tree/whiz-surtr-load_kernel) ブランチにあ"
-"ります。"
+"Source code for this chapter is in [`whiz-surtr-parse_kernel`](https://"
+"github.com/smallkirby/ymir/tree/whiz-surtr-load_kernel) branch."
 
-#: src/bootloader/load_kernel.md:12
+#: src/bootloader/load_kernel.md:13
 msgid "[Ymir のリンカスクリプト](#ymir-のリンカスクリプト)"
 msgstr "[Ymir のリンカスクリプト](#ymir-のリンカスクリプト)"
 
-#: src/bootloader/load_kernel.md:13
+#: src/bootloader/load_kernel.md:14
 msgid "[カーネル用のメモリの確保](#カーネル用のメモリの確保)"
 msgstr "[カーネル用のメモリの確保](#カーネル用のメモリの確保)"
 
-#: src/bootloader/load_kernel.md:14
+#: src/bootloader/load_kernel.md:15
 msgid "[仮想アドレスのマップ](#仮想アドレスのマップ)"
 msgstr "[仮想アドレスのマップ](#仮想アドレスのマップ)"
 
-#: src/bootloader/load_kernel.md:15
+#: src/bootloader/load_kernel.md:16
 msgid "[カーネルの読み込みとロード](#カーネルの読み込みとロード)"
 msgstr "[カーネルの読み込みとロード](#カーネルの読み込みとロード)"
 
-#: src/bootloader/load_kernel.md:16
+#: src/bootloader/load_kernel.md:17
 msgid "[セグメントの読み込み](#セグメントの読み込み)"
 msgstr "[セグメントの読み込み](#セグメントの読み込み)"
 
-#: src/bootloader/load_kernel.md:17
+#: src/bootloader/load_kernel.md:18
 msgid "[BSS セグメントの初期化](#bss-セグメントの初期化)"
 msgstr "[BSS セグメントの初期化](#bss-セグメントの初期化)"
 
-#: src/bootloader/load_kernel.md:20
+#: src/bootloader/load_kernel.md:21
 msgid "Ymir のリンカスクリプト"
-msgstr "Ymir のリンカスクリプト"
+msgstr "Linker Script of Ymir"
 
-#: src/bootloader/load_kernel.md:22
+#: src/bootloader/load_kernel.md:23
 msgid ""
 "まず最初に Ymir の仮想アドレスレイアウトを決めます。 アドレスレイアウトをどの"
 "ようにするかには特に決まりがありません。 例えば、Linux ではユーザランドとカー"
@@ -3369,166 +3368,154 @@ msgid ""
 "は `.text` がマップ、ある部分は物理アドレスに direct map されていたりします"
 "[^1]。"
 msgstr ""
-"まず最初に Ymir の仮想アドレスレイアウトを決めます。 アドレスレイアウトをどの"
-"ようにするかには特に決まりがありません。 例えば、Linux ではユーザランドとカー"
-"ネルごとに利用する仮想アドレス空間を分けています。 カーネルの中でも、ある部分"
-"は `.text` がマップ、ある部分は物理アドレスに direct map されていたりします"
-"[^1]。"
+"First, we'll define the virtual address layout for Ymir. There's no strict "
+"rule for how to organize the address layout. For example, Linux separates "
+"the virtual address space used by userland and the kernel. Even within the "
+"kernel, certain regions are mapped for `.text`, while others are direct-"
+"mapped to physical addresses[^1]."
 
-#: src/bootloader/load_kernel.md:27
+#: src/bootloader/load_kernel.md:28
 msgid ""
 "また、[BitVisor](https://www.bitvisor.org/) は以下のような仮想アドレスのレイ"
 "アウトになっているようです[^2]:"
 msgstr ""
-"また、[BitVisor](https://www.bitvisor.org/) は以下のような仮想アドレスのレイ"
-"アウトになっているようです[^2]:"
+"BitVisor, on the other hand, appears to use the following virtual address "
+"layout[^2]:"
 
-#: src/bootloader/load_kernel.md:29 src/bootloader/load_kernel.md:39
+#: src/bootloader/load_kernel.md:30 src/bootloader/load_kernel.md:40
 msgid "仮想アドレス"
-msgstr "仮想アドレス"
+msgstr "Virtual Address"
 
-#: src/bootloader/load_kernel.md:31
+#: src/bootloader/load_kernel.md:32
 msgid "`0x0000000000` - `0x003FFFFFFF`"
 msgstr "`0x0000000000` - `0x003FFFFFFF`"
 
-#: src/bootloader/load_kernel.md:31
-msgid "プロセス"
-msgstr "プロセス"
-
 #: src/bootloader/load_kernel.md:32
+msgid "プロセス"
+msgstr "Userland Process"
+
+#: src/bootloader/load_kernel.md:33
 msgid "`0x0040000000` - `0x007FFFFFFF`"
 msgstr "`0x0040000000` - `0x007FFFFFFF`"
 
-#: src/bootloader/load_kernel.md:32
-msgid "カーネル"
-msgstr "カーネル"
-
 #: src/bootloader/load_kernel.md:33
+msgid "カーネル"
+msgstr "Kernel"
+
+#: src/bootloader/load_kernel.md:34
 msgid "`0x00F0000000` - `0x00FEFFFFFF`"
 msgstr "`0x00F0000000` - `0x00FEFFFFFF`"
 
-#: src/bootloader/load_kernel.md:33
-msgid "物理アドレスの動的割当て"
-msgstr "物理アドレスの動的割当て"
-
 #: src/bootloader/load_kernel.md:34
+msgid "物理アドレスの動的割当て"
+msgstr "Dynamically allocated physical memory"
+
+#: src/bootloader/load_kernel.md:35
 msgid "`0x8000000000` - `0x8FFFFFFFFF`"
 msgstr "`0x8000000000` - `0x8FFFFFFFFF`"
 
-#: src/bootloader/load_kernel.md:34
+#: src/bootloader/load_kernel.md:35
 msgid "物理アドレスの静的割当て"
-msgstr "物理アドレスの静的割当て"
+msgstr "Statically allocated physical memory"
 
-#: src/bootloader/load_kernel.md:36
+#: src/bootloader/load_kernel.md:37
 msgid ""
 "Ymir では特に理由はなく Linux のレイアウトに近いものを採用します。 Ymir の仮"
 "想アドレスレイアウトは以下のようになります:"
 msgstr ""
-"Ymir では特に理由はなく Linux のレイアウトに近いものを採用します。 Ymir の仮"
-"想アドレスレイアウトは以下のようになります:"
+"Ymir adopts a layout similar to Linux’s, though there's no particular reason "
+"for this choice. The virtual address layout for Ymir is as follows:"
 
-#: src/bootloader/load_kernel.md:41
+#: src/bootloader/load_kernel.md:42
 msgid "`0xFFFF888000000000` - `0xFFFF88FFFFFFFFFF`"
 msgstr "`0xFFFF888000000000` - `0xFFFF88FFFFFFFFFF`"
 
-#: src/bootloader/load_kernel.md:41
+#: src/bootloader/load_kernel.md:42
 msgid "Direct Map. 物理アドレスの `0` にマップされる。ヒープもここ。"
-msgstr "Direct Map. 物理アドレスの `0` にマップされる。ヒープもここ。"
+msgstr ""
+"Direct Map. This region is mapped to physical address 0. Heap also locates "
+"here."
 
-#: src/bootloader/load_kernel.md:42 src/kernel/paging.md:31
+#: src/bootloader/load_kernel.md:43 src/kernel/paging.md:31
 msgid "`0xFFFFFFFF80000000` -"
 msgstr "`0xFFFFFFFF80000000` -"
 
-#: src/bootloader/load_kernel.md:42
+#: src/bootloader/load_kernel.md:43
 msgid "Kernel Base."
 msgstr "Kernel Base."
 
-#: src/bootloader/load_kernel.md:43 src/kernel/paging.md:32
+#: src/bootloader/load_kernel.md:44 src/kernel/paging.md:32
 msgid "`0xFFFFFFFF80100000` -"
 msgstr "`0xFFFFFFFF80100000` -"
 
-#: src/bootloader/load_kernel.md:43
+#: src/bootloader/load_kernel.md:44
 msgid "Kernel Text."
 msgstr "Kernel Text."
 
-#: src/bootloader/load_kernel.md:45
+#: src/bootloader/load_kernel.md:46
 msgid "これらのレイアウトを実現するため、以下のリンカスクリプトを用意します:"
-msgstr "これらのレイアウトを実現するため、以下のリンカスクリプトを用意します:"
+msgstr "To achieve this layout, let's prepare the below linker script:"
 
-#: src/bootloader/load_kernel.md:76
+#: src/bootloader/load_kernel.md:78
 msgid ""
 "このリンカスクリプトによって、全てのセクションは仮想アドレスの "
 "`0xFFFFFFFF80100000` 以降に配置されるようになります。 また、それらのセクショ"
 "ンは仮想アドレスから `0xFFFFFFFF80000000` を引いた物理アドレスにマップされま"
 "す。"
 msgstr ""
-"このリンカスクリプトによって、全てのセクションは仮想アドレスの "
-"`0xFFFFFFFF80100000` 以降に配置されるようになります。 また、それらのセクショ"
-"ンは仮想アドレスから `0xFFFFFFFF80000000` を引いた物理アドレスにマップされま"
-"す。"
+"With this linker script, all sections are placed starting from the virtual "
+"address `0xFFFFFFFF80100000`. Additionally, each section is mapped to a "
+"physical address by subtracting `0xFFFFFFFF80000000` from its virtual "
+"address."
 
-#: src/bootloader/load_kernel.md:79
-msgid "\\[!NOTE\\] 詳しくは..."
-msgstr "\\[!NOTE\\] 詳しくは..."
-
-#: src/bootloader/load_kernel.md:81
-msgid ""
-"Ymir のリンカスクリプトとセグメント構成について、詳しくは [カーネルの起動]"
-"(jump_to_ymir.md) のセクションで説明します。"
+#: src/bootloader/load_kernel.md:81 src/bootloader/load_kernel.md:305
+msgid "\\[!NOTE\\]"
 msgstr ""
-"Ymir のリンカスクリプトとセグメント構成について、詳しくは [カーネルの起動]"
-"(jump_to_ymir.md) のセクションで説明します。"
 
 #: src/bootloader/load_kernel.md:83
 msgid ""
-"リンカスクリプトをビルドに含めるには、`build.zig` で以下のように指定します:"
+"Ymir のリンカスクリプトとセグメント構成について、詳しくは [カーネルの起動]"
+"(jump_to_ymir.md) のセクションで説明します。"
 msgstr ""
-"リンカスクリプトをビルドに含めるには、`build.zig` で以下のように指定します:"
+"For more details on Ymir's linker script and segment layout, see the "
+"[Booting Kernel](jump_to_ymir.md) chapter."
 
 #: src/bootloader/load_kernel.md:85
 msgid ""
-"```build.zig\n"
-"ymir.linker_script = b.path(\"ymir/linker.ld\");\n"
-"```"
+"リンカスクリプトをビルドに含めるには、`build.zig` で以下のように指定します:"
 msgstr ""
-"```build.zig\n"
-"ymir.linker_script = b.path(\"ymir/linker.ld\");\n"
-"```"
+"To include the linker script in the build, write `build.zig` as follows:"
 
-#: src/bootloader/load_kernel.md:89
+#: src/bootloader/load_kernel.md:92
 msgid "ビルドをして生成された ELF ファイルのセグメントを確認してみましょう:"
-msgstr "ビルドをして生成された ELF ファイルのセグメントを確認してみましょう:"
-
-#: src/bootloader/load_kernel.md:112
-msgid ""
-"まだ Ymir カーネル自体がほとんど何もしない関数であるため、`.text`セクションで"
-"すら 3byte しかありません。 しかし、エントリポイントが `0xFFFFFFFF80100000` "
-"であることや、そのセグメントが物理アドレスの `0x100000` にマップされているこ"
-"とがわかります。 意図したとおりに配置されているようですね。"
-msgstr ""
-"まだ Ymir カーネル自体がほとんど何もしない関数であるため、`.text`セクションで"
-"すら 3byte しかありません。 しかし、エントリポイントが `0xFFFFFFFF80100000` "
-"であることや、そのセグメントが物理アドレスの `0x100000` にマップされているこ"
-"とがわかります。 意図したとおりに配置されているようですね。"
+msgstr "Let's see the segments of generated ELF file:"
 
 #: src/bootloader/load_kernel.md:116
-msgid "\\[!WARNING\\] 本当に良いレイアウトは？"
-msgstr "\\[!WARNING\\] 本当に良いレイアウトは？"
-
-#: src/bootloader/load_kernel.md:118
 msgid ""
-"Ymir では Linux に近いレイアウトを採用しました。 特に理由はないですが、Linux "
-"をある程度触ったことがある人にとってはなんとなく直感的であるような気がしたか"
-"らです。 しかし、**Linux に近いレイアウトを採用することは寧ろ良くない選択** "
-"かもしれません。"
+"まだ Ymir カーネル自体がほとんど何もしない関数であるため、`.text`セクションで"
+"すら 3byte しかありません。 しかし、エントリポイントが `0xFFFFFFFF80100000` "
+"であることや、そのセグメントが物理アドレスの `0x100000` にマップされているこ"
+"とがわかります。 意図したとおりに配置されているようですね。"
 msgstr ""
-"Ymir では Linux に近いレイアウトを採用しました。 特に理由はないですが、Linux "
-"をある程度触ったことがある人にとってはなんとなく直感的であるような気がしたか"
-"らです。 しかし、**Linux に近いレイアウトを採用することは寧ろ良くない選択** "
-"かもしれません。"
+"Since the Ymir kernel currently does almost nothing, even the `.text` "
+"section is only 3 bytes long. However, we can confirm that the entry point "
+"is at `0xFFFFFFFF80100000`, and that the segment is mapped to the physical "
+"address `0x100000`. It seems everything is placed as intended."
 
 #: src/bootloader/load_kernel.md:122
 msgid ""
+"Ymir では Linux に近いレイアウトを採用しました。 特に理由はないですが、Linux "
+"をある程度触ったことがある人にとってはなんとなく直感的であるような気がしたか"
+"らです。 しかし、**Linux に近いレイアウトを採用することは寧ろ良くない選択** "
+"かもしれません。"
+msgstr ""
+"Ymir adopts a layout similar to Linux. There’s no particular reason for this "
+"choice - it just felt more intuitive for those who have some experience with "
+"Linux. However, **adopting a layout similar to Linux might actually be a "
+"poor choice**."
+
+#: src/bootloader/load_kernel.md:126
+msgid ""
 "というのも、Linux に近いレイアウトを採用した場合、「あるアドレスが Ymir のア"
 "ドレスなのかゲスト Linux のアドレスなのか」が分かりにくくなります。 "
 "`0xFFFFFFFF80100000` というアドレスに breakpoint を設定した場合、Ymir が実行"
@@ -3537,167 +3524,99 @@ msgid ""
 "るならば、最初から Linux と絶対に被らないような領域を使う方が、デバッグする上"
 "では好ましいのかもしれません。"
 msgstr ""
-"というのも、Linux に近いレイアウトを採用した場合、「あるアドレスが Ymir のア"
-"ドレスなのかゲスト Linux のアドレスなのか」が分かりにくくなります。 "
-"`0xFFFFFFFF80100000` というアドレスに breakpoint を設定した場合、Ymir が実行"
-"した場合もゲストが実行した場合もどちらもヒットしてしまいます。 Breakpoint に"
-"ヒットしたあとで、それが Ymir かゲストかを判断するのは少し面倒です。 そうであ"
-"るならば、最初から Linux と絶対に被らないような領域を使う方が、デバッグする上"
-"では好ましいのかもしれません。"
+"That's because if we adopt a layout similar to Linux, it becomes difficult "
+"to tell whether a given address belongs to Ymir or to the guest Linux. For "
+"example, if you set a breakpoint at the address `0xFFFFFFFF80100000`, it "
+"will be hit regardless of whether Ymir or the guest is running. After "
+"hitting the breakpoint, figuring out which was actually running can be a bit "
+"of a hassle. \n"
+"Given that, it might actually be better to use a memory region that is "
+"guaranteed not to overlap with Linux from the start for debugging purposes ."
 
-#: src/bootloader/load_kernel.md:127
+#: src/bootloader/load_kernel.md:131
 msgid "カーネル用のメモリの確保"
-msgstr "カーネル用のメモリの確保"
+msgstr "Allocating Memory for Kernel"
 
-#: src/bootloader/load_kernel.md:129
+#: src/bootloader/load_kernel.md:133
 msgid ""
 "Ymir カーネルのレイアウトが決まったので、今度はカーネルをメモリにロードする準"
 "備をします。 具体的には、カーネルをロードするメモリとして必要なサイズを計算"
 "し、その分だけメモリを確保します。"
 msgstr ""
-"Ymir カーネルのレイアウトが決まったので、今度はカーネルをメモリにロードする準"
-"備をします。 具体的には、カーネルをロードするメモリとして必要なサイズを計算"
-"し、その分だけメモリを確保します。"
+"Now that the layout of the Ymir kernel has been decided, the next step is to "
+"prepare for loading the kernel into memory. Specifically, we need to "
+"calculate how much memory is required to load the kernel and allocate that "
+"amount of memory accordingly."
 
-#: src/bootloader/load_kernel.md:132
+#: src/bootloader/load_kernel.md:136
 msgid ""
 "カーネルのサイズは ELF ファイルをパースして得られるカーネルのメモリマップから"
 "計算します。 まずは ELF の **セグメントヘッダ (プログラムヘッダ)** のイテレー"
 "タを作成します。 Zig の標準ライブラリにはセグメントヘッダのイテレータが既に実"
 "装されているため、それを使います:"
 msgstr ""
-"カーネルのサイズは ELF ファイルをパースして得られるカーネルのメモリマップから"
-"計算します。 まずは ELF の **セグメントヘッダ (プログラムヘッダ)** のイテレー"
-"タを作成します。 Zig の標準ライブラリにはセグメントヘッダのイテレータが既に実"
-"装されているため、それを使います:"
+"The kernel size is calculated from the kernel's memory map obtained by "
+"parsing the ELF file. First, we create an iterator for the ELF **segment "
+"headers (program headers)**. Since Zig's standard library already provides "
+"an iterator for segment headers, we will use that:"
 
-#: src/bootloader/load_kernel.md:145
+#: src/bootloader/load_kernel.md:150
 msgid ""
 "カーネルを配置する物理アドレスの最小と最大のを記録する変数、及び仮想アドレス"
 "の最小を記録する変数を用意します。 セグメントヘッダのイテレータは、`std.elf."
 "Header.program_header_iterator()` で作成できます。 このイテレータを使ってセグ"
 "メントヘッダを辿り、カーネルが要求する最小・最大アドレスを計算します:"
 msgstr ""
-"カーネルを配置する物理アドレスの最小と最大のを記録する変数、及び仮想アドレス"
-"の最小を記録する変数を用意します。 セグメントヘッダのイテレータは、`std.elf."
-"Header.program_header_iterator()` で作成できます。 このイテレータを使ってセグ"
-"メントヘッダを辿り、カーネルが要求する最小・最大アドレスを計算します:"
+"Prepare variables to record the minimum and maximum physical addresses where "
+"the kernel will be placed, as well as the minimum virtual address. The "
+"segment header iterator can be created using `std.elf.Header."
+"program_header_iterator()`. Using this iterator, iterate through the segment "
+"headers and calculate the minimum and maximum addresses required by the "
+"kernel:"
 
-#: src/bootloader/load_kernel.md:149
-msgid ""
-"```surtr/boot.zig\n"
-"while (true) {\n"
-"    const phdr = iter.next() catch |err| {\n"
-"        log.err(\"Failed to get program header: {?}\\n\", .{err});\n"
-"        return .LoadError;\n"
-"    } orelse break;\n"
-"    if (phdr.p_type != elf.PT_LOAD) continue;\n"
-"    if (phdr.p_paddr < kernel_start_phys) kernel_start_phys = phdr.p_paddr;\n"
-"    if (phdr.p_vaddr < kernel_start_virt) kernel_start_virt = phdr.p_vaddr;\n"
-"    if (phdr.p_paddr + phdr.p_memsz > kernel_end_phys) kernel_end_phys = "
-"phdr.p_paddr + phdr.p_memsz;\n"
-"}\n"
-"```"
-msgstr ""
-"```surtr/boot.zig\n"
-"while (true) {\n"
-"    const phdr = iter.next() catch |err| {\n"
-"        log.err(\"Failed to get program header: {?}\\n\", .{err});\n"
-"        return .LoadError;\n"
-"    } orelse break;\n"
-"    if (phdr.p_type != elf.PT_LOAD) continue;\n"
-"    if (phdr.p_paddr < kernel_start_phys) kernel_start_phys = phdr.p_paddr;\n"
-"    if (phdr.p_vaddr < kernel_start_virt) kernel_start_virt = phdr.p_vaddr;\n"
-"    if (phdr.p_paddr + phdr.p_memsz > kernel_end_phys) kernel_end_phys = "
-"phdr.p_paddr + phdr.p_memsz;\n"
-"}\n"
-"```"
-
-#: src/bootloader/load_kernel.md:162
+#: src/bootloader/load_kernel.md:168
 msgid ""
 "セグメントのタイプが `PT_LOAD`[^3] であるセグメントが現在分かっている最小・最"
 "大のセグメントのアドレスを更新する場合には、そのアドレスを記録します。"
 msgstr ""
-"セグメントのタイプが `PT_LOAD`[^3] であるセグメントが現在分かっている最小・最"
-"大のセグメントのアドレスを更新する場合には、そのアドレスを記録します。"
+"When the segment type is `PT_LOAD`[^3], update the currently known minimum "
+"and maximum segment addresses accordingly."
 
-#: src/bootloader/load_kernel.md:164
+#: src/bootloader/load_kernel.md:170
 msgid "続いて、必要なメモリサイズを計算します:"
-msgstr "続いて、必要なメモリサイズを計算します:"
+msgstr "Then we calculate the memory size required:"
 
-#: src/bootloader/load_kernel.md:166
-msgid ""
-"```surtr/boot.zig\n"
-"const pages_4kib = (kernel_end_phys - kernel_start_phys + (page_size - 1)) / "
-"page_size;\n"
-"log.info(\"Kernel image: 0x{X:0>16} - 0x{X:0>16} (0x{X} pages)\", ."
-"{ kernel_start_phys, kernel_end_phys, pages_4kib });\n"
-"```"
-msgstr ""
-"```surtr/boot.zig\n"
-"const pages_4kib = (kernel_end_phys - kernel_start_phys + (page_size - 1)) / "
-"page_size;\n"
-"log.info(\"Kernel image: 0x{X:0>16} - 0x{X:0>16} (0x{X} pages)\", ."
-"{ kernel_start_phys, kernel_end_phys, pages_4kib });\n"
-"```"
-
-#: src/bootloader/load_kernel.md:171
+#: src/bootloader/load_kernel.md:178
 msgid ""
 "セグメントの最小アドレスと最大アドレスの差分から、必要な 4KiB ページの数を計"
 "算します。 `(A - B + (C - 1)) / C` は `(A + B) / C` の余りが 0 でない場合に切"
 "り上げて1を足す式です。"
 msgstr ""
-"セグメントの最小アドレスと最大アドレスの差分から、必要な 4KiB ページの数を計"
-"算します。 `(A - B + (C - 1)) / C` は `(A + B) / C` の余りが 0 でない場合に切"
-"り上げて1を足す式です。"
+"Calculate the number of required 4KiB pages from the difference between the "
+"minimum and maximum segment addresses. The expression `(A - B + (C - 1)) / "
+"C` rounds up `(A - B) / C` when the remainder is not zero."
 
-#: src/bootloader/load_kernel.md:174 src/vmm/vmlaunch.md:1055
+#: src/bootloader/load_kernel.md:181 src/vmm/vmlaunch.md:1055
 msgid "実行すると以下の出力になります:"
-msgstr "実行すると以下の出力になります:"
+msgstr "You'll see the below output:"
 
-#: src/bootloader/load_kernel.md:186
+#: src/bootloader/load_kernel.md:194
 msgid ""
 "現在 Ymir のセグメントサイズは `kernelEntry()` の 3byte のみであるため、一見"
 "すると変な出力になっていますね。 しかし、`readelf` でセグメントヘッダを読んだ"
 "時の結果と一致しており、 必要なページサイズが 1 ページであることも正しく計算"
 "できているようです。"
 msgstr ""
-"現在 Ymir のセグメントサイズは `kernelEntry()` の 3byte のみであるため、一見"
-"すると変な出力になっていますね。 しかし、`readelf` でセグメントヘッダを読んだ"
-"時の結果と一致しており、 必要なページサイズが 1 ページであることも正しく計算"
-"できているようです。"
+"Currently, Ymir's segment size is only 3 bytes (for `kernelEntry()`), so the "
+"output might look odd at first glance. However, it matches the results "
+"obtained by reading the segment headers with `readelf`, confirming that the "
+"required page size is correctly calculated as one page."
 
-#: src/bootloader/load_kernel.md:190
+#: src/bootloader/load_kernel.md:198
 msgid "最後に、計算したページ分だけメモリを確保してあげます。"
-msgstr "最後に、計算したページ分だけメモリを確保してあげます。"
+msgstr "Finally, allocate memory for the number of pages calculated."
 
-#: src/bootloader/load_kernel.md:192
-msgid ""
-"```surtr/boot.zig\n"
-"status = boot_service.allocatePages(.AllocateAddress, .LoaderData, "
-"pages_4kib, @ptrCast(&kernel_start_phys));\n"
-"if (status != .Success) {\n"
-"    log.err(\"Failed to allocate memory for kernel image: {?}\", ."
-"{status});\n"
-"    return status;\n"
-"}\n"
-"log.info(\"Allocated memory for kernel image @ 0x{X:0>16} ~ 0x{X:0>16}\", ."
-"{ kernel_start_phys, kernel_start_phys + pages_4kib * page_size });\n"
-"```"
-msgstr ""
-"```surtr/boot.zig\n"
-"status = boot_service.allocatePages(.AllocateAddress, .LoaderData, "
-"pages_4kib, @ptrCast(&kernel_start_phys));\n"
-"if (status != .Success) {\n"
-"    log.err(\"Failed to allocate memory for kernel image: {?}\", ."
-"{status});\n"
-"    return status;\n"
-"}\n"
-"log.info(\"Allocated memory for kernel image @ 0x{X:0>16} ~ 0x{X:0>16}\", ."
-"{ kernel_start_phys, kernel_start_phys + pages_4kib * page_size });\n"
-"```"
-
-#: src/bootloader/load_kernel.md:201
+#: src/bootloader/load_kernel.md:210
 msgid ""
 "前チャプターと同様に、 Boot Services の [AllocatePages()](https://uefi.org/"
 "specs/UEFI/2.9_A/07_Services_Boot_Services.html#efi-boot-services-"
@@ -3707,305 +3626,203 @@ msgid ""
 "の開始アドレスです。 もしも指定された物理アドレスからメモリを確保できなかった"
 "場合にはエラーを返すことにします。"
 msgstr ""
-"前チャプターと同様に、 Boot Services の [AllocatePages()](https://uefi.org/"
-"specs/UEFI/2.9_A/07_Services_Boot_Services.html#efi-boot-services-"
-"allocatepages) を使ってページを確保します。 ただし、ここでは **第1引数の "
-"`alloca_type` として `.AllocateAddress` を指定することで、第4引数で指定したア"
-"ドレス丁度にメモリを確保** させます。 このアドレスは先ほど計算したセグメント"
-"の開始アドレスです。 もしも指定された物理アドレスからメモリを確保できなかった"
-"場合にはエラーを返すことにします。"
+"As in the previous chapter, we use Boot Services' [AllocatePages()](https://"
+"uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#efi-boot-services-"
+"allocatepages) to allocate pages. However, here we specify `."
+"AllocateAddress` for the first argument `alloc_type` to **allocate memory "
+"exactly at the address given in the fourth argument**. This address is the "
+"start address of the segment we calculated earlier. If allocation at the "
+"specified physical address fails, an error is returned."
 
-#: src/bootloader/load_kernel.md:206
+#: src/bootloader/load_kernel.md:215
 msgid "仮想アドレスのマップ"
-msgstr "仮想アドレスのマップ"
+msgstr "Mapping Virtual Address"
 
-#: src/bootloader/load_kernel.md:208
+#: src/bootloader/load_kernel.md:217
 msgid ""
 "カーネルが要求する\"物理アドレス\"にメモリを確保できたため、次は要求する\"仮"
 "想アドレス\"を確保した物理アドレスにマップします。 [簡易ページテーブルのチャ"
 "プター](simple_pg.md) で 4KiB ページをマップする関数を実装したため、それを"
 "使ってページをマップします:"
 msgstr ""
-"カーネルが要求する\"物理アドレス\"にメモリを確保できたため、次は要求する\"仮"
-"想アドレス\"を確保した物理アドレスにマップします。 [簡易ページテーブルのチャ"
-"プター](simple_pg.md) で 4KiB ページをマップする関数を実装したため、それを"
-"使ってページをマップします:"
+"Since memory has been successfully allocated at the \"physical address\" "
+"requested by the kernel, the next step is to map the requested \"virtual "
+"address\" to the allocated physical address. We previously implemented a "
+"function to map 4KiB pages in the [Simple Page Table chapter](simple_pg.md), "
+"so we will use that function to map the pages:"
 
-#: src/bootloader/load_kernel.md:211
-msgid ""
-"```surtr/boot.zig\n"
-"for (0..pages_4kib) |i| {\n"
-"    arch.page.map4kTo(\n"
-"        kernel_start_virt + page_size * i,\n"
-"        kernel_start_phys + page_size * i,\n"
-"        .read_write,\n"
-"        boot_service,\n"
-"    ) catch |err| {\n"
-"        log.err(\"Failed to map memory for kernel image: {?}\", .{err});\n"
-"        return .LoadError;\n"
-"    };\n"
-"}\n"
-"log.info(\"Mapped memory for kernel image.\", .{});\n"
-"```"
-msgstr ""
-"```surtr/boot.zig\n"
-"for (0..pages_4kib) |i| {\n"
-"    arch.page.map4kTo(\n"
-"        kernel_start_virt + page_size * i,\n"
-"        kernel_start_phys + page_size * i,\n"
-"        .read_write,\n"
-"        boot_service,\n"
-"    ) catch |err| {\n"
-"        log.err(\"Failed to map memory for kernel image: {?}\", .{err});\n"
-"        return .LoadError;\n"
-"    };\n"
-"}\n"
-"log.info(\"Mapped memory for kernel image.\", .{});\n"
-"```"
-
-#: src/bootloader/load_kernel.md:226
+#: src/bootloader/load_kernel.md:236
 msgid ""
 "確保した 4KiB ページの枚数分 (`pages_4kib`) だけページのマップを繰り返しま"
 "す。 本当であれば、セグメントヘッダが要求する属性 (読み込み専用等) でマップす"
 "るべきですが、ここでは簡単のために全て `.read_write` でマップします。"
 msgstr ""
-"確保した 4KiB ページの枚数分 (`pages_4kib`) だけページのマップを繰り返しま"
-"す。 本当であれば、セグメントヘッダが要求する属性 (読み込み専用等) でマップす"
-"るべきですが、ここでは簡単のために全て `.read_write` でマップします。"
-
-#: src/bootloader/load_kernel.md:229
-msgid "実行してメモリマップを確認すると以下のようになります:"
-msgstr "実行してメモリマップを確認すると以下のようになります:"
+"Repeat the page mapping for the number of allocated 4KiB pages "
+"(`pages_4kib`). Ideally, the pages should be mapped with the attributes "
+"specified by the segment header (such as read-only), but for simplicity, "
+"here we map all pages with `.read_write`."
 
 #: src/bootloader/load_kernel.md:239
+msgid "実行してメモリマップを確認すると以下のようになります:"
+msgstr "When you run it and check the memory map, it looks like the following:"
+
+#: src/bootloader/load_kernel.md:250
 msgid ""
 "仮想アドレスの `0xFFFFFFFF80100000` から1ページ分だけ物理アドレスの "
 "`0x0000000000100000` にマップされていることがわかります。 うまくマップできて"
 "いるようですね。"
 msgstr ""
-"仮想アドレスの `0xFFFFFFFF80100000` から1ページ分だけ物理アドレスの "
-"`0x0000000000100000` にマップされていることがわかります。 うまくマップできて"
-"いるようですね。"
+"You can see that one page starting at virtual address `0xFFFFFFFF80100000` "
+"is mapped to the physical address `0x0000000000100000`. It's as expected. "
+"Nice."
 
-#: src/bootloader/load_kernel.md:242
+#: src/bootloader/load_kernel.md:253
 msgid "カーネルの読み込みとロード"
-msgstr "カーネルの読み込みとロード"
+msgstr "Reading and Loading Kernel Image"
 
-#: src/bootloader/load_kernel.md:244
+#: src/bootloader/load_kernel.md:255
 msgid ""
 "[カーネルのパースのチャプター](./parse_kernel.md) では、Ymir の ELF ヘッダ部"
 "分しかメモリに読み込んでいませんでした。 最後に、用意したメモリにカーネルのセ"
 "グメント全体をロードしていきます。"
 msgstr ""
-"[カーネルのパースのチャプター](./parse_kernel.md) では、Ymir の ELF ヘッダ部"
-"分しかメモリに読み込んでいませんでした。 最後に、用意したメモリにカーネルのセ"
-"グメント全体をロードしていきます。"
+"In the [Parsing Kernel chapter](./parse_kernel.md), only the ELF header of "
+"Ymir was loaded into memory. Now, we will load the entire kernel segments "
+"into the prepared memory."
 
-#: src/bootloader/load_kernel.md:247
+#: src/bootloader/load_kernel.md:258
 msgid "セグメントの読み込み"
-msgstr "セグメントの読み込み"
+msgstr "Loading Segments"
 
-#: src/bootloader/load_kernel.md:249
+#: src/bootloader/load_kernel.md:260
 msgid ""
 "まずは、先ほど必要なメモリサイズを計算したときと同様にセグメントヘッダのイテ"
 "レータを作成するところから始めます:"
 msgstr ""
-"まずは、先ほど必要なメモリサイズを計算したときと同様にセグメントヘッダのイテ"
-"レータを作成するところから始めます:"
+"First, just like when we calculated the required memory size earlier, we "
+"start by creating an iterator for the segment headers:"
 
-#: src/bootloader/load_kernel.md:251
-msgid ""
-"```surtr/boot.zig\n"
-"log.info(\"Loading kernel image...\", .{});\n"
-"iter = elf_header.program_header_iterator(kernel);\n"
-"while (true) {\n"
-"    const phdr = iter.next() catch |err| {\n"
-"        log.err(\"Failed to get program header: {?}\\n\", .{err});\n"
-"        return .LoadError;\n"
-"    } orelse break;\n"
-"    if (phdr.p_type != elf.PT_LOAD) continue;\n"
-"\n"
-"    ...\n"
-"}\n"
-"```"
-msgstr ""
-"```surtr/boot.zig\n"
-"log.info(\"Loading kernel image...\", .{});\n"
-"iter = elf_header.program_header_iterator(kernel);\n"
-"while (true) {\n"
-"    const phdr = iter.next() catch |err| {\n"
-"        log.err(\"Failed to get program header: {?}\\n\", .{err});\n"
-"        return .LoadError;\n"
-"    } orelse break;\n"
-"    if (phdr.p_type != elf.PT_LOAD) continue;\n"
-"\n"
-"    ...\n"
-"}\n"
-"```"
-
-#: src/bootloader/load_kernel.md:265
+#: src/bootloader/load_kernel.md:277
 msgid ""
 "ロードする必要があるのは、やはり `PT_LOAD` セグメントだけです。それ以外の場合"
 "にはスキップします。 続いて、セグメントを FS からメモリに読み出します:"
 msgstr ""
-"ロードする必要があるのは、やはり `PT_LOAD` セグメントだけです。それ以外の場合"
-"にはスキップします。 続いて、セグメントを FS からメモリに読み出します:"
+"Only the `PT_LOAD` segments need to be loaded; all others are skipped. Next, "
+"the segments are read from the file system into memory:"
 
-#: src/bootloader/load_kernel.md:268
-msgid ""
-"```surtr/boot.zig\n"
-"status = kernel.setPosition(phdr.p_offset);\n"
-"if (status != .Success) {\n"
-"    log.err(\"Failed to set position for kernel image.\", .{});\n"
-"    return status;\n"
-"}\n"
-"const segment: [*]u8 = @ptrFromInt(phdr.p_vaddr);\n"
-"var mem_size = phdr.p_memsz;\n"
-"status = kernel.read(&mem_size, segment);\n"
-"if (status != .Success) {\n"
-"    log.err(\"Failed to read kernel image.\", .{});\n"
-"    return status;\n"
-"}\n"
-"log.info(\n"
-"    \"  Seg @ 0x{X:0>16} - 0x{X:0>16}\",\n"
-"    .{ phdr.p_vaddr, phdr.p_vaddr + phdr.p_memsz },\n"
-");\n"
-"```"
-msgstr ""
-"```surtr/boot.zig\n"
-"status = kernel.setPosition(phdr.p_offset);\n"
-"if (status != .Success) {\n"
-"    log.err(\"Failed to set position for kernel image.\", .{});\n"
-"    return status;\n"
-"}\n"
-"const segment: [*]u8 = @ptrFromInt(phdr.p_vaddr);\n"
-"var mem_size = phdr.p_memsz;\n"
-"status = kernel.read(&mem_size, segment);\n"
-"if (status != .Success) {\n"
-"    log.err(\"Failed to read kernel image.\", .{});\n"
-"    return status;\n"
-"}\n"
-"log.info(\n"
-"    \"  Seg @ 0x{X:0>16} - 0x{X:0>16}\",\n"
-"    .{ phdr.p_vaddr, phdr.p_vaddr + phdr.p_memsz },\n"
-");\n"
-"```"
-
-#: src/bootloader/load_kernel.md:287
+#: src/bootloader/load_kernel.md:300
 msgid ""
 "ここで、`kernel` は [カーネルのパース](parse_kernel.md) で作った `*uefi."
 "protocol.File` です。 `setPosition()` でセグメントの開始オフセットまでシーク"
 "したあと、 セグメントヘッダが要求する仮想アドレスに対して、セグメントをファイ"
 "ルから読み出します。 とてもシンプルです。"
 msgstr ""
-"ここで、`kernel` は [カーネルのパース](parse_kernel.md) で作った `*uefi."
-"protocol.File` です。 `setPosition()` でセグメントの開始オフセットまでシーク"
-"したあと、 セグメントヘッダが要求する仮想アドレスに対して、セグメントをファイ"
-"ルから読み出します。 とてもシンプルです。"
-
-#: src/bootloader/load_kernel.md:292
-msgid "\\[!NOTE\\] 仮想アドレスと物理アドレス"
-msgstr "\\[!NOTE\\] 仮想アドレスと物理アドレス"
-
-#: src/bootloader/load_kernel.md:294
-msgid ""
-"ページング周りのコードを書く際は、仮想アドレスと物理アドレスを取り違えるミス"
-"をしやすいです。 しかし、**Surtr においては実はそこまで両者を意識する必要はあ"
-"りません**。 というのも、UEFI が提供するマッピングは仮想アドレスをストレート"
-"に物理アドレスへとマップするため、 仮想アドレスと物理アドレスが等しくなるから"
-"です。"
-msgstr ""
-"ページング周りのコードを書く際は、仮想アドレスと物理アドレスを取り違えるミス"
-"をしやすいです。 しかし、**Surtr においては実はそこまで両者を意識する必要はあ"
-"りません**。 というのも、UEFI が提供するマッピングは仮想アドレスをストレート"
-"に物理アドレスへとマップするため、 仮想アドレスと物理アドレスが等しくなるから"
-"です。"
-
-#: src/bootloader/load_kernel.md:299
-msgid ""
-"なお、カーネルをロードしようとしているメモリは先ほど新たに仮想アドレスをマッ"
-"プしました。 しかし依然としてストレートマップも有効のままです。 そのため、こ"
-"の物理アドレスに対しては2通りの仮想アドレスを介してアクセスできます。 試しに"
-"上のコードの `phdr.p_vaddr` (新しく作成したマップ) を `phdr.p_paddr` (スト"
-"レートマップ) に変更してみてください。 問題なく動くはずです。"
-msgstr ""
-"なお、カーネルをロードしようとしているメモリは先ほど新たに仮想アドレスをマッ"
-"プしました。 しかし依然としてストレートマップも有効のままです。 そのため、こ"
-"の物理アドレスに対しては2通りの仮想アドレスを介してアクセスできます。 試しに"
-"上のコードの `phdr.p_vaddr` (新しく作成したマップ) を `phdr.p_paddr` (スト"
-"レートマップ) に変更してみてください。 問題なく動くはずです。"
-
-#: src/bootloader/load_kernel.md:305
-msgid "BSS セグメントの初期化"
-msgstr "BSS セグメントの初期化"
+"Here, `kernel` is a `*uefi.protocol.File` created in the [Parsing Kernel]"
+"(parse_kernel.md) chapter. After seeking to the segment's start offset using "
+"`setPosition()`, we read the segment from the file directly into the virtual "
+"address requested by the segment header. It's very straightforward."
 
 #: src/bootloader/load_kernel.md:307
 msgid ""
+"ページング周りのコードを書く際は、仮想アドレスと物理アドレスを取り違えるミス"
+"をしやすいです。 しかし、**Surtr においては実はそこまで両者を意識する必要はあ"
+"りません**。 というのも、UEFI が提供するマッピングは仮想アドレスをストレート"
+"に物理アドレスへとマップするため、 仮想アドレスと物理アドレスが等しくなるから"
+"です。"
+msgstr ""
+"When working on paging-related code, it's very likely to confuse virtual "
+"addresses with physical addresses. However, **in Surtr, you actually don't "
+"need to be overly concerned about distinguishing between the two**. This is "
+"because the mappings provided by UEFI direct map virtual addresses to the "
+"same physical addresses, making virtual and physical addresses effectively "
+"identical."
+
+#: src/bootloader/load_kernel.md:312
+msgid ""
+"なお、カーネルをロードしようとしているメモリは先ほど新たに仮想アドレスをマッ"
+"プしました。 しかし依然としてストレートマップも有効のままです。 そのため、こ"
+"の物理アドレスに対しては2通りの仮想アドレスを介してアクセスできます。 試しに"
+"上のコードの `phdr.p_vaddr` (新しく作成したマップ) を `phdr.p_paddr` (スト"
+"レートマップ) に変更してみてください。 問題なく動くはずです。"
+msgstr ""
+"Note that the memory where the kernel is being loaded has just been newly "
+"mapped. However, the direct mapping is still enabled. Therefore, the "
+"physical address can be accessed via two different virtual addresses. \n"
+"Try changing `phdr.p_vaddr` (the newly created mapping) in the code above to "
+"`phdr.p_paddr` (the old direct mapping). It should work without any issues."
+
+#: src/bootloader/load_kernel.md:318
+msgid "BSS セグメントの初期化"
+msgstr "Initialization of BSS Segment"
+
+#: src/bootloader/load_kernel.md:320
+msgid ""
 "[`.bss` セクション](https://en.wikipedia.org/wiki/.bss) は、ロード時にゼロ初"
 "期化されるセクションです。 ゼロ初期化されることが分かっているため、ELF ファイ"
 "ル中には `.bss` セクションのデータは含まれていません。 セグメントをロードする"
 "際に、`.bss` セクションのサイズだけメモリを確保し、ゼロで初期化する必要があり"
 "ます。 既にメモリは確保してあるため、ここではゼロ初期化だけを行いましょう:"
 msgstr ""
-"[`.bss` セクション](https://en.wikipedia.org/wiki/.bss) は、ロード時にゼロ初"
-"期化されるセクションです。 ゼロ初期化されることが分かっているため、ELF ファイ"
-"ル中には `.bss` セクションのデータは含まれていません。 セグメントをロードする"
-"際に、`.bss` セクションのサイズだけメモリを確保し、ゼロで初期化する必要があり"
-"ます。 既にメモリは確保してあるため、ここではゼロ初期化だけを行いましょう:"
-
-#: src/bootloader/load_kernel.md:319
-msgid ""
-"ゼロ埋めには Zig の `@memset()` 関数も利用できますが、 せっかくなので UEFI が"
-"提供してくれる [SetMem()](https://uefi.org/specs/"
-"UEFI/2.10/07_Services_Boot_Services.html#miscellaneous-boot-services) を使っ"
-"てみました。 これで `.bss` セクションの初期化は完了です[^4]。 まぁ、今の "
-"Ymir には `.bss` セクションは存在しないので実際には何も起こらないんです"
-"が...。"
-msgstr ""
-"ゼロ埋めには Zig の `@memset()` 関数も利用できますが、 せっかくなので UEFI が"
-"提供してくれる [SetMem()](https://uefi.org/specs/"
-"UEFI/2.10/07_Services_Boot_Services.html#miscellaneous-boot-services) を使っ"
-"てみました。 これで `.bss` セクションの初期化は完了です[^4]。 まぁ、今の "
-"Ymir には `.bss` セクションは存在しないので実際には何も起こらないんです"
-"が...。"
-
-#: src/bootloader/load_kernel.md:326
-msgid ""
-"本チャプターでは Ymir Kernel をロードするのに必要なメモリサイズを計算し、その"
-"分だけ物理メモリを確保しました。 その後、カーネルが要求する通りに仮想アドレス"
-"をマップし、そこにカーネルをロードしました。"
-msgstr ""
-"本チャプターでは Ymir Kernel をロードするのに必要なメモリサイズを計算し、その"
-"分だけ物理メモリを確保しました。 その後、カーネルが要求する通りに仮想アドレス"
-"をマップし、そこにカーネルをロードしました。"
-
-#: src/bootloader/load_kernel.md:329
-msgid ""
-"これでいよいよ Ymir を実行する準備ができました。 すぐに Ymir にジャンプしても"
-"いいですが、次チャプターは少しお片付けをして、それからカーネルに飛び込むこと"
-"にしましょう。"
-msgstr ""
-"これでいよいよ Ymir を実行する準備ができました。 すぐに Ymir にジャンプしても"
-"いいですが、次チャプターは少しお片付けをして、それからカーネルに飛び込むこと"
-"にしましょう。"
-
-#: src/bootloader/load_kernel.md:332
-msgid ""
-"[Complete virtual memory map with 4-level page tables - kernel.org](https://"
-"www.kernel.org/doc/Documentation/x86/x86_64/mm.txt)"
-msgstr ""
-"[Complete virtual memory map with 4-level page tables - kernel.org](https://"
-"www.kernel.org/doc/Documentation/x86/x86_64/mm.txt)"
+"The `.bss` section is a segment that is zero-initialized when loaded. Since "
+"the segment is known to be zero-initialized, the `.bss` section's data is "
+"not included in the ELF file. When loading segments, you need to allocate "
+"memory for the `.bss` section and initialize it to zero.\n"
+"Since the memory is already allocated, here we only need to perform zero "
+"initialization:"
 
 #: src/bootloader/load_kernel.md:333
 msgid ""
+"ゼロ埋めには Zig の `@memset()` 関数も利用できますが、 せっかくなので UEFI が"
+"提供してくれる [SetMem()](https://uefi.org/specs/"
+"UEFI/2.10/07_Services_Boot_Services.html#miscellaneous-boot-services) を使っ"
+"てみました。 これで `.bss` セクションの初期化は完了です[^4]。 まぁ、今の "
+"Ymir には `.bss` セクションは存在しないので実際には何も起こらないんです"
+"が...。"
+msgstr ""
+"For zero-filling, you could use Zig's `@memset()` function. But now I chose "
+"to use UEFI's [SetMem()](https://uefi.org/specs/"
+"UEFI/2.10/07_Services_Boot_Services.html#miscellaneous-boot-services). Yes, "
+"no reason. We've completed the initialization of the `.bss` section[^4]. \n"
+"Well, technically, the current Ymir kernel doesn’t have a `.bss` section "
+"yet, so nothing actually happens here..."
+
+#: src/bootloader/load_kernel.md:340
+msgid ""
+"本チャプターでは Ymir Kernel をロードするのに必要なメモリサイズを計算し、その"
+"分だけ物理メモリを確保しました。 その後、カーネルが要求する通りに仮想アドレス"
+"をマップし、そこにカーネルをロードしました。"
+msgstr ""
+"In this chapter, we calculated the amount of memory needed to load the Ymir "
+"Kernel and allocated that much physical memory. Then, we mapped the virtual "
+"addresses as required by the kernel and loaded the kernel into that mapped "
+"memory."
+
+#: src/bootloader/load_kernel.md:343
+msgid ""
+"これでいよいよ Ymir を実行する準備ができました。 すぐに Ymir にジャンプしても"
+"いいですが、次チャプターは少しお片付けをして、それからカーネルに飛び込むこと"
+"にしましょう。"
+msgstr ""
+"With this, we are finally ready to run Ymir. We could jump straight into "
+"Ymir now, but in the next chapter, we'll do some cleanup before diving into "
+"the kernel."
+
+#: src/bootloader/load_kernel.md:346
+msgid ""
+"[Complete virtual memory map with 4-level page tables - kernel.org](https://"
+"www.kernel.org/doc/Documentation/x86/x86_64/mm.txt)"
+msgstr ""
+"[Complete virtual memory map with 4-level page tables - kernel.org](https://"
+"www.kernel.org/doc/Documentation/x86/x86_64/mm.txt)"
+
+#: src/bootloader/load_kernel.md:347
+msgid ""
 "[BitVisorの仮想メモリーマップ](https://qiita.com/hdk_2/"
 "items/6c7aaa72f5dcfcfda342)"
 msgstr ""
-"[BitVisorの仮想メモリーマップ](https://qiita.com/hdk_2/"
-"items/6c7aaa72f5dcfcfda342)"
+"[Memory map of BitVisor](https://qiita.com/hdk_2/items/6c7aaa72f5dcfcfda342)"
 
-#: src/bootloader/load_kernel.md:334
+#: src/bootloader/load_kernel.md:348
 msgid ""
 "[Executable and Linking Format (ELF) Specification Version 1.2](https://"
 "refspecs.linuxfoundation.org/elf/elf.pdf)"
@@ -4013,7 +3830,7 @@ msgstr ""
 "[Executable and Linking Format (ELF) Specification Version 1.2](https://"
 "refspecs.linuxfoundation.org/elf/elf.pdf)"
 
-#: src/bootloader/load_kernel.md:335
+#: src/bootloader/load_kernel.md:349
 msgid ""
 "厳密には、この方法は `.bss` セクション以外のセクション/セグメントもゼロクリア"
 "します。 例えば `.text` セグメントのサイズが `0x800` であった場合、セグメント"
@@ -4021,11 +3838,11 @@ msgid ""
 "白ができることになります。 今回の方法では、この空白部分もついでにゼロクリアし"
 "ています(悪いことではありません)。"
 msgstr ""
-"厳密には、この方法は `.bss` セクション以外のセクション/セグメントもゼロクリア"
-"します。 例えば `.text` セグメントのサイズが `0x800` であった場合、セグメント"
-"のサイズは 4KiB アラインされるため `.text` セクションの後に `0x800` byte の空"
-"白ができることになります。 今回の方法では、この空白部分もついでにゼロクリアし"
-"ています(悪いことではありません)。"
+"Strictly speaking, this method zeroes out not only the `.bss` section but "
+"also other segments. For example, if the `.text` segment size is `0x800` "
+"bytes, the segment size is aligned to 4KiB, leaving a `0x800` byte gap after "
+"the `.text` section. With the current approach, this gap is also zeroed out "
+"(which isn't necessarily a bad thing)."
 
 #: src/bootloader/cleanup_memmap.md:1
 msgid "UEFI のメモリマップとお片付け"
@@ -29097,6 +28914,207 @@ msgstr ""
 "distributed under the [MIT License](https://opensource.org/license/mit). "
 "However, snippets of code used in this blog are distributed under CC0 1.0 "
 "Universal."
+
+#~ msgid ""
+#~ "\\[!IMPORTANT\\] 本チャプターの最終コードは [`whiz-surtr-load_kernel`]"
+#~ "(https://github.com/smallkirby/ymir/tree/whiz-surtr-load_kernel) ブランチ"
+#~ "にあります。"
+#~ msgstr ""
+#~ "\\[!IMPORTANT\\] 本チャプターの最終コードは [`whiz-surtr-load_kernel`]"
+#~ "(https://github.com/smallkirby/ymir/tree/whiz-surtr-load_kernel) ブランチ"
+#~ "にあります。"
+
+#~ msgid "\\[!NOTE\\] 詳しくは..."
+#~ msgstr "\\[!NOTE\\] 詳しくは..."
+
+#~ msgid ""
+#~ "```build.zig\n"
+#~ "ymir.linker_script = b.path(\"ymir/linker.ld\");\n"
+#~ "```"
+#~ msgstr ""
+#~ "```build.zig\n"
+#~ "ymir.linker_script = b.path(\"ymir/linker.ld\");\n"
+#~ "```"
+
+#~ msgid "\\[!WARNING\\] 本当に良いレイアウトは？"
+#~ msgstr "\\[!WARNING\\] 本当に良いレイアウトは？"
+
+#~ msgid ""
+#~ "```surtr/boot.zig\n"
+#~ "while (true) {\n"
+#~ "    const phdr = iter.next() catch |err| {\n"
+#~ "        log.err(\"Failed to get program header: {?}\\n\", .{err});\n"
+#~ "        return .LoadError;\n"
+#~ "    } orelse break;\n"
+#~ "    if (phdr.p_type != elf.PT_LOAD) continue;\n"
+#~ "    if (phdr.p_paddr < kernel_start_phys) kernel_start_phys = phdr."
+#~ "p_paddr;\n"
+#~ "    if (phdr.p_vaddr < kernel_start_virt) kernel_start_virt = phdr."
+#~ "p_vaddr;\n"
+#~ "    if (phdr.p_paddr + phdr.p_memsz > kernel_end_phys) kernel_end_phys = "
+#~ "phdr.p_paddr + phdr.p_memsz;\n"
+#~ "}\n"
+#~ "```"
+#~ msgstr ""
+#~ "```surtr/boot.zig\n"
+#~ "while (true) {\n"
+#~ "    const phdr = iter.next() catch |err| {\n"
+#~ "        log.err(\"Failed to get program header: {?}\\n\", .{err});\n"
+#~ "        return .LoadError;\n"
+#~ "    } orelse break;\n"
+#~ "    if (phdr.p_type != elf.PT_LOAD) continue;\n"
+#~ "    if (phdr.p_paddr < kernel_start_phys) kernel_start_phys = phdr."
+#~ "p_paddr;\n"
+#~ "    if (phdr.p_vaddr < kernel_start_virt) kernel_start_virt = phdr."
+#~ "p_vaddr;\n"
+#~ "    if (phdr.p_paddr + phdr.p_memsz > kernel_end_phys) kernel_end_phys = "
+#~ "phdr.p_paddr + phdr.p_memsz;\n"
+#~ "}\n"
+#~ "```"
+
+#~ msgid ""
+#~ "```surtr/boot.zig\n"
+#~ "const pages_4kib = (kernel_end_phys - kernel_start_phys + (page_size - "
+#~ "1)) / page_size;\n"
+#~ "log.info(\"Kernel image: 0x{X:0>16} - 0x{X:0>16} (0x{X} pages)\", ."
+#~ "{ kernel_start_phys, kernel_end_phys, pages_4kib });\n"
+#~ "```"
+#~ msgstr ""
+#~ "```surtr/boot.zig\n"
+#~ "const pages_4kib = (kernel_end_phys - kernel_start_phys + (page_size - "
+#~ "1)) / page_size;\n"
+#~ "log.info(\"Kernel image: 0x{X:0>16} - 0x{X:0>16} (0x{X} pages)\", ."
+#~ "{ kernel_start_phys, kernel_end_phys, pages_4kib });\n"
+#~ "```"
+
+#~ msgid ""
+#~ "```surtr/boot.zig\n"
+#~ "status = boot_service.allocatePages(.AllocateAddress, .LoaderData, "
+#~ "pages_4kib, @ptrCast(&kernel_start_phys));\n"
+#~ "if (status != .Success) {\n"
+#~ "    log.err(\"Failed to allocate memory for kernel image: {?}\", ."
+#~ "{status});\n"
+#~ "    return status;\n"
+#~ "}\n"
+#~ "log.info(\"Allocated memory for kernel image @ 0x{X:0>16} ~ "
+#~ "0x{X:0>16}\", .{ kernel_start_phys, kernel_start_phys + pages_4kib * "
+#~ "page_size });\n"
+#~ "```"
+#~ msgstr ""
+#~ "```surtr/boot.zig\n"
+#~ "status = boot_service.allocatePages(.AllocateAddress, .LoaderData, "
+#~ "pages_4kib, @ptrCast(&kernel_start_phys));\n"
+#~ "if (status != .Success) {\n"
+#~ "    log.err(\"Failed to allocate memory for kernel image: {?}\", ."
+#~ "{status});\n"
+#~ "    return status;\n"
+#~ "}\n"
+#~ "log.info(\"Allocated memory for kernel image @ 0x{X:0>16} ~ "
+#~ "0x{X:0>16}\", .{ kernel_start_phys, kernel_start_phys + pages_4kib * "
+#~ "page_size });\n"
+#~ "```"
+
+#~ msgid ""
+#~ "```surtr/boot.zig\n"
+#~ "for (0..pages_4kib) |i| {\n"
+#~ "    arch.page.map4kTo(\n"
+#~ "        kernel_start_virt + page_size * i,\n"
+#~ "        kernel_start_phys + page_size * i,\n"
+#~ "        .read_write,\n"
+#~ "        boot_service,\n"
+#~ "    ) catch |err| {\n"
+#~ "        log.err(\"Failed to map memory for kernel image: {?}\", .{err});\n"
+#~ "        return .LoadError;\n"
+#~ "    };\n"
+#~ "}\n"
+#~ "log.info(\"Mapped memory for kernel image.\", .{});\n"
+#~ "```"
+#~ msgstr ""
+#~ "```surtr/boot.zig\n"
+#~ "for (0..pages_4kib) |i| {\n"
+#~ "    arch.page.map4kTo(\n"
+#~ "        kernel_start_virt + page_size * i,\n"
+#~ "        kernel_start_phys + page_size * i,\n"
+#~ "        .read_write,\n"
+#~ "        boot_service,\n"
+#~ "    ) catch |err| {\n"
+#~ "        log.err(\"Failed to map memory for kernel image: {?}\", .{err});\n"
+#~ "        return .LoadError;\n"
+#~ "    };\n"
+#~ "}\n"
+#~ "log.info(\"Mapped memory for kernel image.\", .{});\n"
+#~ "```"
+
+#~ msgid ""
+#~ "```surtr/boot.zig\n"
+#~ "log.info(\"Loading kernel image...\", .{});\n"
+#~ "iter = elf_header.program_header_iterator(kernel);\n"
+#~ "while (true) {\n"
+#~ "    const phdr = iter.next() catch |err| {\n"
+#~ "        log.err(\"Failed to get program header: {?}\\n\", .{err});\n"
+#~ "        return .LoadError;\n"
+#~ "    } orelse break;\n"
+#~ "    if (phdr.p_type != elf.PT_LOAD) continue;\n"
+#~ "\n"
+#~ "    ...\n"
+#~ "}\n"
+#~ "```"
+#~ msgstr ""
+#~ "```surtr/boot.zig\n"
+#~ "log.info(\"Loading kernel image...\", .{});\n"
+#~ "iter = elf_header.program_header_iterator(kernel);\n"
+#~ "while (true) {\n"
+#~ "    const phdr = iter.next() catch |err| {\n"
+#~ "        log.err(\"Failed to get program header: {?}\\n\", .{err});\n"
+#~ "        return .LoadError;\n"
+#~ "    } orelse break;\n"
+#~ "    if (phdr.p_type != elf.PT_LOAD) continue;\n"
+#~ "\n"
+#~ "    ...\n"
+#~ "}\n"
+#~ "```"
+
+#~ msgid ""
+#~ "```surtr/boot.zig\n"
+#~ "status = kernel.setPosition(phdr.p_offset);\n"
+#~ "if (status != .Success) {\n"
+#~ "    log.err(\"Failed to set position for kernel image.\", .{});\n"
+#~ "    return status;\n"
+#~ "}\n"
+#~ "const segment: [*]u8 = @ptrFromInt(phdr.p_vaddr);\n"
+#~ "var mem_size = phdr.p_memsz;\n"
+#~ "status = kernel.read(&mem_size, segment);\n"
+#~ "if (status != .Success) {\n"
+#~ "    log.err(\"Failed to read kernel image.\", .{});\n"
+#~ "    return status;\n"
+#~ "}\n"
+#~ "log.info(\n"
+#~ "    \"  Seg @ 0x{X:0>16} - 0x{X:0>16}\",\n"
+#~ "    .{ phdr.p_vaddr, phdr.p_vaddr + phdr.p_memsz },\n"
+#~ ");\n"
+#~ "```"
+#~ msgstr ""
+#~ "```surtr/boot.zig\n"
+#~ "status = kernel.setPosition(phdr.p_offset);\n"
+#~ "if (status != .Success) {\n"
+#~ "    log.err(\"Failed to set position for kernel image.\", .{});\n"
+#~ "    return status;\n"
+#~ "}\n"
+#~ "const segment: [*]u8 = @ptrFromInt(phdr.p_vaddr);\n"
+#~ "var mem_size = phdr.p_memsz;\n"
+#~ "status = kernel.read(&mem_size, segment);\n"
+#~ "if (status != .Success) {\n"
+#~ "    log.err(\"Failed to read kernel image.\", .{});\n"
+#~ "    return status;\n"
+#~ "}\n"
+#~ "log.info(\n"
+#~ "    \"  Seg @ 0x{X:0>16} - 0x{X:0>16}\",\n"
+#~ "    .{ phdr.p_vaddr, phdr.p_vaddr + phdr.p_memsz },\n"
+#~ ");\n"
+#~ "```"
+
+#~ msgid "\\[!NOTE\\] 仮想アドレスと物理アドレス"
+#~ msgstr "\\[!NOTE\\] 仮想アドレスと物理アドレス"
 
 #~ msgid ""
 #~ "```surtr/arch.zig\n"
