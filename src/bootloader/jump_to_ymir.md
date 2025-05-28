@@ -4,6 +4,10 @@ UEFI にいる状態でする必要のあるお片付けも終わったため、
 本チャプターでは、カーネルに渡す引数を準備して Ymir カーネルへジャンプします。
 ジャンプした先でスタックのピボットをしてカーネル用スタックに切り替えたあと、カーネルのメイン関数に制御を移します。
 
+> [!IMPORTANT]
+>
+> 本チャプターの最終コードは [`whiz-surtr-jump_to_ymir`](https://github.com/smallkirby/ymir/tree/whiz-surtr-jump_to_ymir) ブランチにあります。
+
 ## Table of Contents
 
 <!-- toc -->

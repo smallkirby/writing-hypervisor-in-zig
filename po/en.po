@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Writing Hypervisor in Zig\n"
-"POT-Creation-Date: 2025-05-28T22:52:10+09:00\n"
-"PO-Revision-Date: 2025-05-28 22:53+0900\n"
+"POT-Creation-Date: 2025-05-28T22:57:08+09:00\n"
+"PO-Revision-Date: 2025-05-28 23:36+0900\n"
 "Last-Translator: smallkirby <ssmallkirby@gmail.com>\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -731,7 +731,7 @@ msgstr ""
 "Guide](https://ziglang.org/learn/tools/) to set up for your environment."
 
 #: src/setup.md:61 src/bootloader/load_kernel.md:120
-#: src/bootloader/jump_to_ymir.md:201
+#: src/bootloader/jump_to_ymir.md:205
 msgid "\\[!WARNING\\]"
 msgstr ""
 
@@ -818,15 +818,16 @@ msgstr ""
 #: src/bootloader/hello_uefi.md:9 src/bootloader/uefi_log.md:7
 #: src/bootloader/parse_kernel.md:9 src/bootloader/simple_pg.md:9
 #: src/bootloader/load_kernel.md:7 src/bootloader/cleanup_memmap.md:9
-#: src/kernel/serial_output.md:12 src/kernel/bit_and_test.md:8
-#: src/kernel/serial_logsystem.md:8 src/kernel/gdt.md:8
-#: src/kernel/interrupt.md:12 src/kernel/page_allocator.md:14
-#: src/kernel/paging.md:9 src/kernel/panic.md:11
-#: src/kernel/general_allocator.md:10 src/kernel/pic.md:8 src/vmm/vmx_root.md:6
-#: src/vmm/vmcs.md:7 src/vmm/vmlaunch.md:7 src/vmm/vmentry_vmexit.md:8
-#: src/vmm/ept.md:6 src/vmm/linux_boot.md:8 src/vmm/cpuid.md:6 src/vmm/msr.md:7
-#: src/vmm/cr.md:7 src/vmm/io.md:9 src/vmm/intr_injection.md:7
-#: src/vmm/initramfs.md:9 src/vmm/vmcall.md:10
+#: src/bootloader/jump_to_ymir.md:7 src/kernel/serial_output.md:12
+#: src/kernel/bit_and_test.md:8 src/kernel/serial_logsystem.md:8
+#: src/kernel/gdt.md:8 src/kernel/interrupt.md:12
+#: src/kernel/page_allocator.md:14 src/kernel/paging.md:9
+#: src/kernel/panic.md:11 src/kernel/general_allocator.md:10
+#: src/kernel/pic.md:8 src/vmm/vmx_root.md:6 src/vmm/vmcs.md:7
+#: src/vmm/vmlaunch.md:7 src/vmm/vmentry_vmexit.md:8 src/vmm/ept.md:6
+#: src/vmm/linux_boot.md:8 src/vmm/cpuid.md:6 src/vmm/msr.md:7 src/vmm/cr.md:7
+#: src/vmm/io.md:9 src/vmm/intr_injection.md:7 src/vmm/initramfs.md:9
+#: src/vmm/vmcall.md:10
 msgid "\\[!IMPORTANT\\]"
 msgstr ""
 
@@ -841,7 +842,7 @@ msgstr ""
 #: src/bootloader/hello_uefi.md:13 src/bootloader/uefi_log.md:11
 #: src/bootloader/parse_kernel.md:13 src/bootloader/simple_pg.md:13
 #: src/bootloader/load_kernel.md:11 src/bootloader/cleanup_memmap.md:13
-#: src/bootloader/jump_to_ymir.md:7 src/kernel/serial_output.md:16
+#: src/bootloader/jump_to_ymir.md:11 src/kernel/serial_output.md:16
 #: src/kernel/bit_and_test.md:12 src/kernel/serial_logsystem.md:12
 #: src/kernel/gdt.md:12 src/kernel/interrupt.md:16
 #: src/kernel/page_allocator.md:18 src/kernel/paging.md:13
@@ -892,7 +893,7 @@ msgstr ""
 
 #: src/bootloader/hello_uefi.md:24 src/bootloader/uefi_log.md:19
 #: src/bootloader/parse_kernel.md:20 src/bootloader/simple_pg.md:19
-#: src/bootloader/load_kernel.md:19 src/bootloader/jump_to_ymir.md:16
+#: src/bootloader/load_kernel.md:19 src/bootloader/jump_to_ymir.md:20
 #: src/kernel/serial_output.md:25 src/kernel/bit_and_test.md:21
 #: src/kernel/serial_logsystem.md:16 src/kernel/gdt.md:26
 #: src/kernel/interrupt.md:27 src/kernel/page_allocator.md:32
@@ -1439,7 +1440,7 @@ msgstr ""
 
 #: src/bootloader/hello_uefi.md:360 src/bootloader/uefi_log.md:403
 #: src/bootloader/parse_kernel.md:339 src/bootloader/simple_pg.md:630
-#: src/bootloader/load_kernel.md:338 src/bootloader/jump_to_ymir.md:423
+#: src/bootloader/load_kernel.md:338 src/bootloader/jump_to_ymir.md:427
 #: src/kernel/serial_output.md:404 src/kernel/bit_and_test.md:274
 #: src/kernel/serial_logsystem.md:125 src/kernel/gdt.md:531
 #: src/kernel/interrupt.md:584 src/kernel/page_allocator.md:495
@@ -1681,7 +1682,7 @@ msgstr ""
 
 #: src/bootloader/uefi_log.md:63 src/bootloader/uefi_log.md:115
 #: src/bootloader/uefi_log.md:208 src/bootloader/parse_kernel.md:174
-#: src/bootloader/simple_pg.md:59 src/bootloader/jump_to_ymir.md:375
+#: src/bootloader/simple_pg.md:59 src/bootloader/jump_to_ymir.md:379
 #: src/kernel/bit_and_test.md:152 src/kernel/paging.md:364
 msgid "\\[!INFO\\]"
 msgstr ""
@@ -3482,7 +3483,7 @@ msgstr ""
 "address."
 
 #: src/bootloader/load_kernel.md:81 src/bootloader/load_kernel.md:305
-#: src/bootloader/jump_to_ymir.md:311 src/kernel/gdt.md:81
+#: src/bootloader/jump_to_ymir.md:315 src/kernel/gdt.md:81
 #: src/kernel/gdt.md:116 src/kernel/gdt.md:414 src/kernel/interrupt.md:261
 #: src/kernel/interrupt.md:338 src/kernel/interrupt.md:442
 #: src/kernel/page_allocator.md:111 src/kernel/page_allocator.md:352
@@ -4240,176 +4241,191 @@ msgid ""
 "カーネルへジャンプします。 ジャンプした先でスタックのピボットをしてカーネル用"
 "スタックに切り替えたあと、カーネルのメイン関数に制御を移します。"
 msgstr ""
-"UEFI にいる状態でする必要のあるお片付けも終わったため、いよいよカーネルを起動"
-"する準備ができました。 本チャプターでは、カーネルに渡す引数を準備して Ymir "
-"カーネルへジャンプします。 ジャンプした先でスタックのピボットをしてカーネル用"
-"スタックに切り替えたあと、カーネルのメイン関数に制御を移します。"
+"Now that we've completed all the cleanup required while still in the UEFI "
+"environment, we're finally ready to launch the kernel. In this chapter, "
+"we'll prepare the arguments to pass to the Ymir kernel and jump to it. After "
+"the jump, we'll pivot the stack to switch to the kernel's stack and then "
+"transfer control to the kernel's main function."
 
 #: src/bootloader/jump_to_ymir.md:9
+msgid ""
+"本チャプターの最終コードは [`whiz-surtr-jump_to_ymir`](https://github.com/"
+"smallkirby/ymir/tree/whiz-surtr-jump_to_ymir) ブランチにあります。"
+msgstr ""
+"Source code for this chapter is in [`whiz-surtr-jump_to_ymir`](https://"
+"github.com/smallkirby/ymir/tree/whiz-surtr-jump_to_ymir) branch."
+
+#: src/bootloader/jump_to_ymir.md:13
 msgid "[カーネルに渡す引数の準備](#カーネルに渡す引数の準備)"
 msgstr "[カーネルに渡す引数の準備](#カーネルに渡す引数の準備)"
 
-#: src/bootloader/jump_to_ymir.md:10
+#: src/bootloader/jump_to_ymir.md:14
 msgid "[カーネルへのジャンプ](#カーネルへのジャンプ)"
 msgstr "[カーネルへのジャンプ](#カーネルへのジャンプ)"
 
-#: src/bootloader/jump_to_ymir.md:11
+#: src/bootloader/jump_to_ymir.md:15
 msgid "[リンカスクリプトとスタック](#リンカスクリプトとスタック)"
 msgstr "[リンカスクリプトとスタック](#リンカスクリプトとスタック)"
 
-#: src/bootloader/jump_to_ymir.md:12
+#: src/bootloader/jump_to_ymir.md:16
 msgid "[レイアウトの設定](#レイアウトの設定)"
 msgstr "[レイアウトの設定](#レイアウトの設定)"
 
-#: src/bootloader/jump_to_ymir.md:13
+#: src/bootloader/jump_to_ymir.md:17
 msgid "[セクションとセグメントの確認](#セクションとセグメントの確認)"
 msgstr "[セクションとセグメントの確認](#セクションとセグメントの確認)"
 
-#: src/bootloader/jump_to_ymir.md:14
+#: src/bootloader/jump_to_ymir.md:18
 msgid "[Stack Trampoline](#stack-trampoline)"
 msgstr "[Stack Trampoline](#stack-trampoline)"
 
-#: src/bootloader/jump_to_ymir.md:15
+#: src/bootloader/jump_to_ymir.md:19
 msgid "[`BootInfo` の検証](#bootinfo-の検証)"
 msgstr "[`BootInfo` の検証](#bootinfo-の検証)"
 
-#: src/bootloader/jump_to_ymir.md:18
+#: src/bootloader/jump_to_ymir.md:22
 msgid "カーネルに渡す引数の準備"
-msgstr "カーネルに渡す引数の準備"
+msgstr "Preparing Arguments"
 
-#: src/bootloader/jump_to_ymir.md:20
+#: src/bootloader/jump_to_ymir.md:24
 msgid ""
 "Surtr から Ymir にはいくつかの情報を渡す必要があります。 その代表的なものは、"
 "UEFI から取得したメモリマップです。 Boot Services を exit したあとではこのメ"
 "モリマップを取得する方法がなくなるため、 Surtr が事前に取得しておいたメモリ"
 "マップを Ymir に渡します。"
 msgstr ""
-"Surtr から Ymir にはいくつかの情報を渡す必要があります。 その代表的なものは、"
-"UEFI から取得したメモリマップです。 Boot Services を exit したあとではこのメ"
-"モリマップを取得する方法がなくなるため、 Surtr が事前に取得しておいたメモリ"
-"マップを Ymir に渡します。"
+"Surtr needs to pass some essential information to Ymir, most notably the "
+"memory map obtained from UEFI. \n"
+"Once Boot Services are exited, there is no longer a way to retrieve the "
+"memory map, \n"
+"so Surtr must pass the previously acquired memory map to Ymir."
 
-#: src/bootloader/jump_to_ymir.md:25
+#: src/bootloader/jump_to_ymir.md:29
 msgid "`surtr/defs.zig`  に Surtr/Ymir 間で受け渡しする情報を定義します:"
-msgstr "`surtr/defs.zig`  に Surtr/Ymir 間で受け渡しする情報を定義します:"
-
-#: src/bootloader/jump_to_ymir.md:39
-msgid ""
-"`magic` は、正しく引数を Ymir に渡せたことを確認するためのマジックナンバーで"
-"す。 `memory_map` は Boot Services から取得した現在のメモリマップです。 Ymir "
-"はこのマップをもとにして不要な UEFI の領域を解放し、[独自のメモリアロケータ]"
-"(../kernel/page_allocator.md) を構築します。"
 msgstr ""
-"`magic` は、正しく引数を Ymir に渡せたことを確認するためのマジックナンバーで"
-"す。 `memory_map` は Boot Services から取得した現在のメモリマップです。 Ymir "
-"はこのマップをもとにして不要な UEFI の領域を解放し、[独自のメモリアロケータ]"
-"(../kernel/page_allocator.md) を構築します。"
+"Define the data structures shared between Surtr and Ymir in `surtr/defs.zig`:"
 
 #: src/bootloader/jump_to_ymir.md:43
-msgid "`boot.zig` において全てのお片付けを終えた後、 `BootInfo` を作成します:"
-msgstr "`boot.zig` において全てのお片付けを終えた後、 `BootInfo` を作成します:"
-
-#: src/bootloader/jump_to_ymir.md:53
 msgid ""
-"なお、既に Boot Services を exit してしまっているため、デバッグのためにログ出"
-"力は使えないことに注意してください。"
+"`magic` は、正しく引数を Ymir に渡せたことを確認するためのマジックナンバーで"
+"す。 `memory_map` は Boot Services から取得した現在のメモリマップです。 Ymir "
+"はこのマップをもとにして不要な UEFI の領域を解放し、[独自のメモリアロケータ]"
+"(../kernel/page_allocator.md) を構築します。"
 msgstr ""
-"なお、既に Boot Services を exit してしまっているため、デバッグのためにログ出"
-"力は使えないことに注意してください。"
+"`magic` is a magic number used to verify that the arguments have been "
+"correctly passed to Ymir. `memory_map` holds the current memory map obtained "
+"from Boot Services. Based on this map, Ymir will free unnecessary UEFI "
+"memory and construct [its own memory allocator](../kernel/page_allocator.md)."
 
-#: src/bootloader/jump_to_ymir.md:55
-msgid "カーネルへのジャンプ"
-msgstr "カーネルへのジャンプ"
+#: src/bootloader/jump_to_ymir.md:47
+msgid "`boot.zig` において全てのお片付けを終えた後、 `BootInfo` を作成します:"
+msgstr ""
+"After completing all cleanup in `boot.zig`, we construct the `BootInfo`:"
 
 #: src/bootloader/jump_to_ymir.md:57
 msgid ""
+"なお、既に Boot Services を exit してしまっているため、デバッグのためにログ出"
+"力は使えないことに注意してください。"
+msgstr ""
+"Note that since we've already exited Boot Services, we won’t be able to use "
+"log output for debugging purposes anymore."
+
+#: src/bootloader/jump_to_ymir.md:59
+msgid "カーネルへのジャンプ"
+msgstr "Jump to Kernel"
+
+#: src/bootloader/jump_to_ymir.md:61
+msgid ""
 "いよいよカーネルへとジャンプします。 このジャンプは、通常の関数呼び出しと同じ"
 "方法で実現できます。 カーネルのエントリポイントは、先程の `BootInfo` を受け取"
 "る関数です。 UEFI の calling convention は Windows と同じ[^1]であるため、"
 "`callconv(.Win64)` を指定します:"
 msgstr ""
-"いよいよカーネルへとジャンプします。 このジャンプは、通常の関数呼び出しと同じ"
-"方法で実現できます。 カーネルのエントリポイントは、先程の `BootInfo` を受け取"
-"る関数です。 UEFI の calling convention は Windows と同じ[^1]であるため、"
-"`callconv(.Win64)` を指定します:"
+"Finally, we are ready to jump to the kernel. This jump can be performed just "
+"like a regular function call. The kernel entry point is a function that "
+"takes the previously prepared `BootInfo` as an argument. Since UEFI uses the "
+"Windows calling convention[^1], we specify `callconv(.Win64)`:"
 
-#: src/bootloader/jump_to_ymir.md:68
+#: src/bootloader/jump_to_ymir.md:72
 msgid ""
 "エントリポイントのアドレスは、ELF ヘッダにある `entry` フィールドに書いてあり"
 "ます。 この値を `@ptrFromInt()` を使って `*KernelEntryType` という関数ポイン"
 "タにキャストしています。"
 msgstr ""
-"エントリポイントのアドレスは、ELF ヘッダにある `entry` フィールドに書いてあり"
-"ます。 この値を `@ptrFromInt()` を使って `*KernelEntryType` という関数ポイン"
-"タにキャストしています。"
+"The address of the entry point is stored in the `entry` field of the ELF "
+"header. We cast this value to a function pointer of type `*KernelEntryType` "
+"using `@ptrFromInt()`."
 
-#: src/bootloader/jump_to_ymir.md:71
+#: src/bootloader/jump_to_ymir.md:75
 msgid "残るは、この関数ポインタを呼び出すだけです:"
-msgstr "残るは、この関数ポインタを呼び出すだけです:"
+msgstr "All that remains is to call this function:"
 
-#: src/bootloader/jump_to_ymir.md:79
+#: src/bootloader/jump_to_ymir.md:83
 msgid ""
 "Ymir に処理が移ったあとは Surtr に戻ることはありません。 そのため、"
 "`unreachable` を指定してコンパイラにここまで到達しないことを伝えています。"
 msgstr ""
-"Ymir に処理が移ったあとは Surtr に戻ることはありません。 そのため、"
-"`unreachable` を指定してコンパイラにここまで到達しないことを伝えています。"
+"Once control has been transferred to Ymir, it will never return to Surtr. "
+"Therefore, we specify `unreachable` to inform the compiler that this point "
+"should never be reached."
 
-#: src/bootloader/jump_to_ymir.md:82
+#: src/bootloader/jump_to_ymir.md:86
 msgid ""
 "さて、実際に動かして Ymir が実行されていることを確認しましょう。 現在 Ymir の"
 "エントリポイントである `kernelEntry()` は無限 halt するだけの関数です。 QEMU "
 "を動かして無限ループで止まることを確認してください。 その状態で QEMU monitor "
 "を起動し、`info registers` でレジスタの値を確認してみましょう:"
 msgstr ""
-"さて、実際に動かして Ymir が実行されていることを確認しましょう。 現在 Ymir の"
-"エントリポイントである `kernelEntry()` は無限 halt するだけの関数です。 QEMU "
-"を動かして無限ループで止まることを確認してください。 その状態で QEMU monitor "
-"を起動し、`info registers` でレジスタの値を確認してみましょう:"
+"Now, let's actually run it and confirm that Ymir starts running. Currently, "
+"the Ymir entry point `kernelEntry()` is a function that simply halts "
+"infinitelyp. Run QEMU and verify that it stops in this infinite loop. While "
+"in this state, open the QEMU monitor and use `info registers` to check the "
+"values of the registers:"
 
-#: src/bootloader/jump_to_ymir.md:110
+#: src/bootloader/jump_to_ymir.md:114
 msgid ""
 "`RIP` は `0xFFFFFFFF80100001` となっており、これは Ymir のリンカスクリプトで"
 "指定した `.text` セクションの値です。 正しく Ymir に実行が移ったようですね！"
 msgstr ""
-"`RIP` は `0xFFFFFFFF80100001` となっており、これは Ymir のリンカスクリプトで"
-"指定した `.text` セクションの値です。 正しく Ymir に実行が移ったようですね！"
+"The `RIP` shows `0xFFFFFFFF80100001`, which corresponds to the `.text` "
+"section address specified in Ymir's linker script. This confirms that "
+"control has been successfully transferred to Ymir!"
 
-#: src/bootloader/jump_to_ymir.md:113
+#: src/bootloader/jump_to_ymir.md:117
 msgid ""
 "Windows における calling convention では、引数は RCX, RDX, R8, R9 に順に入れ"
 "られます。 今回は引数は `BootInfo` の1つだけなので、RCX に `BootInfo` のアド"
 "レスが入っているはずです:"
 msgstr ""
-"Windows における calling convention では、引数は RCX, RDX, R8, R9 に順に入れ"
-"られます。 今回は引数は `BootInfo` の1つだけなので、RCX に `BootInfo` のアド"
-"レスが入っているはずです:"
+"In the Windows calling convention, arguments are passed in RCX, RDX, R8, and "
+"R9 registers in order. Since there is only one argument this time, the "
+"`BootInfo`, its address should be in RCX:"
 
-#: src/bootloader/jump_to_ymir.md:123
+#: src/bootloader/jump_to_ymir.md:127
 msgid ""
 "RCX が指す先には、`BootInfo` の先頭フィールドである `magic` の値 "
 "`0xDEADBEEFCAFEBABE` が入っていることが確認できます。 引数の受け渡しもしっか"
 "りできているようです。"
 msgstr ""
-"RCX が指す先には、`BootInfo` の先頭フィールドである `magic` の値 "
-"`0xDEADBEEFCAFEBABE` が入っていることが確認できます。 引数の受け渡しもしっか"
-"りできているようです。"
+"At the address pointed to by RCX, you can confirm the value of the first "
+"field in `BootInfo`, which is `magic` with the value `0xDEADBEEFCAFEBABE`. "
+"This shows that the argument passing is working correctly."
 
-#: src/bootloader/jump_to_ymir.md:126
+#: src/bootloader/jump_to_ymir.md:130
 msgid "リンカスクリプトとスタック"
-msgstr "リンカスクリプトとスタック"
+msgstr "Linker Script and Stack"
 
-#: src/bootloader/jump_to_ymir.md:128
+#: src/bootloader/jump_to_ymir.md:132
 msgid ""
 "カーネルが起動したものの、**依然としていろいろなものを UEFI が用意してくれた"
 "まま使っています**。 ページテーブル・IDT・GDT などもそうですが、最初に重要な"
 "のがスタックです。"
 msgstr ""
-"カーネルが起動したものの、**依然としていろいろなものを UEFI が用意してくれた"
-"まま使っています**。 ページテーブル・IDT・GDT などもそうですが、最初に重要な"
-"のがスタックです。"
+"Although the kernel has started, it is still relying on many resources "
+"provided by UEFI, such as the page tables, IDT, and GDT. Among these, stack "
+"is one of the most critical components to set up first."
 
-#: src/bootloader/jump_to_ymir.md:131
+#: src/bootloader/jump_to_ymir.md:135
 msgid ""
 "UEFI が Surtr を実行する際にはスタックを用意してくれるのですが、このスタック"
 "領域は `BootServiceData` と呼ばれるブート用の領域に確保されています。 この領"
@@ -4418,28 +4434,28 @@ msgid ""
 "**。 今回は、Ymir にスタック用のセグメントを用意してあげることでスタック領域"
 "を用意することにします[^2]。"
 msgstr ""
-"UEFI が Surtr を実行する際にはスタックを用意してくれるのですが、このスタック"
-"領域は `BootServiceData` と呼ばれるブート用の領域に確保されています。 この領"
-"域はのちほど Ymir が自身のメモリアロケータを初期化する際に解放することになり"
-"ます。 よって、まずは**スタックをカーネル用の領域へと切り替える必要があります"
-"**。 今回は、Ymir にスタック用のセグメントを用意してあげることでスタック領域"
-"を用意することにします[^2]。"
+"When UEFI wakes Surtr up, it prepares a stack for him. However, this stack "
+"is allocated in the boot-time memory region called `BootServiceData`. Later, "
+"Ymir will free this region when it initializes its own memory allocator. "
+"Therefore, it is necessary to **switch the stack to a kernel memory region** "
+"first. In this case, we will prepare a stack segment for Ymir to use as its "
+"stack space[^2]."
 
-#: src/bootloader/jump_to_ymir.md:136
+#: src/bootloader/jump_to_ymir.md:140
 msgid "レイアウトの設定"
-msgstr "レイアウトの設定"
+msgstr "Layout"
 
-#: src/bootloader/jump_to_ymir.md:138
+#: src/bootloader/jump_to_ymir.md:142
 msgid ""
 "[カーネルのロードのチャプター](load_kernel.md) で Ymir のレイアウトをリンカス"
 "クリプトで簡単に設定しました。 ここではもう少しだけ真面目に設定します。 "
 "`ymir/linker.ld` を以下のように書き換えます[^3]:"
 msgstr ""
-"[カーネルのロードのチャプター](load_kernel.md) で Ymir のレイアウトをリンカス"
-"クリプトで簡単に設定しました。 ここではもう少しだけ真面目に設定します。 "
-"`ymir/linker.ld` を以下のように書き換えます[^3]:"
+"In the [Loading Kernel chapter](load_kernel.md), we briefly set up Ymir’s "
+"memory layout using the linker script. Here, we will configure it a bit more "
+"properly. Modify `ymir/linker.ld` as follows[^3]:"
 
-#: src/bootloader/jump_to_ymir.md:184
+#: src/bootloader/jump_to_ymir.md:188
 msgid ""
 "`.text` / `.rodata` / `.data` / `.bss` についてはそのままです。 各オブジェク"
 "トファイルに存在するセクションを集めて最終的な実行ファイルのセクションを構成"
@@ -4448,14 +4464,15 @@ msgid ""
 "クションの物理アドレスとします。 つまり、ベースの仮想アドレスからのオフセット"
 "をそのまま物理アドレスにしているということです。"
 msgstr ""
-"`.text` / `.rodata` / `.data` / `.bss` についてはそのままです。 各オブジェク"
-"トファイルに存在するセクションを集めて最終的な実行ファイルのセクションを構成"
-"しています。 `AT` は物理アドレスを指定しています。 `ADDR(.text)`は `.text` セ"
-"クションの仮想アドレスになるため、そこから `KERNEL_VADDR_BASE` を引いた値をセ"
-"クションの物理アドレスとします。 つまり、ベースの仮想アドレスからのオフセット"
-"をそのまま物理アドレスにしているということです。"
+"`.text` / `.rodata` / `.data` / `.bss` sections remain unchanged. They are "
+"composed by collecting respective sections from each object file to form the "
+"final sections. The `AT` directive specifies the physical address. Since "
+"`ADDR(.text)` is the virtual address of the `.text` section, subtracting "
+"`KERNEL_VADDR_BASE` from it sets the physical address for the section. In "
+"other words, the physical address is set as the offset from the base virtual "
+"address."
 
-#: src/bootloader/jump_to_ymir.md:190
+#: src/bootloader/jump_to_ymir.md:194
 msgid ""
 "新たに `__stack` セクションを追加しています。 スタックのサイズはとりあえず5"
 "ページです。足りなくなったら足せばいいだけです、今回は十分ですが。 他のセク"
@@ -4465,15 +4482,15 @@ msgid ""
 "`STACK_SIZE` を指定しますが、これによって **ELF 自体のサイズが変わるというこ"
 "とはありません**。"
 msgstr ""
-"新たに `__stack` セクションを追加しています。 スタックのサイズはとりあえず5"
-"ページです。足りなくなったら足せばいいだけです、今回は十分ですが。 他のセク"
-"ションとの違いとして、`NOLOAD` を指定しています。 `NOLOAD` を指定すると、その"
-"領域はメモリにロードされないという意味になります。 スタック領域は初期値が不要"
-"なため、ELF ファイルには含める必要がありません。 セクションのサイズには "
-"`STACK_SIZE` を指定しますが、これによって **ELF 自体のサイズが変わるというこ"
-"とはありません**。"
+"A new section `__stack` is added. The stack size is set to 5 pages for now; "
+"this can be increased later if needed, but it's sufficient for now. Unlike "
+"other sections, `NOLOAD` is specified. This means the section is not loaded "
+"into memory. Since the stack area does not require initial values, it does "
+"not need to be included in the ELF file. Although `STACK_SIZE` defines the "
+"section size, **this does not affect the overall size of the ELF file "
+"itself**."
 
-#: src/bootloader/jump_to_ymir.md:197
+#: src/bootloader/jump_to_ymir.md:201
 msgid ""
 "スタックの両側に配置してある `__stackguard_upper` / `__stackguard_lower` は**"
 "スタックガードページ**です。 このページを read-only にすることで、スタック"
@@ -4481,13 +4498,13 @@ msgid ""
 "せます[^4]。 気づかないうちにスタックが溢れて隣接する領域を破壊してしまうこと"
 "を防ぐ目的です。"
 msgstr ""
-"スタックの両側に配置してある `__stackguard_upper` / `__stackguard_lower` は**"
-"スタックガードページ**です。 このページを read-only にすることで、スタック"
-"オーバーフローやスタックアンダーフローが発生した場合にページフォルトを発生さ"
-"せます[^4]。 気づかないうちにスタックが溢れて隣接する領域を破壊してしまうこと"
-"を防ぐ目的です。"
+"The `__stackguard_upper` and `__stackguard_lower` sections placed on both "
+"sides of the stack act as **stack guard pages**. By setting these pages to "
+"read-only, a page fault will be generated if a stack overflow or underflow "
+"occurs. This mechanism prevents accidental overwriting of adjacent memory "
+"regions caused by unnoticed stack overflows."
 
-#: src/bootloader/jump_to_ymir.md:203
+#: src/bootloader/jump_to_ymir.md:207
 msgid ""
 "スタックがオーバーフローしてガードページへの書き込みが発生すると、ページフォ"
 "ルトが発生します。 フォルトハンドラがガードページをスタックとして利用しようと"
@@ -4495,13 +4512,13 @@ msgid ""
 "し、その中で同様にしてフォルトが起こります。 最終的には **Triple Fault を引き"
 "起こし、CPU がリセットされてこの世の終わりが訪れます...**。"
 msgstr ""
-"スタックがオーバーフローしてガードページへの書き込みが発生すると、ページフォ"
-"ルトが発生します。 フォルトハンドラがガードページをスタックとして利用しようと"
-"することで再度フォルトが発生してしまいます。 これは double fault を引き起こ"
-"し、その中で同様にしてフォルトが起こります。 最終的には **Triple Fault を引き"
-"起こし、CPU がリセットされてこの世の終わりが訪れます...**。"
+"When the stack overflows and a write occurs to a guard page, a page fault is "
+"triggered. If the fault handler attempts to use the guard page as a stack, "
+"another fault occurs. This leads to a double fault, and similarly causes "
+"further faults as well. Ultimately, this results in a **triple fault**, "
+"causing the CPU to reset and bring about the end of the world..."
 
-#: src/bootloader/jump_to_ymir.md:208
+#: src/bootloader/jump_to_ymir.md:212
 msgid ""
 "これを防ぐためには、ページフォルトハンドラでスタックを独自のものに切り替える"
 "必要があります。 割り込みハンドラ用のスタックは [TSS](https://wiki.osdev.org/"
@@ -4511,23 +4528,23 @@ msgid ""
 "タックをそのまま使います。 スタックオーバーフローはすぐに Triple Fault になっ"
 "てしまうので、嫌な人は TSS を使って独自スタックを実装してみてください。"
 msgstr ""
-"これを防ぐためには、ページフォルトハンドラでスタックを独自のものに切り替える"
-"必要があります。 割り込みハンドラ用のスタックは [TSS](https://wiki.osdev.org/"
-"Task_State_Segment) という領域を使って指定することができます。 TSS と GDT と "
-"IDT を適切に設定することでページフォルトのときのみ独自のスタックに切り替える"
-"ことができます[^5]。 本シリーズでは TSS は使わず、割り込みが発生した瞬間のス"
-"タックをそのまま使います。 スタックオーバーフローはすぐに Triple Fault になっ"
-"てしまうので、嫌な人は TSS を使って独自スタックを実装してみてください。"
+"To prevent this, the page fault handler must switch to a dedicated stack. "
+"The interrupt handler stack can be specified using the [Task State Segment "
+"(TSS)](https://wiki.osdev.org/Task_State_Segment). By properly configuring "
+"the TSS, GDT, and IDT, you can switch to a custom stack for page faults. In "
+"this series, however, we do not use TSS and simply use the stack active at "
+"the moment the interrupt occurs. If you want to avoid triple faults, you can "
+"implement stack switch by yourself."
 
-#: src/bootloader/jump_to_ymir.md:214
+#: src/bootloader/jump_to_ymir.md:218
 msgid ""
 "各セクションの最後に書いてある `:segment` は、そのセクションを `segment` セグ"
 "メントに配置します。 セグメントの定義は以下です:"
 msgstr ""
-"各セクションの最後に書いてある `:segment` は、そのセクションを `segment` セグ"
-"メントに配置します。 セグメントの定義は以下です:"
+"The `:segment` at the end of each section puts that section into the "
+"`segment` segment. The segment is defined as follows:"
 
-#: src/bootloader/jump_to_ymir.md:231
+#: src/bootloader/jump_to_ymir.md:235
 msgid ""
 "各セグメントに指定している `PT_LOAD` は、そのセグメントをメモリにロードするこ"
 "とを意味します。 セクションに指定した `NOLOAD` はセクションに対する指定であ"
@@ -4537,120 +4554,122 @@ msgid ""
 "使います。 `__stack` は RW (実行不可) にしたいため、`FLAGS(6)` です。 ガード"
 "ページは read-only にするため、`FLAGS(4)` です。"
 msgstr ""
-"各セグメントに指定している `PT_LOAD` は、そのセグメントをメモリにロードするこ"
-"とを意味します。 セクションに指定した `NOLOAD` はセクションに対する指定であ"
-"り、`PT_LOAD` はセグメントに対する指定です。 `FLAGS` にはセグメントの属性を指"
-"定します。 RWX の左から 4, 2, 1 の値を持ちます。 `text` / `rodata` / "
-"`data` / `bss` セグメントには `FLAGS` を指定せず、セクションの属性をそのまま"
-"使います。 `__stack` は RW (実行不可) にしたいため、`FLAGS(6)` です。 ガード"
-"ページは read-only にするため、`FLAGS(4)` です。"
+"The `PT_LOAD` specified for each segment indicates that the segment should "
+"be loaded into memory. The `NOLOAD` attribute applies to sections, whereas "
+"`PT_LOAD` applies to segments. The `FLAGS` specify the segment’s "
+"permissions, using values 4, 2, and 1 from left to right for Read, Write, "
+"and Execute respectively. For the `text`, `rodata`, `data`, and `bss` "
+"segments, no explicit `FLAGS` are specified, so the section attributes are "
+"used as-is. The `__stack` segment must be RW (read-write, no execute), so it "
+"uses `FLAGS(6)`. The guard pages are set as read-only, hence `FLAGS(4)`."
 
-#: src/bootloader/jump_to_ymir.md:239
+#: src/bootloader/jump_to_ymir.md:243
 msgid "セクションとセグメントの確認"
-msgstr "セクションとセグメントの確認"
+msgstr "Checking Sections and Segments"
 
-#: src/bootloader/jump_to_ymir.md:241
+#: src/bootloader/jump_to_ymir.md:245
 msgid ""
 "スタックを含めた Ymir のレイアウトが設定できたため、意図したとおりのレイアウ"
 "トになっているかを確認しましょう。 `zig build install` で Ymir をビルドした"
 "後、`readelf` でセクションとセグメントの情報を表示させます:"
 msgstr ""
-"スタックを含めた Ymir のレイアウトが設定できたため、意図したとおりのレイアウ"
-"トになっているかを確認しましょう。 `zig build install` で Ymir をビルドした"
-"後、`readelf` でセクションとセグメントの情報を表示させます:"
-
-#: src/bootloader/jump_to_ymir.md:295
-msgid "以下のようなことが分かります:"
-msgstr "以下のようなことが分かります:"
-
-#: src/bootloader/jump_to_ymir.md:297
-msgid "`__stack` やガードページのセクションは:"
-msgstr "`__stack` やガードページのセクションは:"
-
-#: src/bootloader/jump_to_ymir.md:298
-msgid "`Size` が指定したページサイズになっている。"
-msgstr "`Size` が指定したページサイズになっている。"
+"After setting up Ymir’s memory layout including the stack, let's verify that "
+"the layout matches our expectations. After building Ymir with `zig build "
+"install`, use `readelf` to display the section and segment information:"
 
 #: src/bootloader/jump_to_ymir.md:299
-msgid "`Addr` が指定した仮想アドレスになっている。"
-msgstr "`Addr` が指定した仮想アドレスになっている。"
+msgid "以下のようなことが分かります:"
+msgstr "You can see:"
 
-#: src/bootloader/jump_to_ymir.md:300
-msgid ""
-"`Offset` (ELFファイル内におけるセクションの開始アドレス) が同じ `0x2000` に"
-"なっている。 これは、**セクション自体がサイズを持たず ELF バイナリ内に含まれ"
-"ない**ことを示している。"
-msgstr ""
-"`Offset` (ELFファイル内におけるセクションの開始アドレス) が同じ `0x2000` に"
-"なっている。 これは、**セクション自体がサイズを持たず ELF バイナリ内に含まれ"
-"ない**ことを示している。"
+#: src/bootloader/jump_to_ymir.md:301
+msgid "`__stack` やガードページのセクションは:"
+msgstr "Sections for `__stack` and the guard page:"
 
 #: src/bootloader/jump_to_ymir.md:302
-msgid "`__stack` やガードページのセグメントは:"
-msgstr "`__stack` やガードページのセグメントは:"
+msgid "`Size` が指定したページサイズになっている。"
+msgstr "The `Size` matches the page size you specified."
 
 #: src/bootloader/jump_to_ymir.md:303
-msgid ""
-"`FileSize` が `0` になっている。これも ELF 内にデータが含まれないことを示す。"
-msgstr ""
-"`FileSize` が `0` になっている。これも ELF 内にデータが含まれないことを示す。"
+msgid "`Addr` が指定した仮想アドレスになっている。"
+msgstr "The `Addr` corresponds to the specified virtual address."
 
 #: src/bootloader/jump_to_ymir.md:304
-msgid "`MemSize` が指定したページサイズになっている。"
-msgstr "`MemSize` が指定したページサイズになっている。"
-
-#: src/bootloader/jump_to_ymir.md:305
 msgid ""
-"`VirtAddr` と `PhysAddr` が指定した仮想アドレス・物理アドレスになっている。"
+"`Offset` (ELFファイル内におけるセクションの開始アドレス) が同じ `0x2000` に"
+"なっている。 これは、**セクション自体がサイズを持たず ELF バイナリ内に含まれ"
+"ない**ことを示している。"
 msgstr ""
-"`VirtAddr` と `PhysAddr` が指定した仮想アドレス・物理アドレスになっている。"
+"The `Offset` (the section’s start address within the ELF file) is also "
+"`0x2000`. This indicates that the **section itself has no size and is not "
+"included in the ELF binary**."
 
 #: src/bootloader/jump_to_ymir.md:306
-msgid "スタックは read-write になっている。"
-msgstr "スタックは read-write になっている。"
+msgid "`__stack` やガードページのセグメントは:"
+msgstr "Segments for `__stack` and the guard page:"
 
 #: src/bootloader/jump_to_ymir.md:307
-msgid "ガードページは read-only になっている。"
-msgstr "ガードページは read-only になっている。"
+msgid ""
+"`FileSize` が `0` になっている。これも ELF 内にデータが含まれないことを示す。"
+msgstr ""
+"The `FileSize` is `0`, which also indicates that no data is included within "
+"the ELF file."
 
 #: src/bootloader/jump_to_ymir.md:308
+msgid "`MemSize` が指定したページサイズになっている。"
+msgstr "The `MemSize` matches the specified page size."
+
+#: src/bootloader/jump_to_ymir.md:309
+msgid ""
+"`VirtAddr` と `PhysAddr` が指定した仮想アドレス・物理アドレスになっている。"
+msgstr ""
+"The `VirtAddr` and `PhysAddr` match the specified virtual and physical "
+"addresses."
+
+#: src/bootloader/jump_to_ymir.md:310
+msgid "スタックは read-write になっている。"
+msgstr "Stack is read-write."
+
+#: src/bootloader/jump_to_ymir.md:311
+msgid "ガードページは read-only になっている。"
+msgstr "Guard page is read-only."
+
+#: src/bootloader/jump_to_ymir.md:312
 msgid ""
 "`.bss` セクションと `__stackguard_upper` セクションが同じセグメントになってい"
 "る。 これは現在 Ymir が `.bss` に入れる変数を持っていないから。"
 msgstr ""
-"`.bss` セクションと `__stackguard_upper` セクションが同じセグメントになってい"
-"る。 これは現在 Ymir が `.bss` に入れる変数を持っていないから。"
+"The `.bss` and `__stackguard_upper` section are within the same segment. "
+"This is because Ymir currently has no variables placed in the `.bss` section."
 
-#: src/bootloader/jump_to_ymir.md:313
+#: src/bootloader/jump_to_ymir.md:317
 msgid ""
 "余談ですが、セグメントやセクションの属性等は一般的な意味[^6]から逸脱していて"
 "も全く問題ありません。 というのも、これらをパースするローダである Surtr は本"
 "シリーズで自作するものであり、値をどう解釈するかはこちらの一存で決めることが"
 "できるからです。"
 msgstr ""
-"余談ですが、セグメントやセクションの属性等は一般的な意味[^6]から逸脱していて"
-"も全く問題ありません。 というのも、これらをパースするローダである Surtr は本"
-"シリーズで自作するものであり、値をどう解釈するかはこちらの一存で決めることが"
-"できるからです。"
+"As a side note, it is perfectly fine if the attributes of segments and "
+"sections deviate from their usual meanings. This is because Surtr, the "
+"loader that parses them, is custom-made in this series, so how these values "
+"are interpreted is entirely up to us."
 
-#: src/bootloader/jump_to_ymir.md:316
+#: src/bootloader/jump_to_ymir.md:320
 msgid "Stack Trampoline"
 msgstr "Stack Trampoline"
 
-#: src/bootloader/jump_to_ymir.md:318
+#: src/bootloader/jump_to_ymir.md:322
 msgid ""
 "スタックを用意したので、UEFI が用意したスタックからカーネルのスタックへと切り"
 "替えます。"
 msgstr ""
-"スタックを用意したので、UEFI が用意したスタックからカーネルのスタックへと切り"
-"替えます。"
+"Now that the stack is prepared, we switch from the stack provided by UEFI to "
+"the kernel's own stack."
 
-#: src/bootloader/jump_to_ymir.md:320
+#: src/bootloader/jump_to_ymir.md:324
 msgid "Ymir のエントリポイントである `kernelEntry()` を以下のように変更します:"
-msgstr ""
-"Ymir のエントリポイントである `kernelEntry()` を以下のように変更します:"
+msgstr "Modify Ymir’s entry point `kernelEntry()` as follows:"
 
-#: src/bootloader/jump_to_ymir.md:336
+#: src/bootloader/jump_to_ymir.md:340
 msgid ""
 "`__stackguard_lower` は先程リンカスクリプトで定義した `__stackguard_lower` セ"
 "クションの先頭アドレスに位置しています。 この変数はアドレスしか使わないので実"
@@ -4658,32 +4677,33 @@ msgid ""
 "から `0x10` だけずらしたアドレスをスタックポインタにセットしています。 これで"
 "スタックが用意したカーネルスタックに切り替わります。"
 msgstr ""
-"`__stackguard_lower` は先程リンカスクリプトで定義した `__stackguard_lower` セ"
-"クションの先頭アドレスに位置しています。 この変数はアドレスしか使わないので実"
-"際には型は不要です。 インラインアセンブラでは `__stackguard_lower` セクション"
-"から `0x10` だけずらしたアドレスをスタックポインタにセットしています。 これで"
-"スタックが用意したカーネルスタックに切り替わります。"
+"`__stackguard_lower` is located at the start address of the "
+"`__stackguard_lower` section defined earlier in the linker script. Since "
+"only the address of this variable is used, no specific type is required. The "
+"inline assembly sets the stack pointer to the address offset by `0x10` from "
+"the `__stackguard_lower` section. This effectively switches the stack to the "
+"prepared kernel stack."
 
-#: src/bootloader/jump_to_ymir.md:341
+#: src/bootloader/jump_to_ymir.md:345
 msgid ""
 "`kernelTrampoline()` は Zig の通常の calling convention を持つ関数にジャンプ"
 "するためのトランポリン関数です:"
 msgstr ""
-"`kernelTrampoline()` は Zig の通常の calling convention を持つ関数にジャンプ"
-"するためのトランポリン関数です:"
-
-#: src/bootloader/jump_to_ymir.md:358
-msgid ""
-"`kernelEntry()` は関数のプロローグを持ってはいけません。 スタックをカーネルの"
-"ものに切り替える前に、プロローグがスタックに何かを push してしまう可能性があ"
-"るためです。 よって、`callconv(.Naked)` を指定しています。"
-msgstr ""
-"`kernelEntry()` は関数のプロローグを持ってはいけません。 スタックをカーネルの"
-"ものに切り替える前に、プロローグがスタックに何かを push してしまう可能性があ"
-"るためです。 よって、`callconv(.Naked)` を指定しています。"
+"`kernelTrampoline()` is a trampoline that jumps to a function with Zig’s "
+"standard calling convention."
 
 #: src/bootloader/jump_to_ymir.md:362
 msgid ""
+"`kernelEntry()` は関数のプロローグを持ってはいけません。 スタックをカーネルの"
+"ものに切り替える前に、プロローグがスタックに何かを push してしまう可能性があ"
+"るためです。 よって、`callconv(.Naked)` を指定しています。"
+msgstr ""
+"`kernelEntry()` must not have a function prologue. This is because the "
+"prologue might push something onto the stack before Ymir switches to the "
+"kernel’s own stack. Therefore, `callconv(.Naked)` is specified."
+
+#: src/bootloader/jump_to_ymir.md:366
+msgid ""
 "Ymir のメイン関数は通常の Zig の calling convention を持ち、返り値としてエ"
 "ラーも返せるようにしたいです。 そうしないと `try` などの便利キーワードも使え"
 "なくなってしまうからです。 しかし、**`callconv(.Naked)` を持つ関数内では Zig "
@@ -4691,14 +4711,14 @@ msgid ""
 "そこで、 `kernelTrampoline()` を間に入れます。 この関数は引数を適切に受け渡し"
 "つつ、calling convention を切り替えます。"
 msgstr ""
-"Ymir のメイン関数は通常の Zig の calling convention を持ち、返り値としてエ"
-"ラーも返せるようにしたいです。 そうしないと `try` などの便利キーワードも使え"
-"なくなってしまうからです。 しかし、**`callconv(.Naked)` を持つ関数内では Zig "
-"レベルでの関数呼び出しはできません**。 Inline assembly を使うしかないです。 "
-"そこで、 `kernelTrampoline()` を間に入れます。 この関数は引数を適切に受け渡し"
-"つつ、calling convention を切り替えます。"
+"Ymir's main function uses the normal Zig calling convention and can return "
+"errors, allowing the use of convenient keywords like `try`. However, "
+"**functions marked with `callconv(.Naked)` cannot call functions in Zig "
+"syntax**. So inline assembly must be used. To solve this, "
+"`kernelTrampoline()` is introduced as an intermediary function that properly "
+"passes arguments and switches the calling convention."
 
-#: src/bootloader/jump_to_ymir.md:369
+#: src/bootloader/jump_to_ymir.md:373
 msgid ""
 "`kernelEntry()` の先頭では、Surtr から渡された引数が UEFI calling convention "
 "に則って渡されており、 引数の `BootInfo` は RCX に入っています。 よって、"
@@ -4706,21 +4726,14 @@ msgid ""
 "の関数からは他の calling convention を持つ関数を通常通り呼び出すことができる"
 "ため、 `kernelMain()` を Zig-way で呼び出せるという算段です。"
 msgstr ""
-"`kernelEntry()` の先頭では、Surtr から渡された引数が UEFI calling convention "
-"に則って渡されており、 引数の `BootInfo` は RCX に入っています。 よって、"
-"`kernelTrampoline()` は `callconv(.Win64)` を指定します。 `callconv(.Win64)` "
-"の関数からは他の calling convention を持つ関数を通常通り呼び出すことができる"
-"ため、 `kernelMain()` を Zig-way で呼び出せるという算段です。"
+"At the start of `kernelEntry()`, the argument passed from Surtr follows the "
+"UEFI calling convention, with the `BootInfo` argument placed in RCX. "
+"Therefore, `kernelTrampoline()` is specified with `callconv(.Win64)`. Since "
+"functions with `callconv(.Win64)` can normally call functions with other "
+"calling conventions, this setup allows calling `kernelMain()` in the regular "
+"Zig way."
 
-#: src/bootloader/jump_to_ymir.md:377
-#, fuzzy
-#| msgid ""
-#| "\\[!INFO\\] export keyword `export` keyword を関数につけることで、その関数"
-#| "は定義したままの名前で参照できるようになります。 `kernelMain()` や "
-#| "`kernelTrampoline()` はアセンブラから `call` するため、`export` をつけてい"
-#| "ます。 もしも `export` をつけない場合、関数の名前は `main."
-#| "kernelTrampoline` のようなファイル名/モジュール名を含んだ名前になってしま"
-#| "います。"
+#: src/bootloader/jump_to_ymir.md:381
 msgid ""
 "`export` keyword を関数につけることで、その関数は定義したままの名前で参照でき"
 "るようになります。 `kernelMain()` や `kernelTrampoline()` はアセンブラから "
@@ -4728,119 +4741,122 @@ msgid ""
 "数の名前は `main.kernelTrampoline` のようなファイル名/モジュール名を含んだ名"
 "前になってしまいます。"
 msgstr ""
-"\\[!INFO\\] export keyword `export` keyword を関数につけることで、その関数は"
-"定義したままの名前で参照できるようになります。 `kernelMain()` や "
-"`kernelTrampoline()` はアセンブラから `call` するため、`export` をつけていま"
-"す。 もしも `export` をつけない場合、関数の名前は `main.kernelTrampoline` の"
-"ようなファイル名/モジュール名を含んだ名前になってしまいます。"
+"By adding the `export` keyword to a function, the function can be referenced "
+"by the exact name it was defined with. Since `kernelMain()` and "
+"`kernelTrampoline()` are called from assembly, they are marked with "
+"`export`. Without the keyword, the function names would include the file or "
+"module name, such as `main.kernelTrampoline`."
 
-#: src/bootloader/jump_to_ymir.md:381
+#: src/bootloader/jump_to_ymir.md:385
 msgid "`BootInfo` の検証"
-msgstr "`BootInfo` の検証"
+msgstr "Verification of `BootInfo`"
 
-#: src/bootloader/jump_to_ymir.md:383
+#: src/bootloader/jump_to_ymir.md:387
 msgid ""
 "Surtr の役割は終わり、Ymir が実権を握りました。 このチャプターの最後として、"
 "Surtr が渡してくれた引数 `BootInfo` の sanity check をしておきましょう。"
 msgstr ""
-"Surtr の役割は終わり、Ymir が実権を握りました。 このチャプターの最後として、"
-"Surtr が渡してくれた引数 `BootInfo` の sanity check をしておきましょう。"
+"Surtr’s role has ended, and Ymir has taken control. To conclude this "
+"chapter, let’s perform a sanity check on the `BootInfo` argument passed by "
+"Surtr."
 
-#: src/bootloader/jump_to_ymir.md:386
+#: src/bootloader/jump_to_ymir.md:390
 msgid ""
 "まず、Ymir が Surtr の定義した情報を参照できるように Surtr モジュールを作成"
 "し Ymir に追加します。 `build.zig` に以下を追加します:"
 msgstr ""
-"まず、Ymir が Surtr の定義した情報を参照できるように Surtr モジュールを作成"
-"し Ymir に追加します。 `build.zig` に以下を追加します:"
+"First, to allow Ymir to reference the information defined by Surtr, create a "
+"Surtr module and add it to Ymir. Add the following to `build.zig`:"
 
-#: src/bootloader/jump_to_ymir.md:399
+#: src/bootloader/jump_to_ymir.md:403
 msgid ""
 "これで、 `@import(\"surtr\")` によって `surtr/defs.zig` を参照できるようにな"
 "りました。 `kernelMain()` で `BootInfo()` の検証をしましょう:"
 msgstr ""
-"これで、 `@import(\"surtr\")` によって `surtr/defs.zig` を参照できるようにな"
-"りました。 `kernelMain()` で `BootInfo()` の検証をしましょう:"
+"Now, `@import(\"surtr\")` allows referencing `surtr/defs.zig`. Let’s verify "
+"the `BootInfo` in `kernelMain()`:"
 
-#: src/bootloader/jump_to_ymir.md:417
+#: src/bootloader/jump_to_ymir.md:421
 msgid ""
 "`BootInfo` の先頭には、Surtr がマジックナンバーを格納してくれているはずで"
 "す。 この値が正しく設定されているかを確認することで、Surtr が正しく引数を渡し"
 "てくれたかを検証します。"
 msgstr ""
-"`BootInfo` の先頭には、Surtr がマジックナンバーを格納してくれているはずで"
-"す。 この値が正しく設定されているかを確認することで、Surtr が正しく引数を渡し"
-"てくれたかを検証します。"
+"At the beginning of `BootInfo`, Surtr should have stored a magic number. By "
+"checking whether this value is correctly set, we can verify that Surtr has "
+"passed the argument properly."
 
-#: src/bootloader/jump_to_ymir.md:420
+#: src/bootloader/jump_to_ymir.md:424
 msgid ""
 "仮に `magic` が正しくない場合、`error.InvalidMagic` を返します。 本来ならばこ"
 "こでエラー出力をしたいところですが、まだ Ymir ではログシステムを用意していな"
 "いため一旦無言でエラーを返しておきます。"
 msgstr ""
-"仮に `magic` が正しくない場合、`error.InvalidMagic` を返します。 本来ならばこ"
-"こでエラー出力をしたいところですが、まだ Ymir ではログシステムを用意していな"
-"いため一旦無言でエラーを返しておきます。"
+"If `magic` is incorrect, we return `error.InvalidMagic`. Ideally, we would "
+"output an error message here, but since Ymir does not yet have a logging "
+"system, we simply return the error silently for now."
 
-#: src/bootloader/jump_to_ymir.md:425
+#: src/bootloader/jump_to_ymir.md:429
 msgid ""
 "本チャプターでは Surtr から Ymir に渡す引数の準備をし、カーネルのエントリポイ"
 "ントにジャンプしました。 カーネルのエントリポイントではスタックをカーネル用の"
 "スタックに切り替え、Calling Convention も切り替えつつカーネルのメイン関数に制"
 "御を移しました。"
 msgstr ""
-"本チャプターでは Surtr から Ymir に渡す引数の準備をし、カーネルのエントリポイ"
-"ントにジャンプしました。 カーネルのエントリポイントではスタックをカーネル用の"
-"スタックに切り替え、Calling Convention も切り替えつつカーネルのメイン関数に制"
-"御を移しました。"
-
-#: src/bootloader/jump_to_ymir.md:428
-msgid ""
-"本チャプターで Surtr のおおよその実装は終わりです。 またのちほどゲスト Linux "
-"をロードするために機能を追加する必要がありますが、そのときにはぜひ可愛がって"
-"あげてください。 次のチャプターでは Ymir Kernel に最初にやるべきこととして、"
-"ログ出力を実装していくことにしましょう。"
-msgstr ""
-"本チャプターで Surtr のおおよその実装は終わりです。 またのちほどゲスト Linux "
-"をロードするために機能を追加する必要がありますが、そのときにはぜひ可愛がって"
-"あげてください。 次のチャプターでは Ymir Kernel に最初にやるべきこととして、"
-"ログ出力を実装していくことにしましょう。"
+"In this chapter, we prepared the arguments to pass from Surtr to Ymir and "
+"jumped to the kernel's entry point. At the kernel entry point, we switched "
+"to the kernel's dedicated stack and transferred control to the kernel's main "
+"function while also switching the calling convention."
 
 #: src/bootloader/jump_to_ymir.md:432
 msgid ""
-"[Detailed Calling Conventions - UEFI Specification 2.9 Errata A](https://"
-"uefi.org/specs/UEFI/2.9_A/02_Overview.html#detailed-calling-conventions)"
+"本チャプターで Surtr のおおよその実装は終わりです。 またのちほどゲスト Linux "
+"をロードするために機能を追加する必要がありますが、そのときにはぜひ可愛がって"
+"あげてください。 次のチャプターでは Ymir Kernel に最初にやるべきこととして、"
+"ログ出力を実装していくことにしましょう。"
 msgstr ""
-"[Detailed Calling Conventions - UEFI Specification 2.9 Errata A](https://"
-"uefi.org/specs/UEFI/2.9_A/02_Overview.html#detailed-calling-conventions)"
-
-#: src/bootloader/jump_to_ymir.md:433
-msgid ""
-"本当はスタック用に動的にメモリを確保し、その領域に仮想アドレスをマップしてあ"
-"げるべきですが、 めんどうなので本シリーズではこの領域をずっとスタックとして使"
-"い続けることにします。"
-msgstr ""
-"本当はスタック用に動的にメモリを確保し、その領域に仮想アドレスをマップしてあ"
-"げるべきですが、 めんどうなので本シリーズではこの領域をずっとスタックとして使"
-"い続けることにします。"
-
-#: src/bootloader/jump_to_ymir.md:435
-msgid ""
-"[Optional Section Attributes - Using ld The GNU linker](https://ftp.gnu.org/"
-"old-gnu/Manuals/ld-2.9.1/html_node/ld_21.html)"
-msgstr ""
-"[Optional Section Attributes - Using ld The GNU linker](https://ftp.gnu.org/"
-"old-gnu/Manuals/ld-2.9.1/html_node/ld_21.html)"
+"This chapter wraps up the core implementation of Surtr. We'll still need to "
+"extend it later to support loading a guest Linux kernel, so be sure to treat "
+"it kindly when the time comes.\n"
+"In the next chapter, we'll turn our attention to the Ymir kernel. The very "
+"first thing we'll implement there is a logging system."
 
 #: src/bootloader/jump_to_ymir.md:436
 msgid ""
+"[Detailed Calling Conventions - UEFI Specification 2.9 Errata A](https://"
+"uefi.org/specs/UEFI/2.9_A/02_Overview.html#detailed-calling-conventions)"
+msgstr ""
+"[Detailed Calling Conventions - UEFI Specification 2.9 Errata A](https://"
+"uefi.org/specs/UEFI/2.9_A/02_Overview.html#detailed-calling-conventions)"
+
+#: src/bootloader/jump_to_ymir.md:437
+msgid ""
+"本当はスタック用に動的にメモリを確保し、その領域に仮想アドレスをマップしてあ"
+"げるべきですが、 めんどうなので本シリーズではこの領域をずっとスタックとして使"
+"い続けることにします。"
+msgstr ""
+"Ideally, we should dynamically allocate memory for the stack and map virtual "
+"addresses to that region. However, to keep things simple in this series, "
+"we'll use this region as a stack forever."
+
+#: src/bootloader/jump_to_ymir.md:439
+msgid ""
+"[Optional Section Attributes - Using ld The GNU linker](https://ftp.gnu.org/"
+"old-gnu/Manuals/ld-2.9.1/html_node/ld_21.html)"
+msgstr ""
+"[Optional Section Attributes - Using ld The GNU linker](https://ftp.gnu.org/"
+"old-gnu/Manuals/ld-2.9.1/html_node/ld_21.html)"
+
+#: src/bootloader/jump_to_ymir.md:440
+msgid ""
 "通常、ガードページはそもそもマッピングしない場合が多いです。 しかし、やっぱり"
 "めんどうなので今回は read-only にするという方法でガードすることにします。"
 msgstr ""
-"通常、ガードページはそもそもマッピングしない場合が多いです。 しかし、やっぱり"
-"めんどうなので今回は read-only にするという方法でガードすることにします。"
+"Usually, guard pages are often left unmapped altogether. However, to keep "
+"things simple this time, we'll protect the guard pages by making them read-"
+"only instead."
 
-#: src/bootloader/jump_to_ymir.md:438
+#: src/bootloader/jump_to_ymir.md:442
 msgid ""
 "[Double Faults - Writing an OS in Rust](https://os.phil-opp.com/double-fault-"
 "exceptions/)"
@@ -4848,7 +4864,7 @@ msgstr ""
 "[Double Faults - Writing an OS in Rust](https://os.phil-opp.com/double-fault-"
 "exceptions/)"
 
-#: src/bootloader/jump_to_ymir.md:439
+#: src/bootloader/jump_to_ymir.md:443
 msgid ""
 "[Linker and Libraries Guide](https://docs.oracle.com/cd/E19683-01/816-1386/"
 "chapter6-83432/index.html)"
