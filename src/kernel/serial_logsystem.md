@@ -6,6 +6,7 @@
 そのため、本チャプターは一瞬で終わります。やったね、今日は早く寝てください。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-ymir-serial_logsystem`](https://github.com/smallkirby/ymir/tree/whiz-ymir-serial_logsystem) ブランチにあります。
 
 ## Table of Contents
@@ -16,6 +17,7 @@
 
 まずは、必要な構造体や関数を一気に定義してしまいます:
 
+<!-- i18n:skip -->
 ```ymir/log.zig
 const Writer = std.io.Writer(
     void,
@@ -68,6 +70,7 @@ Surtr のときと同様に、デフォルトの `std_options` をオーバー�
 
 `option` モジュールを使えるように `build.zig` に以下を追加します:
 
+<!-- i18n:skip -->
 ```zig
 ymir_module.addOptions("option", options);
 ymir.root_module.addOptions("option", options);
@@ -76,12 +79,14 @@ ymir.root_module.addOptions("option", options);
 `main.zig` から `ymir/log.zig` を使えるように、`ymir/ymir.zig` から export します。
 この際、`log` という名前で export すると `std.log` と混同してしまうおそれがあるため、`klog` として export します:
 
+<!-- i18n:skip -->
 ```ymir/ymir.zig
 pub const klog = @import("log.zig");
 ```
 
 定義した `default_log_options` を使って、デフォルトの値を上書きします:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 const klog = ymir.klog;
 pub const std_options = klog.default_log_options;
@@ -92,6 +97,7 @@ pub const std_options = klog.default_log_options;
 このログシステムは出力を完全にシリアルに依存しています。
 そのため、このログシステムを利用する前にシリアルを初期化し、その後ログシステムに `Serial` を渡して初期化する必要があります:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 const sr = serial.init();
 klog.init(sr);
@@ -100,6 +106,7 @@ log.info("Booting Ymir...", .{});
 
 渡された `Serial` は `log.zig` の変数に保存し、出力時に利用します:
 
+<!-- i18n:skip -->
 ```ymir/log.zig
 var serial: Serial = undefined;
 
@@ -121,6 +128,7 @@ fn write(_: void, bytes: []const u8) LogError!usize {
 楽ですね。
 起動してみると、以下のようにスコープとログレベルが一緒に出力されるはずです:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] main    | Booting Ymir...
 ```
@@ -129,6 +137,7 @@ fn write(_: void, bytes: []const u8) LogError!usize {
 その時点ではログシステムを用意していなかったため、検証に失敗しても無言で `return` することにしていました。
 せっかくログが使えるようになったので、以下のようにエラー出力をできるようにしておきましょう:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 validateBootInfo(boot_info) catch {
     log.err("Invalid boot info", .{});

@@ -8,6 +8,7 @@ VMCALL Service を活用することで、ゲストがホストに対して何�
 本チャプターではそれらを実装するための基盤を作ります。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-vmm-vmcall`](https://github.com/smallkirby/ymir/tree/whiz-vmm-vmcall) ブランチにあります。
 
 ## Table of Contents
@@ -24,7 +25,8 @@ VM Exit したあとに何をするかは完全に VMM の実装依存です。
 Ymir ではお試しとして VMCALL サービスを1つだけ提供します。
 この VMCALL が呼び出されると、Ymir はロゴとメッセージをシリアル出力するようにします。
 
-> [!NOTE] VMCALL と仮想化の隠蔽
+> [!NOTE]
+>
 > VMCALL は VMX 拡張命令であり、VMX Operation でない場合に呼び出すと `#UD: Invalid Opcode` 例外が発生します。
 > セキュリティ的な理由でゲストにゲスト自身が仮想化されていることを隠したい場合には、この挙動を真似て VMCALL の呼び出し時に `#UD` 例外を発生させる必要があります。
 > 例外の挿入は [割り込みの注入のチャプター](./intr_injection.md) で扱ったように VM-Entry Interruption-Information を設定することで可能です。
@@ -36,6 +38,7 @@ VMCALL は命令自体は引数も何も持たず、calling convention を VMM �
 Ymir では **RAX に VMCALL Service の番号を入れて呼び出すという規約** にします。
 VMCALL Service の `0` には `hello` という名前をつけて、ロゴとメッセージを出力するようにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmc.zig
 const VmcallNr = enum(u64) {
     hello = 0,
@@ -57,6 +60,7 @@ pub fn handleVmcall(vcpu: *Vcpu) VmxError!void {
 `vmcHello()` はロゴを出力するだけの簡単な関数です。
 ここでは [Text to ASCII Art Generator (TAAG)](https://patorjk.com/software/taag/#p=display&f=Flower%20Power&t=) で生成したロゴを使います:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmc.zig
 const logo =
     \\   ____     __ ,---.    ,---..-./`) .-------.
@@ -82,6 +86,7 @@ fn vmcHello(_: *Vcpu) VmxError!void {
 *Writing Hypervisor in Zig* で書く最後のプログラムがユーザランドというのはなんともまた皮肉な話です。
 新しく `ymirsh` というディレクトリを作成し、VMCALL をするだけのプログラムを書きます:
 
+<!-- i18n:skip -->
 ```ymirsh/main.zig
 fn asmVmcall(nr: u64) void {
     asm volatile (
@@ -104,6 +109,7 @@ pub fn main() !void {
 `build.zig` に `ymirsh` をビルドするための設定を追記します。
 これまで書いてきた Surtr や Ymir とは異なり、`ymirsh` はユーザランドプログラムなので `.os_tag = .linux` を指定します:
 
+<!-- i18n:skip -->
 ```build.zig
 const ymirsh = b.addExecutable(.{
     .name = "ymirsh",
@@ -128,6 +134,7 @@ b.installArtifact(ymirsh);
 以上で VMCALL Service の実装は終了です。
 最後にゲスト及び `ymirsh` を実行してみましょう:
 
+<!-- i18n:skip -->
 ```txt
 [    0.398950] mount (43) used greatest stack depth: 13832 bytes left
 [    0.400950] ln (52) used greatest stack depth: 13824 bytes left

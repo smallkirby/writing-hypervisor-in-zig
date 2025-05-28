@@ -4,6 +4,7 @@
 EPT を適切に設定することで、ゲストに対してホストと分離された物理アドレス空間を提供しつつ、物理アドレスへのアクセス全てをホストの管理下に置くことができるようになります。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-vmm-ept`](https://github.com/smallkirby/ymir/tree/whiz-vmm-ept) ブランチにあります。
 
 ## Table of Contents
@@ -49,6 +50,7 @@ EPT の構造も通常のページテーブルエントリと同様(もしくは
 以下に EPT エントリを表す構造を示します。
 ほとんど [ページテーブルのチャプター](../kernel/paging.md) で扱ったものと同じです:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/ept.zig
 fn EntryBase(table_level: TableLevel) type {
     return packed struct(u64) {
@@ -157,6 +159,7 @@ GPA to HPA 変換が3回のメモリアクセスで完了することから、4�
 2MiB ページをマップする関数が以下です。
 何回も言いますが、ページテーブルと本当に同じですね[^pg-ept]:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/ept.zig
 fn map2m(gpa: Phys, hpa: Phys, lv4tbl: []Lv4Entry, allocator: Allocator) Error!void {
     const lv4index = (gpa >> lv4_shift) & index_mask;
@@ -184,6 +187,7 @@ fn map2m(gpa: Phys, hpa: Phys, lv4tbl: []Lv4Entry, allocator: Allocator) Error!v
 
 `initTable()` は `Allocator` からページを確保し、512個分のエントリを non-present の状態で初期化します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/ept.zig
 fn initTable(T: type, allocator: Allocator) Error![]T {
     const tbl = try allocator.alloc(T, num_table_entries);
@@ -215,6 +219,7 @@ EPTP は以下のフォーマットを持っています。
 この構造体は `new()` で Lv4 テーブルのアドレスを受け取ります。
 EPTP に格納する Lv4 テーブルのアドレスは、CR3 と同様に物理アドレス(HPA)であることに注意してください:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/ept.zig
 pub const Eptp = packed struct(u64) {
     /// Memory type.
@@ -276,6 +281,7 @@ Ymir 自体は 512MiB のメモリを割り当てるように QEMU の起動オ�
 
 `Vm` 構造体にゲストのメモリを保持するためのメンバ `guest_mem` を追加し、ゲストメモリを初期化する関数を追加します:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig
 const guest_memory_size = 100 * mem.mib;
 
@@ -310,6 +316,7 @@ pub const Vm = struct {
 メモリを確保したら、確保した領域の情報をもとに EPT を初期化するため `arch.vmx.mapGuest()` を呼び出します。
 この関数は `arch.vmx.ept` を Ymir 全体に露出させないための単なるラッパー関数です:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx.zig
 pub fn mapGuest(host_pages: []u8, allocator: Allocator) VmxError!ept.Eptp {
     return ept.initEpt(
@@ -323,6 +330,7 @@ pub fn mapGuest(host_pages: []u8, allocator: Allocator) VmxError!ept.Eptp {
 
 実体は `ept.initEpt()` です:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/ept.zig
 pub fn initEpt(
     /// Guest physical address to map.
@@ -354,6 +362,7 @@ pub fn initEpt(
 
 これらの関数は、VMX Root Operation に入った後 VM を起動する前に `kernelMail()` から呼び出します:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 fn kernelMain(boot_info: surtr.BootInfo) !void {
     ...
@@ -367,6 +376,7 @@ fn kernelMain(boot_info: surtr.BootInfo) !void {
 Lv4 EPT テーブルを指す EPTP を得られたので、これを VMCS Execution Control に設定します。
 EPTP は vCPU ごとに保持するものであるため、ゲストメモリに関する情報もついでに `Vcpu` に持たせておきましょう:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 pub const Vcpu = struct {
     eptp: ept.Eptp = undefined,
@@ -388,6 +398,7 @@ VMCS Execution Control カテゴリの **Secondary Processor-Based VM-Execution 
 このフィールドは Primary Processor-Based VM-Execution Control と同様に主に同期的イベントに関する vCPU の挙動を制御します。
 まだこのフィールドは使ったことがなかったため、構造体を定義しておきます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmcs.zig
 pub const SecondaryProcExecCtrl = packed struct(u32) {
     const Self = @This();
@@ -440,6 +451,7 @@ EPT を有効化するには `.ept` ビットをセットします。
 他の Execution Control フィールドと同様に、Reserved Bits を `0` にするか `1` にするかは MSR に問い合わせる必要があります。
 Secondary Processor-Based Control の場合は、`IA32_VMX_PROCBASED_CTLS2` MSR (address `0x048B`) に問い合わせます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(vcpu: *Vcpu, allocator: Allocator) VmxError!void {
     ...
@@ -480,6 +492,7 @@ Unrestricted Guest にした上でページングを無効化することで、�
 
 まずは Unrestricted Guest を有効化します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(_: *Vcpu, _: Allocator) VmxError!void {
     ...
@@ -490,6 +503,7 @@ fn setupExecCtrls(_: *Vcpu, _: Allocator) VmxError!void {
 
 また、VM Entry 時に IA-32e モードを無効化します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupEntryCtrls(_: *Vcpu) VmxError!void {
     ...
@@ -500,6 +514,7 @@ fn setupEntryCtrls(_: *Vcpu) VmxError!void {
 
 続いて、Guest State の CR0 を操作してページングを無効化します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupGuestState(_: *Vcpu) VmxError!void {
     ...
@@ -515,6 +530,7 @@ fn setupGuestState(_: *Vcpu) VmxError!void {
 <details>
 <summary>CR0の定義</summary>
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/asm.zig
 /// CR0 register.
 pub const Cr0 = packed struct(u64) {
@@ -557,6 +573,7 @@ pub const Cr0 = packed struct(u64) {
 これでゲストが Unrestricted Guest + ページング無効になりました。
 最後に、ゲストメモリに `blobGuest()` をコピーして VMCS RIP に `0` を設定します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 pub fn loop(self: *Self) VmxError!void {
     const func: [*]const u8 = @ptrCast(&blobGuest);
@@ -571,6 +588,7 @@ pub fn loop(self: *Self) VmxError!void {
 現在 `blobGuest()` は HLT ループをするだけであるため、`hlt` + `jmp` の2命令だけで構成されているはずであり、こんなにバイト数は必要ありません。
 まぁ[こんなんなんぼあってもいいですからね](https://youtu.be/3bAwLydEsZo)。
 
+<!-- i18n:skip -->
 ```objdump
 ffffffff80115f20 <blobGuest>:
 ffffffff80115f20:       eb 00                   jmp    ffffffff80115f22 <blobGuest+0x2>
@@ -581,6 +599,7 @@ ffffffff80115f23:       eb fd                   jmp    ffffffff80115f22 <blobGue
 さて、ゲストを実行してみましょう。
 出力は以下のようになります:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] main    | Entered VMX root operation.
 [DEBUG] ept     | EPT Level4 Table @ FFFF88800000A000
@@ -593,6 +612,7 @@ ffffffff80115f23:       eb fd                   jmp    ffffffff80115f22 <blobGue
 無事に HLT ループに入っているようです。
 QEMU monitor で `info registers` を実行すると以下のようになります:
 
+<!-- i18n:skip -->
 ```txt
 EAX=00000000 EBX=00000000 ECX=00000000 EDX=00000000
 ESI=00000000 EDI=00000000 EBP=00000000 ESP=00000000
@@ -672,6 +692,7 @@ Ymir では VMX Transition の度に TLB をフラッシュしなくても良い
 <details>
 <summary>IA32_VMX_EPT_VPID_CAP_MSR MSR の構造</summary>
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/asm.zig
 pub const MsrVmxEptVpidCap = packed struct(u64) {
     ept_exec_only: bool,
@@ -709,6 +730,7 @@ pub const MsrVmxEptVpidCap = packed struct(u64) {
 
 Ymir では、[INVVPID](https://www.felixcloutier.com/x86/invvpid) 命令の全てのオプションがサポートされている場合に VPID がサポートされていると判断します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn isVpidSupported() bool {
     const cap: am.MsrVmxEptVpidCap = @bitCast(am.readMsr(.vmx_ept_vpid_cap));
@@ -719,6 +741,7 @@ fn isVpidSupported() bool {
 VPID を有効化するには **Secondary Processor-Based VM-Execution Control** の `vpid` をセットします。
 また、その vCPU の VPID は VMCS Execution Control の専用フィールドに設定してあげます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(vcpu: *Vcpu, _: Allocator) VmxError!void {
     ...

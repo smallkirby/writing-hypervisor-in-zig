@@ -7,6 +7,7 @@ Ymir が新しく用意するマッピングもダイレクトマップではあ
 本チャプターを終えると、UEFI が提供したものを全て破棄できる状態になります。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-ymir-paging`](https://github.com/smallkirby/ymir/tree/whiz-ymir-paging) ブランチにあります。
 
 ## Table of Contents
@@ -66,6 +67,7 @@ Ymir が新しく用意するマッピングもダイレクトマップではあ
 すなわち、サイズは 4KiB (1ページ) です。
 ページテーブル1つにつき1ページを確保するため、1ページを確保するためのヘルパー関数を用意します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/page.zig
 fn allocatePage(allocator: Allocator) PageError![*]align(page_size_4k) u8 {
     return (allocator.alignedAlloc(
@@ -82,6 +84,7 @@ fn allocatePage(allocator: Allocator) PageError![*]align(page_size_4k) u8 {
 
 マッピングを再構築する関数は `reconstruct()` とします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/page.zig
 pub fn reconstruct(allocator: Allocator) PageError!void {
     const lv4tbl_ptr: [*]Lv4Entry = @ptrCast(try allocatePage(allocator));
@@ -105,6 +108,7 @@ pub fn reconstruct(allocator: Allocator) PageError!void {
 
 作成したまっさらなページテーブルに Direct Map Region をマップします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/page.zig
 const direct_map_base = ymir.direct_map_base;
 const direct_map_size = ymir.direct_map_size;
@@ -135,7 +139,8 @@ pub fn reconstruct(allocator: Allocator) PageError!void {
 `lv4idx_end` は 512GiB をマップするのに必要なだけのエントリ数を `lv4idx_start` に足したものです。
 Lv3 テーブルにはエントリが 512 個あり、それぞれが 1GiB をマップできるため、必要な Lv3 テーブルは 1つです。
 
-> [!NOTE] ページサイズ
+> [!NOTE]
+>
 > 今回は Direct Map Region を 1GiB ページでマップしました。
 > 4KiB ページを使うと 1GiB をマップするのに \\( 2^{18} \\) 個のエントリが必要になります。
 > 1エントリあたり 8byte なので、合計で \\( 2^{18} \times 8 = 2^{21} = 2\text{MiB} \\) になります。
@@ -159,6 +164,7 @@ direct map region を大きくしたいような場合にも対応できるよ�
 
 まずは Lv4 エントリを探索してクローンするべきエントリを探します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/page.zig
 pub fn reconstruct(allocator: Allocator) PageError!void {
     ...
@@ -181,6 +187,7 @@ pub fn reconstruct(allocator: Allocator) PageError!void {
 
 Lv3 ページを確保したあとは、同様にしてテーブル内の有効なエントリが指すテーブルを再帰的にクローンしていきます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/page.zig
 fn cloneLevel3Table(lv3_table: []Lv3Entry, allocator: Allocator) PageError![]Lv3Entry {
     const new_lv3ptr: [*]Lv3Entry = @ptrCast(try allocatePage(allocator));
@@ -227,6 +234,7 @@ Lv3 と Lv2 ページエントリは Lv4 と異なり、次レベルのページ
 Lv1 エントリはテーブルを指すことがなく必ず物理ページをマップしています。
 よって、`cloneLevel1Table()` は単純にテーブルを新たに作成してコピーするだけです:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/page.zig
 fn cloneLevel1Table(lv1_table: []Lv1Entry, allocator: Allocator) PageError![]Lv1Entry {
     const new_lv1ptr: [*]Lv1Entry = @ptrCast(try allocatePage(allocator));
@@ -244,6 +252,7 @@ fn cloneLevel1Table(lv1_table: []Lv1Entry, allocator: Allocator) PageError![]Lv1
 最後に、新しいページテーブルをロードします。
 Lv4 ページテーブルのアドレスは CR3 レジスタに書き込むことで変更できます。
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/page.zig
 pub fn reconstruct(allocator: Allocator) PageError!void {
     ...
@@ -272,6 +281,7 @@ CR3 へ書き込みを行うと、TLB の前エントリがフラッシュされ
 
 実装した関数を使ってメモリマップを再構築します:
 
+<!-- i18n:skip -->
 ```ymir/mem.zig
 var mapping_reconstructed = false;
 
@@ -289,6 +299,7 @@ pub fn reconstructMapping(allocator: Allocator) !void {
 新しいページテーブルではもはやマップされていません。
 テーブルを再構築したあとには変換の挙動を変更する必要があります:
 
+<!-- i18n:skip -->
 ```ymir/mem.zig
 pub fn virt2phys(addr: u64) Phys {
     return if (!mapping_reconstructed) b: {
@@ -322,6 +333,7 @@ pub fn phys2virt(addr: u64) Virt {
 さて、以上でページテーブルの再構築が完了しました。
 `kernelMain()` から呼び出します:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 log.info("Reconstructing memory mapping...", .{});
 try mem.reconstructMapping(mem.page_allocator);
@@ -329,6 +341,7 @@ try mem.reconstructMapping(mem.page_allocator);
 
 Ymir を実行し、HALT ループに入ったところで GDB をアタッチしてメモリマップを確認すると以下のようになります:
 
+<!-- i18n:skip -->
 ```txt
 Virtual address start-end              Physical address start-end             Total size   Page size   Count  Flags
 0xffff888000000000-0xffff890000000000  0x0000000000000000-0x0000008000000000  0x8000000000 0x40000000  512    [RWX KERN ACCESSED GLOBAL]
@@ -340,7 +353,8 @@ Direct Map Region とカーネルイメージ領域がマップされている�
 
 ## Surtr のマッピング改良
 
-> [!INFO] スキップ可能
+> [!INFO]
+>
 > この部分はスキップして次に進むことが可能です。
 
 新しいアドレスマップを見て気づいたことがあります。
@@ -352,6 +366,7 @@ Direct Map Region とカーネルイメージ領域がマップされている�
 というわけで、Surtr のカーネルローダ部分が、セグメントの属性を考慮してロードするように修正します。
 まずは Surtr に 4KiB ページの属性を変更する関数を定義します:
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/page.zig
 pub const PageAttribute = enum {
     read_only,
@@ -390,6 +405,7 @@ pub fn changeMap4k(virt: Virt, attr: PageAttribute) PageError!void {
 
 特定の TLB エントリをフラッシュするヘルパー関数は、INVLPG 命令を使用します:
 
+<!-- i18n:skip -->
 ```surtr/arch/x86/asm.zig
 pub inline fn flushTlbSingle(virt: u64) void {
     asm volatile (
@@ -403,6 +419,7 @@ pub inline fn flushTlbSingle(virt: u64) void {
 
 続いて、カーネルのロード部分を修正します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 // セグメントごとにカーネルをロードするところ
 while (true) {
@@ -435,6 +452,7 @@ while (true) {
 以上で Ymir のセグメントを属性を考慮してロードできるようになりました。
 現在のメモリマップは以下のようになっています:
 
+<!-- i18n:skip -->
 ```txt
 Virtual address start-end              Physical address start-end             Total size   Page size   Count  Flags
 0xffff888000000000-0xffff890000000000  0x0000000000000000-0x0000008000000000  0x8000000000 0x40000000  512    [RWX KERN ACCESSED GLOBAL]
@@ -449,6 +467,7 @@ Virtual address start-end              Physical address start-end             To
 Direct Map Region はこれまでと同様一律に RWX な領域ですが、カーネル部分がセグメントの属性に従ってマップされていることが分かります。
 これは `readelf` で読み取れるセグメント情報と一致しています:
 
+<!-- i18n:skip -->
 ```sh
 > readelf --segment --sections ./zig-out/bin/ymir.elf
 

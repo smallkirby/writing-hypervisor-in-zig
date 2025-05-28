@@ -17,6 +17,7 @@ Surtr が事前に取得しておいたメモリマップを Ymir に渡しま�
 
 `surtr/defs.zig`  に Surtr/Ymir 間で受け渡しする情報を定義します:
 
+<!-- i18n:skip -->
 ```surtr/defs.zig
 pub const magic: usize = 0xDEADBEEF_CAFEBABE;
 
@@ -34,6 +35,7 @@ Ymir はこのマップをもとにして不要な UEFI の領域を解放し、
 
 `boot.zig` において全てのお片付けを終えた後、 `BootInfo` を作成します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const boot_info = defs.BootInfo{
     .magic = defs.magic,
@@ -50,6 +52,7 @@ const boot_info = defs.BootInfo{
 カーネルのエントリポイントは、先程の `BootInfo` を受け取る関数です。
 UEFI の calling convention は Windows と同じ[^1]であるため、`callconv(.Win64)` を指定します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const KernelEntryType = fn (defs.BootInfo) callconv(.Win64) noreturn;
 const kernel_entry: *KernelEntryType = @ptrFromInt(elf_header.entry);
@@ -60,6 +63,7 @@ const kernel_entry: *KernelEntryType = @ptrFromInt(elf_header.entry);
 
 残るは、この関数ポインタを呼び出すだけです:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 kernel_entry(boot_info);
 unreachable;
@@ -73,6 +77,7 @@ Ymir に処理が移ったあとは Surtr に戻ることはありません。
 QEMU を動かして無限ループで止まることを確認してください。
 その状態で QEMU monitor を起動し、`info registers` でレジスタの値を確認してみましょう:
 
+<!-- i18n:skip -->
 ```txt
 (qemu) info registers
 
@@ -101,6 +106,7 @@ CR0=80010033 CR2=0000000000000000 CR3=000000001e4d9000 CR4=00000668
 Windows における calling convention では、引数は RCX, RDX, R8, R9 に順に入れられます。
 今回は引数は `BootInfo` の1つだけなので、RCX に `BootInfo` のアドレスが入っているはずです:
 
+<!-- i18n:skip -->
 ```txt
 (qemu) x/4gx 0x000000001fe91f78
 000000001fe91f78: 0xdeadbeefcafebabe 0x0000000000004000
@@ -126,6 +132,7 @@ UEFI が Surtr を実行する際にはスタックを用意してくれるの�
 ここではもう少しだけ真面目に設定します。
 `ymir/linker.ld` を以下のように書き換えます[^3]:
 
+<!-- i18n:skip -->
 ```ymir/linker.ld
 STACK_SIZE = 0x5000;
 
@@ -184,7 +191,7 @@ SECTIONS {
 このページを read-only にすることで、スタックオーバーフローやスタックアンダーフローが発生した場合にページフォルトを発生させます[^4]。
 気づかないうちにスタックが溢れて隣接する領域を破壊してしまうことを防ぐ目的です。
 
-> [!WARNING] Stack Overflow からの Triple Fault
+> [!WARNING]
 >
 > スタックがオーバーフローしてガードページへの書き込みが発生すると、ページフォルトが発生します。
 > フォルトハンドラがガードページをスタックとして利用しようとすることで再度フォルトが発生してしまいます。
@@ -200,6 +207,7 @@ SECTIONS {
 各セクションの最後に書いてある `:segment` は、そのセクションを `segment` セグメントに配置します。
 セグメントの定義は以下です:
 
+<!-- i18n:skip -->
 ```ymir/linker.ld
 PHDRS {
     text PT_LOAD;
@@ -226,6 +234,7 @@ RWX の左から 4, 2, 1 の値を持ちます。
 スタックを含めた Ymir のレイアウトが設定できたため、意図したとおりのレイアウトになっているかを確認しましょう。
 `zig build install` で Ymir をビルドした後、`readelf` でセクションとセグメントの情報を表示させます:
 
+<!-- i18n:skip -->
 ```bash
 > readelf --segment --sections ./zig-out/bin/ymir.elf
 
@@ -292,7 +301,7 @@ Program Headers:
 - `.bss` セクションと `__stackguard_upper` セクションが同じセグメントになっている。
 これは現在 Ymir が `.bss` に入れる変数を持っていないから。
 
-> [!NOTE] セクションとセグメントの属性
+> [!NOTE]
 >
 > 余談ですが、セグメントやセクションの属性等は一般的な意味[^6]から逸脱していても全く問題ありません。
 > というのも、これらをパースするローダである Surtr は本シリーズで自作するものであり、値をどう解釈するかはこちらの一存で決めることができるからです。
@@ -303,6 +312,7 @@ Program Headers:
 
 Ymir のエントリポイントである `kernelEntry()` を以下のように変更します:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 extern const __stackguard_lower: [*]const u8;
 
@@ -323,6 +333,7 @@ export fn kernelEntry() callconv(.Naked) noreturn {
 
 `kernelTrampoline()` は Zig の通常の calling convention を持つ関数にジャンプするためのトランポリン関数です:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 export fn kernelTrampoline(boot_info: surtr.BootInfo) callconv(.Win64) noreturn {
     kernelMain(boot_info) catch |err| {
@@ -354,7 +365,8 @@ Inline assembly を使うしかないです。
 `callconv(.Win64)` の関数からは他の calling convention を持つ関数を通常通り呼び出すことができるため、
 `kernelMain()` を Zig-way で呼び出せるという算段です。
 
-> [!INFO] export keyword
+> [!INFO]
+>
 > `export` keyword を関数につけることで、その関数は定義したままの名前で参照できるようになります。
 > `kernelMain()` や `kernelTrampoline()` はアセンブラから `call` するため、`export` をつけています。
 > もしも `export` をつけない場合、関数の名前は `main.kernelTrampoline` のようなファイル名/モジュール名を含んだ名前になってしまいます。
@@ -367,6 +379,7 @@ Surtr の役割は終わり、Ymir が実権を握りました。
 まず、Ymir が Surtr の定義した情報を参照できるように Surtr モジュールを作成し Ymir に追加します。
 `build.zig` に以下を追加します:
 
+<!-- i18n:skip -->
 ```build.zig
 // Modules
 const surtr_module = b.createModule(.{
@@ -379,6 +392,7 @@ ymir.root_module.addImport("surtr", surtr_module);
 これで、 `@import("surtr")` によって `surtr/defs.zig` を参照できるようになりました。
 `kernelMain()` で `BootInfo()` の検証をしましょう:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 // Validate the boot info.
 validateBootInfo(boot_info) catch {

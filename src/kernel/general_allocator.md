@@ -8,6 +8,7 @@
 これにより、ページアロケータよりも遥かに小さなメモリオーバヘッドでメモリを確保できるようになります。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-ymir-general_allocator`](https://github.com/smallkirby/ymir/tree/whiz-ymir-general_allocator) ブランチにあります。
 
 ## Table of Contents
@@ -42,6 +43,7 @@ Bin のリストの中に割り当て可能な chunk がない場合、新しく
 `BinAllocator` も `PageAllocator` と同様にファイル全体を構造体として扱います。
 新たに `BinAllocator.zig` を作成し、必要な定数・変数を定義します:
 
+<!-- i18n:skip -->
 ```ymir/mem/BinAllocator.zig
 pub const vtable = Allocator.VTable{
     .alloc = allocate,
@@ -73,6 +75,7 @@ Free な chunk は **メタデータ** を持ちます。
 **`BinAllocator` で必要な情報は次の free な chunk へのポインタだけ**です。
 メタデータを表す構造体を定義します:
 
+<!-- i18n:skip -->
 ```ymir/mem/BinAllocator.zig
 /// Heads of the chunk lists.
 list_heads: [bin_sizes.len]ChunkMetaPointer,
@@ -94,6 +97,7 @@ const ChunkMetaPointer = ?*ChunkMetaNode;
 バックエンドのアロケータとして `PageAllocator` を保持することにします。
 `BinAllocator` を初期化する際には、`PageAllocator` を引数として受け取ります:
 
+<!-- i18n:skip -->
 ```ymir/mem/BinAllocator.zig
 page_allocator: Allocator,
 
@@ -107,6 +111,7 @@ pub fn init(self: *Self, page_allocator: Allocator) void {
 これは全ての bin が空であることを意味します。
 続いて、bin が空である場合に新しくページを確保し、chunk を作成する関数を実装します:
 
+<!-- i18n:skip -->
 ```ymir/mem/BinAllocator.zig
 fn initBinPage(self: *Self, bin_index: usize) ?void {
     const new_page = self.page_allocator.alloc(u8, 4096) catch return null;
@@ -141,6 +146,7 @@ fn push(list_head: *ChunkMetaPointer, node: *ChunkMetaNode) void {
 
 メモリを確保する関数は bin のインデックスを受け取って、その bin から chunk を取り出します:
 
+<!-- i18n:skip -->
 ```ymir/mem/BinAllocator.zig
 fn allocFromBin(self: *Self, bin_index: usize) ?[*]u8 {
     if (self.list_heads[bin_index] == null) {
@@ -165,6 +171,7 @@ Bin に chunk があれば (または新しく chunk を作成した場合には
 
 メモリの解放は確保時と逆の操作をします:
 
+<!-- i18n:skip -->
 ```ymir/mem/BinAllocator.zig
 fn freeToBin(self: *Self, bin_index: usize, ptr: [*]u8) void {
     const chunk: *ChunkMetaNode = @alignCast(@ptrCast(ptr));
@@ -185,6 +192,7 @@ Bin から chunk を取得したり返却する処理が実装できたため、
 よって、 `BinAllocator` 要求されたアラインを考慮する必要があります。
 要求されるアラインは、`allocate()`の第3引数に渡されます:
 
+<!-- i18n:skip -->
 ```ymir/mem/BinAllocator.zig
 fn allocate(ctx: *anyopaque, n: usize, log2_align: u8, _: usize) ?[*]u8 {
     const self: *Self = @alignCast(@ptrCast(ctx));
@@ -225,6 +233,7 @@ Chunk を確保する bin が決まれば、先ほどの `allocFromBin()` を呼
 よって、**解放されようとしているメモリがどの bin に属するか(サイズがいくらなのか)を保存しておく必要はありません**。
 この特性により、glibc などのヒープ実装とは異なり利用中の chunk の先頭にメタデータを入れておく必要がなくなります:
 
+<!-- i18n:skip -->
 ```ymir/mem/BinAllocator.zig
 fn free(ctx: *anyopaque, slice: []u8, log2_align: u8, _: usize) void {
     const self: *Self = @alignCast(@ptrCast(ctx));
@@ -244,6 +253,7 @@ fn free(ctx: *anyopaque, slice: []u8, log2_align: u8, _: usize) void {
 
 `PageAllocator` と同様に、`BinAllocator` はサイズ変更をサポートしないことにします:
 
+<!-- i18n:skip -->
 ```ymir/mem/BinAllocator.zig
 fn resize(_: *anyopaque, _: []u8, _: u8, _: usize, _: usize) bool {
     @panic("BinAllocator does not support resizing");
@@ -254,6 +264,7 @@ fn resize(_: *anyopaque, _: []u8, _: u8, _: usize, _: usize) bool {
 
 `BinAllocator` をインスタンス化して利用可能な状態にします:
 
+<!-- i18n:skip -->
 ```ymir/mem/BinAllocator.zig
 pub fn newUninit() Self {
     return Self{
@@ -263,6 +274,7 @@ pub fn newUninit() Self {
 }
 ```
 
+<!-- i18n:skip -->
 ```ymir/mem.zig
 pub const general_allocator = Allocator{
     .ptr = &bin_allocator_instance,
@@ -282,6 +294,7 @@ pub fn initGeneralAllocator() void {
 
 `kernelMain()` でアロケータを初期化します:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 ymir.mem.initGeneralAllocator();
 log.info("Initialized general allocator.", .{});
@@ -289,6 +302,7 @@ log.info("Initialized general allocator.", .{});
 
 最後に、作りたてほやほやのアロケータを使ってメモリを確保してみましょう:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 const p = try ymir.mem.general_allocator.alloc(u8, 0x4);
 const q = try ymir.mem.general_allocator.alloc(u8, 0x4);
@@ -298,6 +312,7 @@ log.debug("q @ {X:0>16}", .{@intFromPtr(q.ptr)});
 
 結果は以下のようになります:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] main    | Initialized general allocator.
 [DEBUG] main    | p @ FFFF888000008000

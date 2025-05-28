@@ -10,6 +10,7 @@
 なお、ログシステムの構築自体は次チャプターで行うこととして、本チャプターではシリアル出力すること自体を目標とします。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-ymir-serial_output`](https://github.com/smallkirby/ymir/tree/whiz-ymir-serial_output) ブランチにあります。
 
 ## Table of Contents
@@ -23,6 +24,7 @@
 [Surtr のとき](../bootloader/simple_pg.md) と同様に、アーキテクチャに強く依存するコードはディレクトリを分けて実装します。
 Ymir のディレクトリは以下のようになります:
 
+<!-- i18n:skip -->
 ```sh
 tree ./ymir
 
@@ -44,6 +46,7 @@ tree ./ymir
 アーキテクチャ依存のコードを `ymir/arch` より上のディレクトリから利用する際には、必ずこのファイルを import して使うことにします。
 `ymir/arch/x86/arch.zig` は以下のようにしておきます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/arch.zig
 // `/arch` 以外から使いたいモジュール
 pub const serial = @import("serial.zig");
@@ -60,12 +63,14 @@ const am = @import("asm.zig");
 現在のところ、`ymir/hoge/fuga.zig` から `ymir/piyo/neko.zig` を参照するためには、
 以下のように相対パスで指定する必要があります:
 
+<!-- i18n:skip -->
 ```ymir/hoge/fuga.zig
 const neko = @import("../piyo/neko.zig");
 ```
 
 これは見た目が気持ち悪いだけではなく、以下のように **誤って秘匿したいモジュールを参照してしまう可能性** があります:
 
+<!-- i18n:skip -->
 ```zig
 const am = @import("arch/x86/asm.zig"); // 本来はアクセスさせたくない
 ```
@@ -73,6 +78,7 @@ const am = @import("arch/x86/asm.zig"); // 本来はアクセスさせたくな�
 これを防ぐため、ルートモジュールを作成し、**全てのモジュールはルートモジュールを経由してアクセスさせる** ことにします。
 モジュールの作成は Surtr のときと同様に `build.zig` で定義します:
 
+<!-- i18n:skip -->
 ```build.zig
 const ymir_module = b.createModule(.{
     .root_source_file = b.path("ymir/ymir.zig"),
@@ -83,6 +89,7 @@ ymir_module.addImport("surtr", surtr_module);
 
 定義した `ymir` モジュールを `ymir` 実行ファイルに追加します:
 
+<!-- i18n:skip -->
 ```build.zig
 ymir.root_module.addImport("ymir", ymir_module);
 ```
@@ -90,6 +97,7 @@ ymir.root_module.addImport("ymir", ymir_module);
 これで、`@import("ymir")` のようにモジュール名で Ymir モジュールを import できるようになりました。
 モジュールのルートである `ymir/ymir.zig` は、必要な全ての子モジュールを export します:
 
+<!-- i18n:skip -->
 ```ymir/ymir.zig
 pub const arch = @import("arch.zig");
 ```
@@ -97,6 +105,7 @@ pub const arch = @import("arch.zig");
 これで、全てのファイルから `@import("ymir").arch` のようにして `arch/x86/arch.zig` にアクセスできるようになりました。
 試しに、`arch/x86/arch.zig` で適当な関数を定義して `main.zig` からアクセスしてみましょう:
 
+<!-- i18n:skip -->
 ```zig
 // -- ymir/arch/x86/arch.zig --
 pub fn someFunction() void {}
@@ -110,7 +119,8 @@ arch.someFunction();
 `std` と同じノリで `ymir` モジュールにアクセスできますね。
 これ以降は意図しない import を防ぐため、**同一ディレクトリ以外のファイルを相対パスを使って直接 import することは原則禁止**とします。
 
-> [!TIP] ymir への ymir の追加
+> [!TIP]
+>
 > Zig に馴染みがない人は、`ymir` executable に `ymir` モジュールを追加するというのは気持ち悪いかもしれません。
 > 筆者も当初は違和感を感じたため [Ziggit](https://ziggit.dev/) で聞いてみたところ、このような書き方は合法なのは勿論、自然であるとのことでした[^self-dependent]。
 
@@ -124,6 +134,7 @@ arch.someFunction();
 COM ポートは I/O port を介してアクセスします。
 COM ポートと I/O port の対応関係を定義するため、`ymir/arch/x86/serial.zig` を作成します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/serial.zig
 pub const Ports = enum(u16) {
     com1 = 0x3F8,
@@ -140,6 +151,7 @@ Ymir では COM1 だけを使います。
 各ポートはそれぞれのデータレジスタを持っています。
 **データレジスタへは COM ポートをベースとしたオフセットでアクセスします**:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/serial.zig
 const offsets = struct {
     /// Transmitter Holding Buffer: DLAB=0, W
@@ -178,6 +190,7 @@ const offsets = struct {
 COM ポートへのアクセスは、対応する I/O port への [IN](https://www.felixcloutier.com/x86/in) / [OUT](https://www.felixcloutier.com/x86/out) 命令を使っておこないます。
 必要なアセンブリ命令を定義しましょう:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/asm.zig
 pub inline fn inb(port: u16) u8 {
     return asm volatile (
@@ -207,6 +220,7 @@ pub inline fn outb(value: u8, port: u16) void {
 | **IER** (Interrupt Enable) | 有効化する割り込み | 0 (全ての割り込みを無効化) |
 | **FCR** (FIFO Control) | FIFO バッファ | 0 (FIFO を無効化) |
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/serial.zig
 const am = @import("asm.zig");
 
@@ -237,6 +251,7 @@ UEFI はこのクロック周波数を、**Divisor** として設定された値
 
 以下のように Baud Rate を設定します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/serial.zig
 {
     ...
@@ -262,6 +277,7 @@ DLAB をセットしたあとで、計算した `divisor` の下位・上位バ�
 TX-buffer が空なのかどうかは、 **LSR: Line Status Register** の *THRE: Transmitter Holding Register Empty* ビットで確認できます。
 もしも空でなかった場合には、空になるまで待ちます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/serial.zig
 const bits = ymir.bits;
 
@@ -287,6 +303,7 @@ COM ポートからのオフセット `0` が TX-buffer に対応しているた
 `main.zig` に実験コードを追加します。
 Surtr のログとは違って、出力は USC-2 ではなく単なる ASCII 文字で問題ないです:
 
+<!-- i18n:skip -->
 ```zig
 const ymir = @import("ymir");
 const arch = ymir.arch;
@@ -306,6 +323,7 @@ for ("Hello, Ymir!\n") |c|
 
 `arch/x86/serial.zig` を抽象化するため、ルート直下に `ymir/serial.zig` を作成します:
 
+<!-- i18n:skip -->
 ```ymir/serial.zig
 const ymir = @import("ymir");
 const arch = ymir.arch;
@@ -324,6 +342,7 @@ pub const Serial = struct {
 `Serial` は、シリアル出力・入力用にそれぞれ `_write_fn` と `_read_fn` という関数ポインタを持ちます[^input]。
 `Serial` は以下のように Baud Rate を `115200` としてインスタンス化します:
 
+<!-- i18n:skip -->
 ```ymir/serial.zig
 pub fn init() Serial {
     var serial = Serial{};
@@ -336,6 +355,7 @@ pub fn init() Serial {
 先ほど実装した `initSerial()` を修正し第1引数として `*Serial` を受け取れるように変更します。
 受け取った `*Serial` 内の関数ポインタ `_write_fn` に対し、適切な出力関数を設定します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/serial.zig
 pub fn initSerial(serial: *Serial, port: Ports, baud: u32) void {
     ...
@@ -350,6 +370,7 @@ pub fn initSerial(serial: *Serial, port: Ports, baud: u32) void {
 
 `writeByteComN()` は `Port` に対応する COM ポートに出力するためのヘルパー関数で、実体は先ほど実装した `writeByte()` です:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/serial.zig
 fn writeByteCom1(byte: u8) void {
     writeByte(byte, .com1);
@@ -360,6 +381,7 @@ fn writeByteCom1(byte: u8) void {
 これで `Serial` に出力用の関数を設定できました。
 利用者側からは使いやすいように、1文字だけを出力するための関数と文字列を出力する関数を提供しましょう:
 
+<!-- i18n:skip -->
 ```ymir/serial.zig
 pub fn write(self: Self, c: u8) void {
     self._write_fn(c);
@@ -378,6 +400,7 @@ pub fn writeString(self: Self, s: []const u8) void {
 また、アーキテクチャに強く依存する部分を `arch` ディレクトリに分離し、それを抽象化する `Serial` 構造体を作成しました。
 `main.zig` において、以下のように初期化して使ってみます:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 const sr = serial.init();
 sr.writeString("Hello, Ymir!\n");
@@ -385,6 +408,7 @@ sr.writeString("Hello, Ymir!\n");
 
 実行すると以下のように `Hello, Ymir!` が表示されるはずです:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] (surtr): Initialized bootloader log.
 [INFO ] (surtr): Got boot services.

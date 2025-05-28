@@ -7,6 +7,7 @@
 Linux をブートさせるために仮想化するデバイスはそれほど多くなく、その他のデバイスは単純にパススルーするか無効化することにします。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-vmm-io`](https://github.com/smallkirby/ymir/tree/whiz-vmm-io) ブランチにあります。
 
 ## Table of Contents
@@ -24,6 +25,7 @@ I/O Access を起因とする VM Exit は、CR Access と同様に **Exit Qualif
 Qualification には、アクセス長・アクセス方向・ポート番号等の情報が格納されています。
 I/O 用の Exit Qualification を表す構造体を定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/common.zig
 pub const qual = struct {
     pub const QualIo = packed struct(u64) {
@@ -77,6 +79,7 @@ Qualification の `.string` で表現されるような [OUTS](https://www.felix
 ハンドラはアクセスの方向ごとに定義し、各ハンドラではアクセスされたポート番号に応じて処理をします。
 今のところはどのポートに対するハンドラも定義していないため、全ポートアクセスを `else` で捕捉し、アボートすることにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
 pub fn handleIo(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     return switch (qual.direction) {
@@ -108,6 +111,7 @@ fn handleIoOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
 VM Exit ハンドラである `Vcpu.handleExit()` では、Exit Reason が `.io` であった場合に Exit Qualification を取得します。
 取得した Qualification を先ほどのハンドラに渡せば、雛形の完成です:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
     fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
         switch (exit_info.basic_reason) {
@@ -123,6 +127,7 @@ VM Exit ハンドラである `Vcpu.handleExit()` では、Exit Reason が `.io`
 
 I/O Access が VM Exit を発生させるようにするためには、VMCS Execution Controls カテゴリの **Pin-Based VM-Execution Controls** にある `.unconditional_io` というフィールドをセットする必要があります:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmcs.zig
 fn setupExecCtrls(vcpu: *Vcpu, _: Allocator) VmxError!void {
     ...
@@ -159,6 +164,7 @@ PCI の無効化は、単に RAX に `0` を返すだけで十分です。
 Linux は PCI を使う前に Probing という処理をするのですが、常に RAX を `0` にすることで Probing が失敗するようになります。
 Probing が失敗すると、以降 Linux は PCI を利用しなくなります:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
 fn handleIoIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     switch (qual.port) {
@@ -222,6 +228,7 @@ Ymir では COM1 ポートだけをサポートすることにします。
 仮想化するレジスタの内、値を実際のシリアルレジスタとは別にソフトウェア的に別途保持する必要のある3レジスタのために、
 これらの値を保持する構造体を定義し、`Vcpu` 構造体に持たせます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
 pub const Serial = struct {
     /// Interrupt Enable Register.
@@ -238,6 +245,7 @@ pub const Serial = struct {
 まずは読み込みアクセスについて仮想化します。
 読み込みで使われるレジスタは、RX / DLL / IER / DLH / IIR / LCR / MCR / LSR / MSR / SR です:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
 fn handleSerialIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     const regs = &vcpu.guest_regs;
@@ -277,6 +285,7 @@ fn handleSerialIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
 リストに挙げたレジスタの内、LSR と MSR は読み込み専用なので書き込みが発生することはありません。
 よって分岐の数は少なくなります:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
 const sr = arch.serial;
 
@@ -306,7 +315,8 @@ fn handleSerialOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
 TX への書き込みは、[シリアル出力のチャプター](../kernel/serial_output.md#シリアルコンソールによるログ出力)
 で実装した `Serial.writeByte()` を使うことで、Ymir が代わりに行います。
 
-> [!TIP] I/O Bitmap
+> [!TIP]
+>
 > I/O Bitmap を設定することで、ポートごとに VM Exit を発生させるかどうかを決定させることができます。
 > シリアルの仮想化ではアクセスが起こってもパススルーするレジスタがいくつかありました。
 > そのようなレジスタのポートに対しては I/O Bitmap で VM Exit を発生させないようにすることで、
@@ -315,6 +325,7 @@ TX への書き込みは、[シリアル出力のチャプター](../kernel/seri
 実装したシリアルのハンドラを、先ほどの I/O ハンドラに追加します。
 前述したように、サポートするのは COM1 ポートだけであり、それ以外の場合には単純に無視するようにしておきます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
 fn handleIoIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     const regs = &vcpu.guest_regs;
@@ -355,6 +366,7 @@ Ymir カーネルはスケジューラを持っていません。
 したがって、PIT を使うことがありません。
 そのため、PIT は仮想化せずにゲストにパススルーすることにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
 fn handlePitIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     const regs = &vcpu.guest_regs;
@@ -379,6 +391,7 @@ fn handlePitOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
 今回は、唯一アクセスサイズによる分岐だけをおこないパススルーしています。
 これらのハンドラを PIT へのアクセスで呼び出すようにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
 fn handleIoIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     switch (qual.port) {
@@ -428,6 +441,7 @@ PIC の初期化は **ICW** と呼ばれるコマンド群によって段階的�
 それぞれの情報は Primary と Secondary のそれぞれについて記憶する必要があります。
 仮想化された PIC を表す構造体を定義し、`Vcpu` 構造体に持たせます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
 pub const Pic = struct {
     /// Mask of the primary PIC.
@@ -468,6 +482,7 @@ pub const Pic = struct {
 厳密には正しくない実装ですが、この実装でも Linux はとりあえず動くので簡単のためにこのようにしています。
 余力がある人は直前の OCW の内容を保存し、その値をもとに適切な値を返すようにしてみてください:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
 fn handlePicIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     const regs = &vcpu.guest_regs;
@@ -495,6 +510,7 @@ fn handlePicIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
 
 続いて OUT 命令に対するハンドラを定義します。
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
 fn handlePicOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     const regs = &vcpu.guest_regs;
@@ -583,6 +599,7 @@ Linux がアクセスするポートは、以下のとおりです:
 
 最終的に、I/O Exit ハンドラは以下のようになります:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
 fn handleIoIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     const regs = &vcpu.guest_regs;
@@ -633,6 +650,7 @@ fn handleIoOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
 
 それではここまでで一旦ゲストを動かしてみましょう:
 
+<!-- i18n:skip -->
 ```txt
 ...
 [    0.000000] Dentry cache hash table entries: 16384 (order: 5, 131072 bytes, linear)
@@ -677,6 +695,7 @@ Ymir と同じ値ですね。
 この状態で QEMU monitor を開くか GDB をアタッチするかして RIP を調べてみると、`0xFFFFFFFF81002246` になっています。
 `addr2line` で該当するソースコードを調べてみると、[calibrate_delay_converge()](https://github.com/torvalds/linux/blob/0a9b9d17f3a781dea03baca01c835deaa07f7cc3/init/calibrate.c#L197) という関数であることが分かります:
 
+<!-- i18n:skip -->
 ```init/calibrate.c
 /* wait for "start of" clock tick */
 ticks = jiffies;

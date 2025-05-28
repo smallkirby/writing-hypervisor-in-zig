@@ -1,3 +1,4 @@
+<!-- i18n:skip -->
 # Page Allocator
 
 前チャプターまでは UEFI から提供されるデータ構造を Ymir のものに置き換えていきました。
@@ -11,6 +12,7 @@ Zig には「暗黙的なメモリ割当てが極めて少ない」という特�
 このチャプターでは、Zig の要でもある `Allocator` インタフェース[^interface]をもつ Page Allocator を実装していきます。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-ymir-page_allocator`](https://github.com/smallkirby/ymir/tree/whiz-ymir-page_allocator) ブランチにあります。
 
 ## Table of Contents
@@ -21,6 +23,7 @@ Zig には「暗黙的なメモリ割当てが極めて少ない」という特�
 
 まず Zig の `Allocator` を実装する手順を概観するため、スケルトンの実装をしましょう:
 
+<!-- i18n:skip -->
 ```ymir/mem/PageAllocator.zig
 const Allocator = std.mem.Allocator;
 const Self = @This();
@@ -40,6 +43,7 @@ fn resize(ctx: *anyopaque, _: []u8, _: u8, _: usize, _: usize) bool { @panic("un
 `PageAllocator.zig` は今までのファイルとは少し異なり、**このファイル自体を構造体(型)として扱います**[^file-struct]。
 そのため、この型は他のファイルから以下のようにしてアクセスできます:
 
+<!-- i18n:skip -->
 ```zig
 const PageAllocator = @import("mem/PageAllocator.zig");
 // 以下と同じ
@@ -73,6 +77,7 @@ Ymir の `PageAllocator` では、利用できる(割当可能な)ページを�
 [カーネルの起動](../bootloader/jump_to_ymir.md) では、Surtr から Ymir に対してメモリマップを渡していました。
 `PageAllocator` では初期化時にこのメモリマップを受取り、メモリを探査して利用可能なページをビットマップに記録していきます:
 
+<!-- i18n:skip -->
 ```ymir/mem/PageAllocator.zig
 pub fn init(self: *Self, map: MemoryMap) void {
     var avail_end: Phys = 0;
@@ -91,7 +96,8 @@ pub fn init(self: *Self, map: MemoryMap) void {
 メモリマップには、その [メモリの種類](https://uefi.org/specs/UEFI/2.9_A/07_Services_Boot_Services.html#memory-type-usage-before-exitbootservices) も記録されています。
 この内、Ymir では *Conventional Memory* と *Boot Services Code* の2つを OS(Ymir) が自由に利用可能な領域として扱います。
 
-> [!NOTE] 本当はまだある利用可能領域
+> [!NOTE]
+>
 > 本当は *Boot Services Data* も利用可能な領域です。
 > しかし、この領域にはまだ Ymir が利用中のデータが入っています。
 > そう、ページテーブルです。
@@ -102,6 +108,7 @@ pub fn init(self: *Self, map: MemoryMap) void {
 
 Memory Descriptor を受け取って、そのメモリが利用可能かどうかを返す関数を定義しておきます:
 
+<!-- i18n:skip -->
 ```ymir/mem/PageAllocator.zig
 inline fn isUsableMemory(descriptor: *uefi.tables.MemoryDescriptor) bool {
     return switch (descriptor.type) {
@@ -120,6 +127,7 @@ Zig では任意のビット幅を持つ整数型を利用することができ�
 `[N]u1` のような配列を作っても一要素が 1byte になってしまいます。
 よって、今回は `u64` 型の配列としてビットマップを実装していきます:
 
+<!-- i18n:skip -->
 ```ymir/mem/PageAllocator.zig
 /// Maximum physical memory size in bytes that can be managed by this allocator.
 const max_physical_size = 128 * gib;
@@ -151,6 +159,7 @@ const BitMap = [num_maplines]MapLineType;
 `PageAllocator` はページ番号を使ってページを管理します。
 ページ番号は、物理アドレスから計算できます:
 
+<!-- i18n:skip -->
 ```ymir/mem/PageAllocator.zig
 const FrameId = u64;
 const bytes_per_frame = 4 * kib;
@@ -174,6 +183,7 @@ inline fn frame2phys(frame: FrameId) Phys {
 しかし、次チャプターでメモリマップを再構築すると両者は等しくなくなります。
 そのときに備えて、物理アドレスと仮想アドレスの変換をしてくれる関数を用意しておきましょう:
 
+<!-- i18n:skip -->
 ```ymir/mem.zig
 pub fn virt2phys(addr: anytype) Phys {
     return @intCast(addr);
@@ -189,6 +199,7 @@ pub fn phys2virt(addr: anytype) Virt {
 
 定義したビットマップに対する操作をする関数を用意します:
 
+<!-- i18n:skip -->
 ```ymir/mem/PageAllocator.zig
 const Status = enum(u1) {
     /// Page frame is in use.
@@ -225,6 +236,7 @@ fn set(self: *Self, frame: FrameId, status: Status) void {
 
 1ページ単位ではなく複数ページの状態をまとめて変更するヘルパー関数も用意しておきます:
 
+<!-- i18n:skip -->
 ```ymir/mem/PageAllocator.zig
 fn markAllocated(self: *Self, frame: FrameId, num_frames: usize) void {
     for (0..num_frames) |i| {
@@ -244,6 +256,7 @@ fn markNotUsed(self: *Self, frame: FrameId, num_frames: usize) void {
 ここまでで作成したビットマップを使い、メモリアロケータを初期化します。
 `init()` においてメモリマップをひとつずつイテレートし、そのメモリ領域が Ymir が利用可能なものであればビットマップに記録します:
 
+<!-- i18n:skip -->
 ```ymir/mem/PageAllocator.zig
 frame_begin: FrameId = 1,
 frame_end: FrameId,
@@ -281,6 +294,7 @@ pub fn init(self: *Self, map: MemoryMap) void {
 ここからは `Allocator` が要求する vtable の各関数を実装していきます。
 まずは指定されたサイズだけメモリを確保する `allocate()` です:
 
+<!-- i18n:skip -->
 ```ymir/mem/PageAllocator.zig
 const p2v = phys2virt;
 const v2p = virt2phys;
@@ -323,7 +337,8 @@ fn allocate(ctx: *anyopaque, n: usize, _: u8, _: usize) ?[*]u8 {
 利用可能な領域が見つかった場合、`markAllocated()` でそのページを確保済みにし、そのアドレスを返します。
 見つからなかった場合には `null` を返します。
 
-> [!NOTE] アラインメント
+> [!NOTE]
+>
 > `allocate()` の第2引数は要求するアラインメントです。
 > `0x30` を指定された場合、返す領域のポインタは `0x00`, `0x30`, `0x60`, ... で終わる必要があります。
 > しかし、`Allocator` が想定するアラインメントの最大値はページサイズです[^align]。
@@ -339,6 +354,7 @@ fn allocate(ctx: *anyopaque, n: usize, _: u8, _: usize) ?[*]u8 {
 もし生のポインタを渡せるようになっていた場合、指定されたアドレスがどれだけのサイズで確保されたのかについてメタデータを保持する必要が出てきます (Cの `malloc()` などがそうですね)。
 実装がかなり簡単になるので嬉しいですね:
 
+<!-- i18n:skip -->
 ```ymir/mem/PageAllocator.zig
 fn free(ctx: *anyopaque, slice: []u8, _: u8, _: usize) void {
     const self: *PageAllocator = @alignCast(@ptrCast(ctx));
@@ -356,6 +372,7 @@ fn free(ctx: *anyopaque, slice: []u8, _: u8, _: usize) void {
 本シリーズでは、この関数は実装しません。
 ユースケースとしてリサイズをしたいときがないので、問題なしです:
 
+<!-- i18n:skip -->
 ```ymir/mem/PageAllocator.zig
 fn resize(_: *anyopaque, _: []u8, _: u8, _: usize, _: usize) bool {
     @panic("PageAllocator does not support resizing");
@@ -381,6 +398,7 @@ fn resize(_: *anyopaque, _: []u8, _: u8, _: usize, _: usize) bool {
 
 それでは、ページ単位でのメモリ確保をする関数を実装します:
 
+<!-- i18n:skip -->
 ```ymir/mem/PageAllocator.zig
 pub fn allocPages(self: *PageAllocator, num_pages: usize, align_size: usize) ?[]u8 {
     const num_frames = num_pages;
@@ -414,6 +432,7 @@ pub fn allocPages(self: *PageAllocator, num_pages: usize, align_size: usize) ?[]
 以上で準備が整いました。
 Ymir で利用できる `Allocator` を作成しましょう:
 
+<!-- i18n:skip -->
 ```ymir/mem/PageAllocator.zig
 pub fn newUninit() Self {
     return Self{
@@ -423,6 +442,7 @@ pub fn newUninit() Self {
 }
 ```
 
+<!-- i18n:skip -->
 ```ymir/mem.zig
 pub const PageAllocator = @import("mem/PageAllocator.zig");
 pub var page_allocator_instance = PageAllocator.newUninit();
@@ -449,6 +469,7 @@ pub fn initPageAllocator(map: MemoryMap) void {
 
 利用時には以下のようにして `Allocator` として利用します (内部実装を気にする必要がありません):
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 mem.initPageAllocator(boot_info.memory_map);
 log.info("Initialized page allocator", .{});

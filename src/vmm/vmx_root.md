@@ -4,6 +4,7 @@
 本チャプターは VT-x の基礎的な概念の説明から始まり、VMX Root Operation という VMM 用のモードに遷移するところまでを目的にします。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-vmm-vmx_root`](https://github.com/smallkirby/ymir/tree/whiz-vmm-vmx_root) ブランチにあります。
 
 ## Table of Contents
@@ -58,6 +59,7 @@ VMM は VM Exit の発生原因をもとにして適切な処理をし、再度 
 VMX Operation に入る前にこれらの条件が満たされているかを順に確認していきます。
 以降、VMX に関連する操作は `ymir/vmx.zig` をルートとして実装していきます:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig
 const VmError = error{
     /// Memory allocation failed.
@@ -94,6 +96,7 @@ EAX で取得したい情報を指定します。一部の場合は追加で ECX
 どのレジスタにどのような情報が入るかは、指定した Leaf/Subleaf に依存します。
 CPUID の Leaf/Subleaf 一覧については *[SDM Vol.2A](https://cdrdv2-public.intel.com/812383/253666-sdm-vol-2a.pdf) Chapter 3.3 Table 3-8* を参照してください。
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/cpuid.zig
 pub const Leaf = enum(u32) {
     maximum_input = 0x0,
@@ -139,6 +142,7 @@ Non-exhaustive Enum への `switch` は必ず non-exhaustive switch になりま
 
 `Leaf` は以下のように使います:
 
+<!-- i18n:skip -->
 ```zig
 const result = Leaf.query(.ext_feature, 0x1);
 // OR
@@ -148,7 +152,8 @@ const result = Leaf.ext_feature.query(0x1);
 もしも Subleaf を指定する必要があれば `query()` の引数として渡します。
 Subleaf が不要な場合は `null` を渡すことができます。
 
-> [!TIP] Zig のメソッド
+> [!TIP]
+>
 > Zig における static ではない構造体のメソッドは、`fn hoge(self: Self)` のように定義します。
 > これを呼び出す際には、以下の2通りの方法があります:
 >
@@ -163,6 +168,7 @@ Subleaf が不要な場合は `null` を渡すことができます。
 `cpuid()` は CPUID 命令の実体となるアセンブリ関数です。
 この関数は外部には直接露出せず、`Leaf` を介して利用させます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/cpuid.zig
 fn cpuid(leaf: u32, subleaf: u32) CpuidRegisters {
     var eax: u32 = undefined;
@@ -205,6 +211,7 @@ MSR も CPUID と同様にどんどん追加され続けるため、すべてを
 以下で定義しているものは Ymir で利用する MSR の全てではありません。
 必要になった時に新たに追加していきます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/asm.zig
 pub const Msr = enum(u32) {
     /// IA32_FEATURE_CONTROL MSR.
@@ -232,6 +239,7 @@ MSR へのアクセスには [RDMSR](https://www.felixcloutier.com/x86/rdmsr) �
 MSR の指定には ECX を使います。
 返り値は EDX と EAX をこの順に連結した値となります:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/asm.zig
 pub fn readMsr(msr: Msr) u64 {
     var eax: u32 = undefined;
@@ -261,6 +269,7 @@ pub fn writeMsr(msr: Msr, value: u64) void {
 
 手順1の Vendor ID String は `CPUID[0]` (`.maximum_input`) で取得できます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/arch.zig
 pub fn getCpuVendorId() [12]u8 {
     var ret: [12]u8 = undefined;
@@ -278,6 +287,7 @@ pub fn getCpuVendorId() [12]u8 {
 
 `Vm.new()` で Vendor ID を取得し、`GenuineIntel` であることを確認します:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig
 const vendor = arch.getCpuVendorId();
 if (!std.mem.eql(u8, vendor[0..], "GenuineIntel")) {
@@ -293,6 +303,7 @@ if (!std.mem.eql(u8, vendor[0..], "GenuineIntel")) {
 手順3では VMXON が SMX Operation の外でも実行可能かを確認します。
 これは MSR の `IA32_FEATURE_CONTROL` の値をチェックすることで確かめられます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/arch.zig
 pub fn isVmxSupported() bool {
     // Check CPUID if VMX is supported.
@@ -328,6 +339,7 @@ Lock Bit はシステムがリセットされるまでクリアされること�
 
 `Vm.new()` の中でこれらの関数を呼び出します:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig
 if (!arch.isVmxSupported()) {
     log.err("Virtualization is not supported.", .{});
@@ -338,6 +350,7 @@ if (!arch.isVmxSupported()) {
 以上で VMX がサポートされているかどうかを確認する処理が完成しました。
 `kernelMain()` から呼び出して、VMX がサポートされていることを確認しましょう:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 const vm = try vmx.Vm.new();
 _ = vm;
@@ -349,6 +362,7 @@ VMX Operation に入るということは、現在の CPU の状態を変更す�
 本シリーズの Ymir では1コアのみをサポートするためとりわけ意識する必要があることではないのですが、
 それでも CPU に固有ということを意識するためにも `Vcpu` という構造体を作っておきます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 pub const Vcpu = struct {
     const Self = @This();
@@ -373,6 +387,7 @@ PCID のように、TLB のエントリを識別する等に使われます。
 ここでも、CPU に強く依存する VMX コードは `arch/x86/vmx` 以下に配置することにします。
 もしも AMD-V をサポートしたくなったような場合には `switch` で分岐することができます:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig
 const impl = switch (builtin.target.cpu.arch) {
     .x86_64 => @import("arch/x86/vmx.zig"),
@@ -417,6 +432,7 @@ CR4 も同様で `IA32_VMX_CR4_FIXED0` と `IA32_VMX_CR4_FIXED1` の2つの MSR 
 
 なお、各レジスタは下位 32bit のみが有効です。上位 32bit は無視します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn adjustControlRegisters() void {
     const vmx_cr0_fixed0: u32 = @truncate(am.readMsr(.vmx_cr0_fixed0));
@@ -451,6 +467,7 @@ fn adjustControlRegisters() void {
 
 `readCr4()`/`loadCr4()` の定義を以下に示しておきます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/asm.zig
 pub const Cr4 = packed struct(u64) {
     /// Other fields, see repository for details.
@@ -490,6 +507,7 @@ VMXON Region は CPU が VMX Operation 中に使う(かもしれない)領域で
 VMXON Region はページアラインされている必要があります。
 必要なサイズは実装依存であり、`IA32_VMX_BASIC` MSR (`0x0480`) を調べることで取得できます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/asm.zig
 pub fn readMsrVmxBasic() MsrVmxBasic {
     const val = readMsr(.vmx_basic);
@@ -509,6 +527,7 @@ pub const MsrVmxBasic = packed struct(u64) {
 VMXON Region を確保する際には取得したサイズを用いてページアラインされた領域を確保します。
 この領域は 4KiB アラインされていることが要求されます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 const VmxonRegion = packed struct {
     vmcs_revision_id: u31,
@@ -532,6 +551,7 @@ VMXON Region で唯一設定する必要のあるフィールドが **VMCS Revis
 ここでは、VMCS という構造体のバージョン番号を VMXON Region にも設定する必要があると考えれば十分です。
 この ID は、VMXON Region のサイズと同様に `IA32_VMX_BASIC` から取得します[^vmx_basic]:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 inline fn getVmcsRevisionId() u31 {
     return am.readMsrVmxBasic().vmcs_revision_id;
@@ -542,6 +562,7 @@ inline fn getVmcsRevisionId() u31 {
 VMXON Region を確保したあと、VMCS Revision ID を取得しセットします。
 VMXON 命令に渡すのは物理アドレスであるため、VMXON Region の仮想アドレスを変換してから `am.vmxon()` に渡します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn vmxon(allocator: Allocator) VmxError!*VmxonRegion {
     const vmxon_region = try VmxonRegion.new(allocator);
@@ -556,6 +577,7 @@ fn vmxon(allocator: Allocator) VmxError!*VmxonRegion {
 
 `am.vmxon()` はアセンブリ関数です:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/asm.zig
 const vmx = @import("vmx/common.zig");
 const vmxerr = vmx.vmxtry;
@@ -591,6 +613,7 @@ VMfailValid は、現在の論理コアが有効な VMCS を持っている場�
 
 VMX 拡張命令のエラーを処理するための関数を定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/common.zig
 pub const VmxError = error{
     VmxStatusUnavailable,
@@ -610,6 +633,7 @@ pub fn vmxtry(rflags: u64) VmxError!void {
 
 EFLAGS レジスタは次のように定義されます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/asm.zig
 pub const FlagsRegister = packed struct(u64) {
     /// Carry flag.
@@ -637,6 +661,7 @@ pub const FlagsRegister = packed struct(u64) {
 VMX の有効化は `CR4[13]` に `1` をセットすることで行います。
 VMX を有効化したら、VMXON で VMX Root Operation に遷移します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 vmxon_region: *VmxonRegion = undefined,
 ...
@@ -656,6 +681,7 @@ pub fn virtualize(self: *Self, allocator: Allocator) VmxError!void {
 
 `Vm` からこの関数を呼び出します:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig
 pub const Error = VmError || impl.VmxError;
 
@@ -676,6 +702,7 @@ VMX Non-root Operation に遷移するための [VMLAUNCH](https://www.felixclou
 VMX Root Operation 以外で VMLAUNCH を実行すると `#UD: Invalid Opcode` 例外が発生します。
 よって、この命令を実行して例外が発生しなければ VMX Root Operation に遷移できているということがわかります[^vmlaunch]:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 asm volatile("vmlaunch");
 ```

@@ -5,6 +5,7 @@
 また、VM Entry と VM Exit の際に MSR の値を適切に保存・復元するようにします。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-vmm-msr`](https://github.com/smallkirby/ymir/tree/whiz-vmm-msr) ブランチにあります。
 
 ## Table of Contents
@@ -21,6 +22,7 @@ MSR Bitmaps は MSR のアドレスにマップされるビットマップであ
 
 本シリーズでは MSR Bitmaps を無効化し、全ての MSR に対する RDMSR/WRMSR が VM Exit を発生させるようにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(vcpu: *Vcpu, _: Allocator) VmxError!void {
     ...
@@ -32,6 +34,7 @@ fn setupExecCtrls(vcpu: *Vcpu, _: Allocator) VmxError!void {
 RDMSR は `31` / WRMSR は `32` 番の Exit Reason で VM Exit します。
 それぞれについて Exit ハンドラを呼び出すように変更します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
     switch (exit_info.basic_reason) {
@@ -119,6 +122,7 @@ Ymir では以下の MSR についてロードを有効化します。
 - `IA32_PAT`
 - `IA32_EFER`
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExitCtrls(_: *Vcpu) VmxError!void {
     ...
@@ -167,6 +171,7 @@ VM Entry 時にホストの MSR をセーブするためのエリアは存在し
 
 MSR Area を表現する構造体を定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/msr.zig
 pub const ShadowMsr = struct {
     /// Maximum number of MSR entries in a page.
@@ -239,6 +244,7 @@ pub const ShadowMsr = struct {
 `ShadowMsr` は MSR Entry の配列を保持し、登録する MSR を操作するための API を提供します。
 3つの MSR Area のうち、ホスト用(Load)とゲスト用(Store+Load)の領域を表すメンバ変数を `Vm` に追加します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 pub const Vcpu = struct {
     host_msr: msr.ShadowMsr = undefined,
@@ -254,6 +260,7 @@ MSR Area の物理アドレスは VM-Exit Controls / VM-Entry Controls の `MSR-
 ホストの MSR は現在の MSR の値をそのまま登録することにします。
 ゲストの MSR は全て `0` に初期化します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn registerMsrs(vcpu: *Vcpu, allocator: Allocator) !void {
     vcpu.host_msr = try msr.ShadowMsr.init(allocator);
@@ -289,6 +296,7 @@ VM-Exit MSR-Load Area (VM Exit 時にホストの MSR にロードされる領�
 そうしなければ、最初に設定した値が永遠に使われることになってしまいます。
 VM Entry ループをする `loop()` 内の `while` ループの先頭で、以下の関数を呼び出します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn updateMsrs(vcpu: *Vcpu) VmxError!void {
     // Save host MSRs.
@@ -322,6 +330,7 @@ RDMSR の結果は上位 32bit を RDX に、下位 32bit を RAX に格納し�
 
 前者のために `setRetVal()` を、後者のために `shadowRead()` を用意します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/msr.zig
 /// Concatnate two 32-bit values into a 64-bit value.
 fn concat(r1: u64, r2: u64) u64 {
@@ -348,6 +357,7 @@ fn shadowRead(vcpu: *Vcpu, msr_kind: am.Msr) void {
 
 以上を踏まえて、RDMSR ハンドラを実装します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/msr.zig
 pub fn handleRdmsrExit(vcpu: *Vcpu) VmxError!void {
     const guest_regs = &vcpu.guest_regs;
@@ -378,6 +388,7 @@ pub fn handleRdmsrExit(vcpu: *Vcpu) VmxError!void {
 
 RDMSR と同様にヘルパー関数を用意します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/msr.zig
 fn shadowWrite(vcpu: *Vcpu, msr_kind: am.Msr) void {
     const regs = &vcpu.guest_regs;
@@ -392,6 +403,7 @@ fn shadowWrite(vcpu: *Vcpu, msr_kind: am.Msr) void {
 
 WRMSR ハンドラを実装します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/msr.zig
 pub fn handleWrmsrExit(vcpu: *Vcpu) VmxError!void {
     const regs = &vcpu.guest_regs;
@@ -432,6 +444,7 @@ RDMSR よりは対応する必要のある MSR が多いです。
 
 もはや恒例になってきましたが、最後にゲストを動かしてみましょう:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] main    | Entered VMX root operation.
 [INFO ] vmx     | Guest memory region: 0x0000000000000000 - 0x0000000006400000
@@ -496,6 +509,7 @@ Booting the kernel (entry_offset: 0x0000000000000000).
 
 最終的に発生している Triple Fault は、CR4 の PSE ビットをセットしようとしている部分です:
 
+<!-- i18n:skip -->
 ```arch/x86/kernel/head_64.S
 ffffffff8102e0a8 <common_startup_64>:
 ffffffff8102e0a8:       ba 20 10 00 00          mov    edx,0x1020

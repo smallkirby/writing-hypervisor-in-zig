@@ -1,3 +1,4 @@
+<!-- i18n:skip -->
 # GDT: Global Descriptor Table
 
 このチャプターから数回にかけて、UEFI が用意してくれた構造を Ymir のものに置き換えていきます。
@@ -5,6 +6,7 @@
 その第1弾が GDT です。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-ymir-gdt`](https://github.com/smallkirby/ymir/tree/whiz-ymir-gdt) ブランチにあります。
 
 ## Table of Contents
@@ -17,6 +19,7 @@
 セグメンテーションは、メモリをいくつかの仮想的なブロックに分割する機能です。
 x86-64 には3つのアドレスの種類があり、以下のように変換されます:
 
+<!-- i18n:skip -->
 ```mermaid
 graph TD
     Logi[Logical Address] --> |GDT / Segment Selector| Lin[Linear Address]
@@ -63,7 +66,8 @@ CPU は GDT からエントリを取得する必要がなくなります[^hidden
 **プログラムから直接設定できるのは selector のみ** です。
 プログラムが selector を設定すると、CPU が自動的に GDT からエントリを取得し、Hidden Part にキャッシュします。
 
-> [!NOTE] セグメントとアクセスチェック
+> [!NOTE]
+>
 > Logical to Linear 変換の際には、アドレスの計算以外にも以下のチェックが行われます:
 >
 > - Logical Address のオフセット部が **Limit** を超えていないか
@@ -97,7 +101,8 @@ Logical to Linear 変換の際には、CPL が変換に利用するセグメン�
 その他にも、CPL(Ring) は特権レジスタや特権命令の実行ができるかどうかの判断にも使われます。
 例として [Control Register](https://wiki.osdev.org/CPU_Registers_x86-64#Control_Registers) には Ring-0 でないとアクセスできません。
 
-> [!NOTE] IOPL
+> [!NOTE]
+>
 > x64 には CPL とは別に **IOPL: I/O Privilege Level** があります。
 > IOPL は I/O 命令の実行に必要な CPL を定義します。
 > CPL が CS レジスタに格納されているのに対し、IOPL は RFLAGS レジスタに格納されています。
@@ -148,7 +153,8 @@ FSBASE / GSBASE  MSR に *Base* を直接書き込むことも可能です。
 
 とどのつまり、Ymir においてはほとんどセグメントの設定をする必要はないということです。
 
-> [!WARN] 64bit mode における権限チェック
+> [!WARN]
+>
 > セグメンテーションが無効化されると書きましたが、これはアドレス変換が行われないという意味です。
 > 64bit mode においてもセグメントへのアクセス権限チェックは行われます。
 >
@@ -393,7 +399,8 @@ fn loadKernelTss() void {
 }
 ```
 
-> [!NOTE] TSS と VM-Entry
+> [!NOTE]
+>
 > Ymir ではユーザランドを実装せず、かつ割り込み用のスタックも用意しないため TSS も使いません。
 > しかし、のちほど VM-Entry をする際に "ホストの TR は 0 であってはならない" という制約があるため、ここでは空の TSS を作成しています。
 
@@ -423,7 +430,8 @@ GDTR は GDT のアドレスとサイズのみを持ちます。
 仮想アドレスと物理アドレスが等しいです。
 そのため、`&gdt` (仮想アドレス) をそのまま物理アドレスとして使っています。
 
-> [!WARN] Zig の static initialization バグ
+> [!WARN]
+>
 > 本当は `gdtr` の宣言時に `.base = &gdt` として初期化したかったのですが、
 > 現在 Zig or LLVM にバグ[^zig-bug]があり、この初期化方法はエラーになってしまいます。
 > そのため、仕方なく `init()` の中で `&gdt` を代入しています。

@@ -7,6 +7,7 @@
 ネタバレしてごめんね。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-vmm-initramfs`](https://github.com/smallkirby/ymir/tree/whiz-vmm-initramfs) ブランチにあります。
 
 ## Table of Contents
@@ -15,7 +16,8 @@
 
 ## initramfs の作成
 
-> [!TIP] ショートカット
+> [!TIP]
+>
 > 自分で initramfs を生成するのがめんどうな人用に、以下の手順で生成した FS イメージを [こちら](https://r2.hv.smallkirby.com/rootfs.cpio.gz) からダウンロードすることができます。
 
 **initramfs** はメモリ上に展開される RAM FS の一種です。
@@ -39,6 +41,7 @@ buildroot は組み込み用 Linux をビルドするためのツールチェイ
 ファイルは `./output/images/rootfs.cpio` に出力されます。
 cpio ファイルは、以下の手順で展開および圧縮することができます[^lysithea]:
 
+<!-- i18n:skip -->
 ```bash
 # 展開
 mkdir x && cd x
@@ -55,6 +58,7 @@ Linux はカーネルのブート後に FS の `/init` を実行します。
 出力された initramfs を展開し、中から余計な起動スクリプトを消してあげます。
 本シリーズではネットワークはサポートしないため、ネットワーク関連のスクリプトを削除しましょう:
 
+<!-- i18n:skip -->
 ```bash
 rm ./x/etc/init.d/S41dhcpcd
 rm ./x/extracted/etc/init.d/S40network
@@ -62,6 +66,7 @@ rm ./x/extracted/etc/init.d/S40network
 
 また、以下の起動スクリプトを代わりに `S999whiz` として追加します:
 
+<!-- i18n:skip -->
 ```sh:etc/init.d/S999whiz
 #!/bin/sh
 
@@ -77,6 +82,7 @@ poweroff -d 0 -f
 
 最終的には以下のようなディレクトリ構造になります:
 
+<!-- i18n:skip -->
 ```bash
 > tree ./x/etc/init.d
 ./x/etc/init.d
@@ -92,6 +98,7 @@ poweroff -d 0 -f
 以上の準備が終わったら、`rootfs.cpio` を gzip 圧縮して `rootfs.cpio.gz` にしてあげ、
 Ymir カーネルが置いてある `zig-out/img` ディレクトリにコピーしておいてください:
 
+<!-- i18n:skip -->
 ```bash
 > tree ./zig-out/img
 ./zig-out/img
@@ -108,6 +115,7 @@ Ymir カーネルが置いてある `zig-out/img` ディレクトリにコピー
 `bzImage` をメモリにロードした際と同様に、`rootfs.cpio.gz` をメモリにロードして Ymir に渡すのは Surtr の役割です。
 `boot.zig` に `rootfs.cpio.gz` 用のメモリ領域の確保とロードを行うコードを追加します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const initrd = openFile(root_dir, "rootfs.cpio.gz") catch return .Aborted;
 const initrd_info_buffer_size: usize = @sizeOf(uefi.FileInfo) + 0x100;
@@ -129,6 +137,7 @@ if (status != .Success) return status;
 
 また、Surtr から Ymir に渡す情報である `GuestInfo` に initramfs をロードした場所に関する情報を追加します:
 
+<!-- i18n:skip -->
 ```surtr/defs.zig
 pub const GuestInfo = extern struct {
     ...
@@ -141,6 +150,7 @@ pub const GuestInfo = extern struct {
 
 Surtr が Ymir に処理を移す際に initramfs の情報を埋めてあげます:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const boot_info = defs.BootInfo{
     ...
@@ -158,6 +168,7 @@ Ymir 側で渡された情報を見ることができるか確認してみまし
 `kernelMain()` に以下のコードを追加します。
 Surtr から渡される initramfs のアドレスは物理アドレスであるため、 `phys2virt()` で仮想アドレスに変換する必要があることに注意してください:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 const initrd = b: {
     const ptr: [*]u8 = @ptrFromInt(ymir.mem.phys2virt(guest_info.initrd_addr));
@@ -173,6 +184,7 @@ x86 Linux のブートプロトコルで利用される `BootParams` 内の `Set
 Linux カーネルが initramfs を認識し、マウントすることがでるようになります。
 本シリーズでは initramfs は `0x0600_0000` にロードすることにします:
 
+<!-- i18n:skip -->
 ```ymir/linux.zig
 pub const layout = struct {
     ...
@@ -182,6 +194,7 @@ pub const layout = struct {
 
 `loadKernel()` で initramfs をロードします:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig
 fn loadKernel(self: *Self, kernel: []u8, initrd: []u8) Error!void {
     ...
@@ -198,6 +211,7 @@ fn loadKernel(self: *Self, kernel: []u8, initrd: []u8) Error!void {
 本チャプターでは initramfs を作成し、Surtr にロードしてもらった後ゲストに渡しました。
 ゲストを動かしてみましょう:
 
+<!-- i18n:skip -->
 ```txt
 [    0.364946] Loading compiled-in X.509 certificates
 [    0.364946] PM:   Magic number: 0:110:269243

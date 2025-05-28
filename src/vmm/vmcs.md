@@ -5,6 +5,7 @@
 Ymir が Linux をブートするために必要な項目についてのみ触れることとします。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-vmm-vmcs`](https://github.com/smallkirby/ymir/tree/whiz-vmm-vmcs) ブランチにあります。
 
 ## Table of Contents
@@ -116,6 +117,7 @@ Read-only であることからも分かるように、このカテゴリは特�
 
 VMCS を設定するための雛形を `Vcpu` に追加しておきます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 pub const Vcpu = struct {
     ...
@@ -157,6 +159,7 @@ VMX-Abort Indicator は本シリーズでは使いません。
 
 VMCS Region を定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 const VmcsRegion = packed struct {
     vmcs_revision_id: u31,
@@ -197,6 +200,7 @@ VMCS Region を設定するというのは、VMCS の状態を *Active + Current
 - [VMCLEAR](https://www.felixcloutier.com/x86/vmclear) 命令: 状態を *Inactive + Not Current + Clear* にする
 - [VMPTRLD](https://www.felixcloutier.com/x86/vmptrld) 命令: 状態を *Active + Current + Clear* にする
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn resetVmcs(vmcs_region: *VmcsRegion) VmxError!void {
     try am.vmclear(mem.virt2phys(vmcs_region));
@@ -204,6 +208,7 @@ fn resetVmcs(vmcs_region: *VmcsRegion) VmxError!void {
 }
 ```
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/asm.zig
 pub inline fn vmclear(vmcs_region: mem.Phys) VmxError!void {
     var rflags: u64 = undefined;
@@ -237,6 +242,7 @@ pub inline fn vmptrld(vmcs_region: mem.Phys) VmxError!void {
 
 以上を踏まえて、VMCS Region の確保・初期化は以下のようになります:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
     const vmcs_region = try VmcsRegion.new(allocator);
@@ -249,6 +255,7 @@ pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
 
 `Vm.init()` から `setupVmcs()` を呼び出すようにしておきます:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig
 pub fn init(self: *Self, allocator: Allocator) VmxError!void {
     ...
@@ -291,6 +298,7 @@ VMCS のフィールドレイアウトは実装依存です。
 各フィールドに対する Encoding の内容は *SDM Appendix B FIELD ENCODING IN VMCS* に記載されています。
 そのリストをもとに各フィールドの encoding を計算するヘルパー関数を定義します[^encoding]:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmcs.zig
 fn encode(
     comptime field_type: FieldType,
@@ -367,6 +375,7 @@ const ComponentEncoding = packed struct(u32) {
 <details>
 <summary>(GitHub にアクセスできないという稀有な人のために Guest-State タイプの encoding 定義だけ抜粋しておきます)</summary>
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmcs.zig
 pub const guest = enum(u32) {
     // Natural-width fields.
@@ -458,6 +467,7 @@ VMCS encoding が定義できたため、VMCS フィールドにアクセスす�
 本来であればフィールドの *Width* に応じて適切な型を返すべきですが、面倒なので全て一律 64bit としています。
 また、VMREAD 自体が VMX 拡張命令であるため RFLAGS を使ったエラーハンドリングをしています:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/common.zig
 pub fn vmread(field: anytype) VmxError!u64 {
     var rflags: u64 = undefined;
@@ -478,6 +488,7 @@ pub fn vmread(field: anytype) VmxError!u64 {
 VMWRITE は引数として encoding と書き込む値を受け取りますが、書き込む値は `anytype` としています。
 これは、VMWRITE に対して `packed struct (u64)` のような Packed Struct を渡したい場面が多く、その都度 `@bitCast()` を呼ぶ手間を省くためです:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/common.zig
 pub fn vmwrite(field: anytype, value: anytype) VmxError!void {
     const value_int = switch (@typeInfo(@TypeOf(value))) {
@@ -516,6 +527,7 @@ pub fn vmwrite(field: anytype, value: anytype) VmxError!void {
 どうせ失敗するだろうけど、こちとら VMCS をセットしたので。
 どんな文句を言われるのか見てやりましょう:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.tmp.zig
 ...
 pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
@@ -531,6 +543,7 @@ pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
 **VMX 拡張命令である VMLAUNCH は失敗した場合に例外ではなく独自の方法でエラーを返す**ためです。
 単に VMLAUNCH を呼ぶのではなく、このエラーをチェックしてあげましょう:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.tmp.zig
 const rflags = asm volatile (
     \\vmlaunch
@@ -545,6 +558,7 @@ vmx.vmxtry(rflags) catch |err| {
 
 出力は以下のようになります:
 
+<!-- i18n:skip -->
 ```txt
 [ERROR] vcpu    | VMLAUNCH: error.VmxStatusAvailable
 ```
@@ -554,6 +568,7 @@ vmx.vmxtry(rflags) catch |err| {
 エラーコードに対応する `enum` と、VM-Instruction Error Field からエラーコードを取得するヘルパー関数を作ります。
 エラー番号の一覧と説明は *SDM Vol.3C 31.4 VM INSTRUCTION ERROR NUMBERS* を参照してください:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/common.zig
 pub const InstructionError = enum(u32) {
     error_not_available = 0,
@@ -596,6 +611,7 @@ VMREAD の初めての出番ですね。かわいい。
 <details>
 <summary><code>ro</code> enum の定義:</summary>
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmcs.zig
 pub const ro = enum(u32) {
     // Natural-width fields.
@@ -623,6 +639,7 @@ pub const ro = enum(u32) {
 
 さて、VMLAUNCH 後にエラーコードを取得してみましょう:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.tmp.zig
 vmx.vmxtry(rflags) catch |err| {
     log.err("VMLAUNCH: {?}", .{err});
@@ -632,6 +649,7 @@ vmx.vmxtry(rflags) catch |err| {
 
 出力は以下のようになります:
 
+<!-- i18n:skip -->
 ```txt
 [ERROR] vcpu    | VMLAUNCH: error.VmxStatusAvailable
 [ERROR] vcpu    | VM-instruction error number: vmentry_invalid_ctrl

@@ -5,6 +5,7 @@ Control Registers は CPU の挙動を制御するための重要なレジスタ
 本チャプターでは CR からの読み込みと CR への書き込みの両方を仮想化し、他の VMCS フィールドとの整合性を保ちながらハンドリングしていきます。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-vmm-cr`](https://github.com/smallkirby/ymir/tree/whiz-vmm-cr) ブランチにあります。
 
 ## Table of Contents
@@ -28,6 +29,7 @@ Guest/Host Masks のあるビットが `1` であるとき、CR の対応する�
 ゲストが CR から read をするとき、そのビットがホストが所有する場合には、Read Shadows の対応するビットが read されます。
 ゲストが CR に write をするとき、**ホストが所有するビットに対して Read Shadows の対応するビットと異なる値を書き込もうとすると VM Exit が発生** します。
 
+<!-- i18n:skip -->
 ```mermaid
 ---
 title: Read/Write CR's N-th bit
@@ -47,6 +49,7 @@ flowchart TD
 Ymir では Guest/Host Masks のビットを全てセットします。
 CR0 と CR4 のビットは全てホストが所有するということです:。
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(vcpu: *Vcpu, allocator: Allocator) VmxError!void {
     ...
@@ -61,6 +64,7 @@ fn setupExecCtrls(vcpu: *Vcpu, allocator: Allocator) VmxError!void {
 よって、**Read Shadows は CR の実際の値に追従するようにする必要があります**。
 追従するロジックはのちほど VM Exit ハンドラで書くとして、とりあえず初期状態には CR0 / CR4 の値をそのまま代入しておきます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupGuestState(vcpu: *Vcpu) VmxError!void {
     ...
@@ -86,6 +90,7 @@ CR Access に対する Exit Qualification は以下のフォーマットを持�
 Exit Qualification は CR Access 以外にも今後追加していく予定のため、`qual` 空間を用意してそこに追加していくことにします。
 第1号として、CR Access 用の Exit Qualification を追加します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/common.zig
 pub const qual = struct {
     pub const QualCr = packed struct(u64) {
@@ -142,6 +147,7 @@ CR Access による VM Exit は [MOV](https://www.felixcloutier.com/x86/mov) (fr
 Exit Qualification を取得するための関数も用意しておきましょう。
 Exit Qualification は Exit Reason によってその中身が異なるため、どの型として取得するのかは呼び出し側で決定します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn getExitQual(T: anytype) VmxError!T {
     return @bitCast(@as(u64, try vmread(vmcs.ro.exit_qual)));
@@ -154,6 +160,7 @@ fn getExitQual(T: anytype) VmxError!T {
 Exit Reason としては MOV to と MOV from のどちらかによらず1つしか用意されていません。
 MOV to か from かは Exit Qualification を取得して判断する必要があります:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
     switch (exit_info.basic_reason) {
@@ -170,6 +177,7 @@ fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
 CR Access を原因とする VM Exit が発生したら、先ほどの関数を使って Exit Qualification を取得し、専用のハンドラ `cr.handleAccessCr()` に渡します。
 この関数は `cr.zig` に実装していくことにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
 pub fn handleAccessCr(vcpu: *Vcpu, qual: QualCr) VmxError!void {
     switch (qual.access_type) {
@@ -196,6 +204,7 @@ Masks を全てセットしているため、CR0 と CR4 への read は常に R
 CR3 からの read は、実際の CR3 の値をそのままゲストに露出することにします。
 CR の値をゲストにそのままパススルーするためのヘルパー関数を用意します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
 fn passthroughRead(vcpu: *Vcpu, qual: QualCr) VmxError!void {
     const value = switch (qual.index) {
@@ -215,6 +224,7 @@ CR3 は VMCS Guest-State に入っているため、その値を `setValue()` �
 <details>
 <summary>setValue() と getValue() の実装</summary>
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
 fn setValue(vcpu: *Vcpu, qual: QualCr, value: u64) VmxError!void {
     const gregs = &vcpu.guest_regs;
@@ -265,6 +275,7 @@ fn getValue(vcpu: *Vcpu, qual: QualCr) VmxError!u64 {
 
 `handleAccessCr()` から read 用のハンドラを呼び出します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
 switch (qual.access_type) {
     .mov_from => try passthroughRead(vcpu, qual),
@@ -288,6 +299,7 @@ FIXED0 で `1` になっているビットは、常に `1` にする必要があ
 ゲストが CR0/CR4 に書き込む際には、これらの MSR の値を確認して書き込む値を調整する必要があります。
 CR の値をパススルー + 調整するためのヘルパー関数を用意します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
 fn passthroughWrite(vcpu: *Vcpu, qual: QualCr) VmxError!void {
     const value = try getValue(vcpu, qual);
@@ -311,6 +323,7 @@ fn passthroughWrite(vcpu: *Vcpu, qual: QualCr) VmxError!void {
 <details>
 <summary>adjustCr0() と adjustCr4() の実装</summary>
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
 fn adjustCr0(value: u64) u64 {
     var ret: u64 = @bitCast(value);
@@ -362,6 +375,7 @@ IA-32e モードは、VMX Operation "ではないとき" 以下の条件を全�
 CR0/4 への write の際には、CR0/CR4 の値をもとに IA-32e モードが有効かどうかを判断し、
 EFER の値と VM-Entry Controls の設定を更新する必要があります:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
 fn updateIa32e(vcpu: *Vcpu) VmxError!void {
     const cr0: am.Cr0 = @bitCast(try vmx.vmread(vmcs.guest.cr0));
@@ -383,6 +397,7 @@ fn updateIa32e(vcpu: *Vcpu) VmxError!void {
 
 `handleAccessCr()` において、値のパススルーと IA-32e モードの更新をおこないます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
 switch (qual.access_type) {
     .mov_to => {
@@ -423,6 +438,7 @@ PCID が有効な場合、`CR3[63]` が `0` の時には新しい CR3 の PCID �
 これと同様に、ゲストの `CR3[63]` は必ず `0` でなければいけないというわけだと思います。
 というわけで、ゲストが書き込もうとした値の 63-th bit がセットされている場合にはクリアしてからセットしてあげる必要があります:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
 switch (qual.access_type) {
     .mov_to => {
@@ -473,6 +489,7 @@ INVVPID は INVEPT とは異なり、Combined Mappings だけをフラッシュ�
 INVVPID 命令には4つのタイプがあり、それぞれフラッシュする対象範囲が異なります。
 今回は、指定した VPID に紐づく全ての Combined Mappings をフラッシュする Single Context タイプを使います:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/asm.zig
 const InvvpidType = enum(u64) {
     individual_address = 0,
@@ -499,6 +516,7 @@ pub inline fn invvpid(comptime inv_type: InvvpidType, vpid: u16) void {
 
 MOV to CR3 の最後に、INVVPID を使って Combined Mappings をフラッシュします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
     .mov_to => {
         switch (qual.index) {
@@ -518,6 +536,7 @@ MOV to CR3 の最後に、INVVPID を使って Combined Mappings をフラッシ
 さて、Linux はどこまでブートするようになったでしょうか。
 ゲストを実行してみましょう:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] main    | Starting the virtual machine...
 No EFI environment detected.
@@ -595,6 +614,7 @@ Linux がブートし始めています！
 このフィールドを有効化するのを、うっかり忘れていました。
 `setupExecCtrls()` でこのフィールドを有効化してあげることで、この例外は発生しなくなります:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(vcpu: *Vcpu, _: Allocator) VmxError!void {
     ...
@@ -616,6 +636,7 @@ INVPCID を有効化する前よりもさらにブートが進むはずです。
 以降は、Linux のブートログの先頭部分は省略することにします
 (あんなに見えて嬉しかったログを省略するのは心惜しいですけどね、なにせ長いので):
 
+<!-- i18n:skip -->
 ```txt
 ...
 [    0.128997] NET: Registered PF_UNIX/PF_LOCAL protocol family

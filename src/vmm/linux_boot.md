@@ -6,6 +6,7 @@ EPT を有効化しゲストを Unrestricted Guest にしたことで、ゲス�
 本チャプターでは、Linux の x86 におけるブートプロトコルに従って Linux をロードし、処理をカーネルに渡すまでの流れを追っていきます。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-vmm-linux_boot`](https://github.com/smallkirby/ymir/tree/whiz-vmm-linux_boot) ブランチにあります。
 
 ## Table of Contents
@@ -59,7 +60,8 @@ x64 の場合にはエントリポイントは [startup_32()](https://github.com
 
 ## Linux Kernel のビルド
 
-> [!TIP] ショートカット
+> [!TIP]
+>
 > 自分でカーネルをビルドするのがめんどうな人用に、以下の手順でビルドしたカーネルイメージを [こちら](https://r2.hv.smallkirby.com/bzImage) からダウンロードすることができます。
 
 Linux をロード・ブートするにはカーネルイメージがないと話になりません。
@@ -67,6 +69,7 @@ Linux をロード・ブートするにはカーネルイメージがないと�
 Linux のソースコードは [git://git.kernel.org](git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git) からクローンすることができます。
 以下のコマンドでリポジトリをクローンしてきてください:
 
+<!-- i18n:skip -->
 ```bash
 git clone git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
 cd linux
@@ -77,6 +80,7 @@ cd linux
 ただし、本シリーズでは汎用性を考慮してデフォルトの設定でビルドすることにします。
 このへんは好みに合わせて設定してください:
 
+<!-- i18n:skip -->
 ```bash
 make defconfig
 make -j$(nproc)
@@ -90,6 +94,7 @@ Ymir の開発中は Linux の方にログを仕込んでデバッグしたい�
 その際には `compile_commands.json` があるとコードエディタの機能が使いやすくなるため、以下のコマンドで生成しておきます。
 `compile_commands.json` のエディタへの読み込ませ方は、お使いのエディタのドキュメントを参照してください[^compile_commands]:
 
+<!-- i18n:skip -->
 ```bash
 python3 ./scripts/clang-tools/gen_compile_commands.py
 ```
@@ -97,6 +102,7 @@ python3 ./scripts/clang-tools/gen_compile_commands.py
 最後に、ビルドしたカーネルイメージを Ymir のディレクトリにコピーします。
 `bzImage` は Ymir カーネルと同様に FAT ファイルシステムのルートディレクトリに配置することにします:
 
+<!-- i18n:skip -->
 ```bash
 cp ./arch/x86/boot/bzImage <Ymir Directory>/zig-out/img/bzImage
 ```
@@ -110,6 +116,7 @@ FAT ファイルシステムを利用するには UEFI Boot Services の [Simple
 Boot Services は一旦 Ymir が起動してしまうと利用できなくなるため、これらの処理は Surtr の中で行います。
 ちょうど [カーネルのパース](../bootloader/parse_kernel.md) でしたのと同様に、まずはファイルを開いてファイルサイズを取得します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const guest = openFile(root_dir, "bzImage") catch return .Aborted;
 
@@ -129,6 +136,7 @@ const guest_info: *const uefi.FileInfo = @alignCast(@ptrCast(&guest_info_buffer)
 今読み込もうとしているファイルデータは、ページアロケータの初期化後もゲストメモリにロードするまでは破棄したくないため、
 ページアロケータが利用しない `.LoaderData` に配置することにします:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 var guest_start: u64 align(page_size) = undefined;
 const guest_size_pages = (guest_info.file_size + (page_size - 1)) / page_size;
@@ -139,6 +147,7 @@ var guest_size = guest_info.file_size;
 
 最後に、確保したページに `bzImage` を読み込みます:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 status = guest.read(&guest_size, @ptrFromInt(guest_start));
 if (status != .Success) return status;
@@ -148,6 +157,7 @@ log.info("Loaded guest kernel image @ 0x{X:0>16} ~ 0x{X:0>16}", .{ guest_start, 
 これで `bzImage` をメモリ上に読み込むことができました。
 カーネルイメージをどこにロードしたのかを Ymir に伝えるために、Surtr と Ymir の間で共有されるデータである `BootInfo` に情報を追加します:
 
+<!-- i18n:skip -->
 ```surtr/defs.zig
 pub const BootInfo = extern struct {
     ...
@@ -164,6 +174,7 @@ pub const GuestInfo = extern struct {
 
 Ymir に渡す引数に、`GuestInfo` を追加します:
 
+<!-- i18n:skip -->
 ```surtr/boot.zig
 const boot_info = defs.BootInfo{
     ...
@@ -186,6 +197,7 @@ Ymir がメモリマップを再構築したあとはこのアドレスを使っ
 Linux に渡す `struct boot_params` を `BootParams` として定義します。
 全てのフィールドを使うわけではないため、使わないフィールドは `_` で始まる名前をつけて無視しています:
 
+<!-- i18n:skip -->
 ```ymir/linux.zig
 pub const BootParams = extern struct {
     /// Maximum number of entries in the E820 map.
@@ -238,6 +250,7 @@ E820 マップについては [のちほど扱います](#e820-map)。
 `BootParams` のうち、ブートローダ(Ymir)が設定してあげる必要のある主なフィールドが **Setup Headers** です。
 Setup Headers を以下に定義します:
 
+<!-- i18n:skip -->
 ```ymir/linux.zig
 pub const SetupHeader = extern struct {
     /// RO. The number of setup sectors.
@@ -363,6 +376,7 @@ Protected Mode のコードは Realmode Code の直後に配置されるため�
 E820 エントリは以下のように定義します。
 `addr` / `size` で指定されるメモリ領域に対して、`type` でその種類を示しています:
 
+<!-- i18n:skip -->
 ```ymir/linux.zig
 pub const E820Entry = extern struct {
     addr: u64 align(1),
@@ -386,6 +400,7 @@ pub const E820Entry = extern struct {
 
 `BootParams` に E820 エントリを追加するためのメソッドを用意します:
 
+<!-- i18n:skip -->
 ```ymir/linux.zig
     pub fn addE820entry(
         self: *@This(),
@@ -418,6 +433,7 @@ Ymir では以下の物理メモリレイアウトでカーネルをロードし
 
 `linux.zig` にメモリレイアウトを定義します:
 
+<!-- i18n:skip -->
 ```ymir/linux.zig
 pub const layout = struct {
     /// Where the kernel boot parameters are loaded, known as "zero page".
@@ -436,6 +452,7 @@ pub const layout = struct {
 
 以上の情報を適切に設定する関数を `Vm` に追加します:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig
 fn loadKernel(self: *Self, kernel: []u8) Error!void {
     const guest_mem = self.guest_mem;
@@ -488,6 +505,7 @@ Ymir ではデバッグしやすいように `console=ttyS0 earlyprintk=serial n
 これにより、KASLR が無効化され、ログはシリアルに対して出力されるようになります。
 シリアル出力は QEMU によって `stdout` にリダイレクトされるため、QEMU の標準出力に Linux のログが出力されるようになります:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig
     const cmdline_max_size = if (bp.hdr.cmdline_size < 256) bp.hdr.cmdline_size else 256;
     const cmdline = guest_mem[linux.layout.cmdline .. linux.layout.cmdline + cmdline_max_size];
@@ -499,6 +517,7 @@ Ymir ではデバッグしやすいように `console=ttyS0 earlyprintk=serial n
 続いて、設定した `BootParams` やカーネルの Protected-Mode Code をゲストメモリにロードします。
 ゲストメモリにデータを配置するヘルパー関数を用意します:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig
 fn loadImage(memory: []u8, image: []u8, addr: usize) !void {
     if (memory.len < addr + image.len) {
@@ -510,6 +529,7 @@ fn loadImage(memory: []u8, image: []u8, addr: usize) !void {
 
 これを利用して、`BootParams` をロードします:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig
     try loadImage(guest_mem, std.mem.asBytes(&bp), linux.layout.bootparam);
 ```
@@ -518,6 +538,7 @@ fn loadImage(memory: []u8, image: []u8, addr: usize) !void {
 `bzImage` におけるカーネルコードのオフセットは、先ほど実装した `SetupHeader.getProtectedCodeOffset()` で取得できます。
 ロードするコードのサイズは `bzImage` 全体のサイズから Real-Mode Code のオフセットを引いたものです:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig
     const code_offset = bp.hdr.getProtectedCodeOffset();
     const code_size = kernel.len - code_offset;
@@ -531,6 +552,7 @@ fn loadImage(memory: []u8, image: []u8, addr: usize) !void {
 以上で `BootParams` の設定およびカーネルイメージのロードは完了です。
 これらの関数を `Vm.setupGuestMemory()` から呼び出すように変更しましょう:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig.diff
          ) orelse return Error.OutOfMemory;
 
@@ -544,6 +566,7 @@ fn loadImage(memory: []u8, image: []u8, addr: usize) !void {
 また、`kernelMain()` で Surtr から渡されたカーネルイメージを `setupGuestMemory()` に渡すように変更します。
 Surtr から渡されるカーネルイメージのアドレスは物理アドレスであるため、仮想アドレスに変換する必要があることに注意してください:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 // Copy boot_info into Ymir's stack since it becomes inaccessible after memory mapping is reconstructed.
 const guest_info = boot_info.guest_info;
@@ -569,6 +592,7 @@ Linux カーネルをゲストにロードすることができたため、VMCS 
 RIP は Protected Mode Kernel のエントリポイントである `0x100000` に設定します。
 RSI には `BootParams` のアドレスを設定します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupGuestState(vcpu: *Vcpu) VmxError!void {
     ...
@@ -582,6 +606,7 @@ fn setupGuestState(vcpu: *Vcpu) VmxError!void {
 よって、CS は 64bit Code ではなく 32bit Code に設定する必要があります。
 また、`BootParams.hdr.loadflags.keep_segments` を `true` に設定したため全てのセグメントセレクタを `0` に設定する必要があります:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupGuestState(vcpu: *Vcpu) VmxError!void {
     ...
@@ -605,6 +630,7 @@ fn setupGuestState(vcpu: *Vcpu) VmxError!void {
 EFER には Long Mode に関する設定フィールドがあります。
 Long Mode は無効化しておきたいため、全て `0` に設定します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupGuestState(vcpu: *Vcpu) VmxError!void {
     ...
@@ -618,6 +644,7 @@ fn setupGuestState(vcpu: *Vcpu) VmxError!void {
 
 さあ、いよいよゲストとして Linux を起動してみましょう:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] main    | Entered VMX root operation.
 [INFO ] vmx     | Guest memory region: 0x0000000000000000 - 0x0000000006400000
@@ -640,6 +667,7 @@ Ymir の起動後ゲストが起動するまでに、GDB から `target remote :
 その後、hardware breakpoint を `0x100000` に設定してください (例: `hbreak *0x100000`)。
 そのまま `continue` すると breakpoint で止まるはずです:
 
+<!-- i18n:skip -->
 ```gdb
 $rax   : 0x0000000000000000
 $rbx   : 0x0000000000000000

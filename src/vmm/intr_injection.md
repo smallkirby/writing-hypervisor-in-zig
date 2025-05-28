@@ -5,6 +5,7 @@
 その過程で、ホストはゲストに対して VM Entry 時に割り込みを注入することになります。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-vmm-intr_injection`](https://github.com/smallkirby/ymir/tree/whiz-vmm-intr_injection) ブランチにあります。
 
 ## Table of Contents
@@ -44,6 +45,7 @@ VMM 側は任意の割り込みに対して透過的に介入することがで�
 今の所このフィールドは設定していないため、外部割り込みで VM Exit は発生せずゲストに直接割り込みが通知されます。
 まずはこのフィールドを有効化することで、外部割り込みで VM Exit が発生するようにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(vcpu: *Vcpu, _: Allocator) VmxError!void {
     ...
@@ -57,6 +59,7 @@ fn setupExecCtrls(vcpu: *Vcpu, _: Allocator) VmxError!void {
 これは IRQ 0番のタイマー割り込みによるものです。
 PIC のタイマー割り込みマスクは Ymir が既に外しているため、ゲストの実行中に割り込みが発生しています:
 
+<!-- i18n:skip -->
 ```txt
 No EFI environment detected.
 early console in extract_kernel
@@ -87,6 +90,7 @@ Decompressing Linux... [ERROR] vcpu    | Unhandled VM-exit: reason=extintr
 割り込みに対して subscribe する主体のことを **Subscriber** と呼ぶことにします。
 Subscriber インタフェースは以下のように定義されます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/interrupt.zig
 pub const Subscriber = struct {
     /// Context of the subscriber.
@@ -108,6 +112,7 @@ pub const Subscriber = struct {
 
 Subscriber はグローバル変数で管理し、以下の関数で登録することができます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/interrupt.zig
 const max_subscribers = 10;
 var subscribers: [max_subscribers]?Subscriber = [_]?Subscriber{null} ** max_subscribers;
@@ -131,6 +136,7 @@ pub fn subscribe(ctx: *anyopaque, callback: Subscriber.Callback) !void {
 本シリーズでは汎用的に全ての割り込みに対して subscriber が呼び出されるようにしています。
 発生した割り込みが本当に興味のあるものかどうかを判断するのは、Subscriber の責任とします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/interrupt.zig
 pub fn dispatch(context: *Context) void {
     const vector = context.vector;
@@ -148,6 +154,7 @@ pub fn dispatch(context: *Context) void {
 Subscriber として適当な型 `A` と適当なハンドラ `blobSubscriber()` を用意します。
 ハンドラの中では、`self` が正しく取得できていることを確認するためにログを出力してすぐに panic させます:
 
+<!-- i18n:skip -->
 ```ymir/main.tmp.zig
 const A = struct { value: u64 };
 var something: A = .{ .value = 0xDEAD };
@@ -162,6 +169,7 @@ fn blobSubscriber(p: *anyopaque, _: *arch.intr.Context) void {
 
 実行すると以下のようになります。
 
+<!-- i18n:skip -->
 ```txt
 [DEBUG] main    | self: value = DEAD
 [ERROR] panic   | Subscriber is HERE!!!
@@ -176,6 +184,7 @@ fn blobSubscriber(p: *anyopaque, _: *arch.intr.Context) void {
 Subscriber は、割り込みが発生したらそれをゲストに注入するために割り込みの内容を記録しておく必要があります。
 ゲストに注入されるのを待っている IRQ の一覧を保持するための変数を `Vcpu` に追加します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 pub const Vcpu = struct {
     ...
@@ -202,6 +211,7 @@ Subscriber は、割り込みが発生すると `.pending_irq` に対応する�
 Ymir では IRQ 割り込みをベクタ `0x20` から `0x2F` の間にリマップしているため、
 これらのベクタが発生した場合に限って IRQ ビットをセットしましょう:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn intrSubscriberCallback(self_: *anyopaque, ctx: *isr.Context) void {
     const self: *Self = @alignCast(@ptrCast(self_));
@@ -216,6 +226,7 @@ fn intrSubscriberCallback(self_: *anyopaque, ctx: *isr.Context) void {
 この Subscriber は `loop()` の先頭で登録することにします。
 一度だけ呼び出される場所であれば、他にどこで呼び出しても問題ありません:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 pub fn loop(self: *Self) VmxError!void {
     intr.subscribe(self, intrSubscriberCallback) catch return error.InterruptFull;
@@ -238,6 +249,7 @@ IRQ をゲストに注入する関数を定義します。
 `injectExtIntr()` はゲストに割り込みを注入するための VMCS フィールドを設定する関数です。
 注入する割り込みの設定に成功した場合は `true` を返します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn injectExtIntr(self: *Self) VmxError!bool {
     const pending = self.pending_irq;
@@ -275,6 +287,7 @@ IRQ 0 から 15 の順番で、注入対象かどうかを確認します:
 以下で使っている `bits` は [ビット演算とテスト](../kernel/bit_and_test.md) で実装したライブラリです。
 `.pending_irq` のようなビットマップを扱う際に大活躍します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn injectExtIntr(self: *Self) VmxError!bool {
     ...
@@ -316,6 +329,7 @@ Interruption-Information は以下の構造を持ちます:
 
 Interruption-Information を以下のように定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/common.zig
 pub const EntryIntrInfo = packed struct(u32) {
     vector: u8,
@@ -346,6 +360,7 @@ pub const EntryIntrInfo = packed struct(u32) {
 なお、注入するベクタは IRQ のリマップを考慮して計算する必要があります。
 ゲストの IRQ がどのベクタにマップされているかは `Vcpu.pic` に記録されているため、IRQ の番号をこれに加算して注入するベクタを計算します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn injectExtIntr(self: *Self) VmxError!bool {
     ...
@@ -379,6 +394,7 @@ fn injectExtIntr(self: *Self) VmxError!bool {
 そこで、割り込みで VM Exit が発生した場合には **一時的に Ymir で割り込みを許可して割り込みを受け入れてあげる** 必要があります。
 `handleExit()` の `switch` に割り込み用の処理を追加します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 .extintr => {
     // Consume the interrupt by Ymir.
@@ -426,6 +442,7 @@ Ymir では他の方法として、HLT 命令の際に `.pending_irq` に IRQ �
 HLT が実行されたらホスト側で代わりに HLT をします。
 その際、STI をして割り込み許可モードにしてから HLT を実行し、Subscribers によって `.pending_irq` がセットされるまで待ちます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
     .hlt => {
         // Wait until the external interrupt is generated.
@@ -445,6 +462,7 @@ HLT が実行されたらホスト側で代わりに HLT をします。
 
 最後に Primary Processor-Based VM-Execution Controls を設定して HLT による VM Exit を有効化します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(vcpu: *Vcpu, _: Allocator) VmxError!void {
     ...
@@ -462,6 +480,7 @@ fn setupExecCtrls(vcpu: *Vcpu, _: Allocator) VmxError!void {
 さて、前チャプターでは `early exception` によってあまり起動が進みませんでしたが、今回の実装によってどこまで進むようになったでしょうか。
 ゲストを動かして確かめてみましょう:
 
+<!-- i18n:skip -->
 ```txt
 ...
 [    0.328952] sched_clock: Marking stable (328952424, 0)->(329000000, -47576)

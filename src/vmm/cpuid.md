@@ -4,6 +4,7 @@
 本チャプターでは、ゲストの CPUID 命令に対して適切な値を見せることで CPUID を仮想化します。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-vmm-cpuid`](https://github.com/smallkirby/ymir/tree/whiz-vmm-cpuid) ブランチにあります。
 
 ## Table of Contents
@@ -16,6 +17,7 @@
 この際、VMCS **Basic VM-Exit Information** カテゴリの **Basic Reason** フィールドに `0x0A`(`.cpuid`) が設定されます。
 VM Exit ハンドラである `handleExit()` において、CPUID を原因とする VM Exit に対してハンドラを呼び出すようにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 const cpuid = @import("cpuid.zig");
 
@@ -41,6 +43,7 @@ VM Exit を発生させた命令の長さを取得することができます。
 わざわざ自分で x64 命令セットのデコーダを書く必要がないのは非常に助かります。
 `stepNextInst()` ではこのフィールドの値を読み取って、RIP に加算することで次の命令を指すようにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn stepNextInst(_: *Self) VmxError!void {
     const rip = try vmread(vmcs.guest.rip);
@@ -53,6 +56,7 @@ fn stepNextInst(_: *Self) VmxError!void {
 `cpuid.handleCpuidExit()` は CPUID 命令に対するハンドラです。
 その雛形は以下のようになります:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cpuid.zig
 const cpuid = arch.cpuid;
 const Leaf = cpuid.Leaf;
@@ -77,6 +81,7 @@ CPUID の Leaf の数は非常に多いです。
 Ymir では、明示的にサポートする CPUID Leaf 以外は未サポートとということにします。
 未サポートの Leaf に対する CPUID 命令は、RAX/RBX/RCX/RDX レジスタの全てに `0` をセットするという仕様になっています:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cpuid.zig
 fn invalid(vcpu: *Vcpu) void {
     const gregs = &vcpu.guest_regs;
@@ -93,6 +98,7 @@ inline fn setValue(reg: *u64, val: u64) void {
 
 `Leaf` enum はそもそも全 Leaf を定義してるわけではなく、*Non-Exhaustive Enum* として定義されていました:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/cpuid.zig
 pub const Leaf = enum(u32) {
     ...
@@ -104,6 +110,7 @@ pub const Leaf = enum(u32) {
 Non-Exhaustive Enum は、`switch` において定義されていないフィールド(`_`)全てを `_ =>` で捕捉することができます[^non-exhaustive]。
 ひとまず個別の `Leaf` の対応を書く前に、全てのフィールドに対して `invalid()` を呼び出すようにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cpuid.zig
 switch (Leaf.from(regs.rax)) {
     _ => {
@@ -136,6 +143,7 @@ KVM 上で動作するゲストはこの Vendor ID から KVM 上で動作して
 Ymir では KVM にならい Vendor ID を `"YmirYmirYmir"` として返すことにします。
 もちろん Ymir に対応したゲストOSなんてものは存在しないので、この値を見てもゲストは何もできませんけどね!:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cpuid.zig
     .maximum_input => {
         setValue(&regs.rax, 0x20); // Maximum input value for basic CPUID.
@@ -154,6 +162,7 @@ Leaf `0x1` は CPU のバージョンとサポートする機能に関する情�
 バージョン情報は、Vendor ID がゲストが知らない値である以上何の意味も持ちません。
 ここではとりあえずホストの CPU が返すバージョン情報をそのまま返すことにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cpuid.zig
     .version_info => {
         const orig = Leaf.query(.version_info, null);
@@ -171,6 +180,7 @@ Feature Information の定義は以下のようになっていますが、長い
 <details>
 <summary>Feature Information の定義</summary>
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/cpuid.zig
 pub const FeatureInfoEcx = packed struct(u32) {
     /// Streaming SIMD Extensions 3 (SSE3).
@@ -312,6 +322,7 @@ pub const FeatureInfoEdx = packed struct(u32) {
 x64 は [`verify_cpu()` において必須の機能がサポートされているかどうかを確認](https://github.com/torvalds/linux/blob/de2f378f2b771b39594c04695feee86476743a69/arch/x86/include/asm/required-features.h#L76) し、
 サポートされていない場合には初期化処理を中止してしまいます:
 
+<!-- i18n:skip -->
 ```required-features.h
 #define REQUIRED_MASK0	(NEED_FPU|NEED_PSE|NEED_MSR|NEED_PAE|\
 			 NEED_CX8|NEED_PGE|NEED_FXSR|NEED_CMOV|\
@@ -332,6 +343,7 @@ Ymir ではこれらの必須機能を含む以下の機能をサポートする
 
 - ACPI: Ymir では一切サポートしません
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cpuid.zig
 const feature_info_ecx = cpuid.FeatureInfoEcx{
     .pcid = true,
@@ -365,6 +377,7 @@ const feature_info_edx = cpuid.FeatureInfoEdx{
 
 Ymir では Thermal and Power Management には一切対応しません:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cpuid.zig
     .thermal_power => invalid(vcpu),
 ```
@@ -382,6 +395,7 @@ Linux は Subleaf 1 以降の情報を取得しようとします。
 そのため、Subleaf 1,2 に関しては呼び出しを許容するものの、 `invalid()` を返すことにします。
 Subleaf 3 以降の呼び出しはエラーにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cpuid.zig
     .ext_feature => {
         switch (regs.rcx) {
@@ -406,6 +420,7 @@ EDX に格納される Feature Feature Flags は以下のようになってい�
 <details>
 <summary>Extended Feature Flags の定義</summary>
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/cpuid.zig
 pub const ExtFeatureEbx0 = packed struct(u32) {
     fsgsbase: bool = false,
@@ -452,6 +467,7 @@ Ymir では以下の機能をサポートします:
 - [SMAP](https://en.wikipedia.org/wiki/Supervisor_Mode_Access_Prevention)
 - [INVPCID](https://www.felixcloutier.com/x86/invpcid)
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cpuid.zig
 const ext_feature0_ebx = cpuid.ExtFeatureEbx0{
     .fsgsbase = false,
@@ -468,6 +484,7 @@ Leaf `0xD` は CPU の拡張機能に関する情報を返します。
 Subleaf 1 は [XSAVE](https://www.felixcloutier.com/x86/xsave) / [XRSTOR](https://www.felixcloutier.com/x86/xrstor) のサポートに関する情報を返します。
 Ymir では Subleaf 1 のみ呼び出しを許可(実際には未実装)し、それ以外の呼び出しはエラーとします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cpuid.zig
     .ext_enumeration => {
         switch (regs.rcx) {
@@ -489,6 +506,7 @@ Leaf `0x8000_0000` は CPU がサポートする最大の Extended Function Leaf
 Linux は [`verify_cpu()` においてこの値を取得し `0x8000_0001` 以上であることを要求する](https://github.com/torvalds/linux/blob/de2f378f2b771b39594c04695feee86476743a69/arch/x86/kernel/verify_cpu.S#L109) ため、
 Ymir でもそこまでをサポートするようにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cpuid.zig
     .ext_func => {
         setValue(&regs.rax, 0x8000_0000 + 1); // Maximum input value for extended function CPUID.
@@ -503,6 +521,7 @@ Ymir でもそこまでをサポートするようにします:
 Leaf `0x8000_0001` は syscall や Intel 64 などの拡張機能に関する情報を返します。
 Ymir ではこの Leaf はホストの値をパススルーします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cpuid.zig
     .ext_proc_signature => {
         const orig = Leaf.ext_proc_signature.query(null);
@@ -522,6 +541,7 @@ Ymir ではこの Leaf はホストの値をパススルーします:
 
 最後に、CPUID を仮想化した状態でゲストを実行してみましょう:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] main    | Entered VMX root operation.
 [INFO ] vmx     | Guest memory region: 0x0000000000000000 - 0x0000000006400000

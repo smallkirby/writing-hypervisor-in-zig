@@ -6,6 +6,7 @@
 これにより、タイマーやキーボード等の外部デバイスから割り込みを受け取ることができるようになります。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-ymir-pic`](https://github.com/smallkirby/ymir/tree/whiz-ymir-pic) ブランチにあります。
 
 ## Table of Contents
@@ -124,6 +125,7 @@ IMR の各ビットは対応する IRQ をマスクする。
 x64 では Primary PIC と Secondary PIC のそれぞれに対して Command Port と Data Port が用意されています[^port]。
 各 I/O ポートは以下のとおりです:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/pic.zig
 const primary_command_port: u16 = 0x20;
 const primary_data_port: u16 = primary_command_port + 1;
@@ -133,6 +135,7 @@ const secondary_data_port: u16 = secondary_command_port + 1;
 
 まずは ICW を定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/pic.zig
 const icw = enum { icw1, icw2, icw3, icw4 };
 const Icw = union(icw) {
@@ -185,6 +188,7 @@ C の共用体のように、`union` は active なフィールドを常に1つ�
 
 同様に OCW も定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/pic.zig
 const ocw = enum { ocw1, ocw2, ocw3 };
 const Ocw = union(ocw) {
@@ -231,6 +235,7 @@ const Ocw = union(ocw) {
 
 続いて、これらの CW を PIC に対して発行するためのヘルパー関数を定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/pic.zig
 const am = @import("asm.zig");
 
@@ -253,6 +258,7 @@ fn issue(cw: anytype, port: u16) void {
 
 この関数を使うと、PIC の初期化関数は簡単に書けます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/pic.zig
 pub const primary_vector_offset: usize = 32;
 pub const secondary_vector_offset: usize = primary_vector_offset + 8;
@@ -340,6 +346,7 @@ PIC の初期化はできました。
 
 まずは IRQ に対応する `enum` を定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/pic.zig
 pub const IrqLine = enum(u8) {
     timer = 0,
@@ -387,6 +394,7 @@ IRQ 番号を扱う際には、Primary と Secondary を合わせた連番 (`0`-
 
 `IrqLine` を指定して対応する IMR (マスク)を設定する関数を定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/pic.zig
 pub fn setMask(irq: IrqLine) void {
     const port = irq.dataPort();
@@ -404,6 +412,7 @@ IMR は各 PIC がそれぞれ持っており、IRQ の `0-7` と `8-15` はそ�
 
 最後に、指定した `IrqLine` に対して EOI を通知する関数を定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/pic.zig
 pub fn notifyEoi(irq: IrqLine) void {
     issue(
@@ -426,6 +435,7 @@ pub fn notifyEoi(irq: IrqLine) void {
 
 `kernelMain()` から PIC の初期化を実行しましょう (`arch.zig` において `pic.zig` を export するのを忘れずに):
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 arch.pic.init();
 log.info("Initialized PIC.", .{});
@@ -440,6 +450,7 @@ log.info("Initialized PIC.", .{});
 とはいっても、Ymir 自体は入力を受け付けて処理するような機能は実装しません。
 そのため、とりあえずログだけ出力したあと EOI を送信するだけの割り込みハンドラを用意します:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 fn blobIrqHandler(ctx: *arch.intr.Context) void {
     const vector: u16 = @intCast(ctx.vector - 0x20);
@@ -456,6 +467,7 @@ IRQ の番号を取得するには、割り込みベクタから ICW2 で設定�
 続いて、この割り込みハンドラを登録します。
 そういえば割り込みハンドラを登録する関数を実装していなかったため、ここで実装しておきます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/interrupt.zig
 pub fn registerHandler(comptime vector: u8, handler: Handler) void {
     handlers[vector] = handler;
@@ -469,6 +481,7 @@ pub fn registerHandler(comptime vector: u8, handler: Handler) void {
 
 `kernelMain()` で割り込みハンドラを登録し、PIC にシリアルの割り込みマスクを外すように指示します:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 arch.intr.registerHandler(idefs.pic_serial1, blobIrqHandler);
 arch.pic.unsetMask(.serial1);
@@ -480,6 +493,7 @@ arch.pic.unsetMask(.serial1);
 TX-available は、シリアル出力が完了し、出力バッファに新しいデータを書き込める状態になった場合に発生します。
 Rx-available は、シリアル入力がバッファから読み取り可能な状態になった場合に発生します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/serial.zig
 pub fn enableInterrupt(port: Ports) void {
     var ie = am.inb(@intFromEnum(port) + offsets.ier);
@@ -491,6 +505,7 @@ pub fn enableInterrupt(port: Ports) void {
 
 `idefs` は、`interrupts.zig` のインポートです:
 
+<!-- i18n:skip -->
 ```ymir/interrupts.zig
 const arch = @import("ymir").arch;
 
@@ -509,6 +524,7 @@ Tx-empty は、シリアル出力しようとしたデータが実際に送信�
 これでシリアルの割り込みが有効化されました。
 実際に実行してみましょう:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] main    | Booting Ymir...
 [INFO ] main    | Initialized GDT.
@@ -529,12 +545,14 @@ PIC の設定がちゃんとできていることの証拠ですね。
 その際、IER は固定で Tx-empty と Rx-available だけを有効化しておくように仮想化し、ゲストには触らせないようにする予定です。
 そのため、IER はあらかじめホストである Ymir が設定しておく必要があるというわけです:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/serial.zig
     ie |= @as(u8, 0b0000_0011); // Tx-empty, Rx-available
 ```
 
 また、ついでに [PIT](https://wiki.osdev.org/Programmable_Interval_Timer) もマスクだけ外しておきましょう:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 arch.intr.registerHandler(idefs.pic_timer, blobIrqHandler);
 arch.pic.unsetMask(.timer);

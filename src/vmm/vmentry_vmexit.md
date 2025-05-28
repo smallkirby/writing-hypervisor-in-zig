@@ -6,6 +6,7 @@
 本チャプターでは VM Entry と VM Exit の処理を実装し、適切に状態の保存・復元と VM Exit のハンドリングをするようにします。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-vmm-vmentry_vmexit`](https://github.com/smallkirby/ymir/tree/whiz-vmm-vmentry_vmexit) ブランチにあります。
 
 ## Table of Contents
@@ -18,6 +19,7 @@
 ひとまずここではゲストの汎用レジスタを記憶することにしましょう。
 保持するべき汎用レジスタの一覧を定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/common.zig
 pub const GuestRegisters = extern struct {
     rax: u64,
@@ -54,6 +56,7 @@ pub const GuestRegisters = extern struct {
 
 `Vcpu` 構造体にゲストの情報を保持する変数を持たせます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 pub const Vcpu = struct {
     ...
@@ -81,6 +84,7 @@ VMCS の状態を取得する方法はありません。
 そのため、VMM 側でこれらの状態を記録しておく必要があります。
 `Vcpu` に VMCS の状態を保持する変数を追加します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 pub const Vcpu = struct {
     ...
@@ -104,6 +108,7 @@ VM Entry には、以下の2種類の失敗があります:
 
 まず扱うのは前者のケースです:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 pub fn loop(self: *Self) VmxError!void {
     while (true) {
@@ -132,6 +137,7 @@ VMX 拡張命令にはさらに2通りのエラーが存在します:
 VMCS の設定が適切にされていれば VMX 拡張命令は失敗することがありません。
 そのため、Ymir では VM Entry 時のエラーは復帰不可能とみなし、`self.abort()` でアボートします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
     pub fn abort(self: *Self) noreturn {
         @setCold(true);
@@ -188,6 +194,7 @@ VMCS の設定が適切にされていれば VMX 拡張命令は失敗するこ�
 
 さきほど出てきた `vmentry()` はアセンブリの VMLAUNCH / VMRESUME をラップする関数です:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn vmentry(self: *Self) VmxError!void {
     const success = asm volatile (
@@ -235,6 +242,7 @@ VM Entry に失敗した場合には、VMX Instruction Error があるかどう�
 まずは x64 における callee-saved レジスタたちを保存します[^callee-saved]。
 本当は RSP も callee-saved ですが、RSP はのちほど別の方法で保存します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/asm.zig
 export fn asmVmEntry() callconv(.Naked) u8 {
     // Save callee saved registers.
@@ -257,6 +265,7 @@ export fn asmVmEntry() callconv(.Naked) u8 {
 `comptimePrint()` はコンパイル時に評価される文字列を生成できるため、`asm volatile()` の引数として指定することができます。
 このようにオフセットを計算することで、**`.guest_regs` のオフセットが変わったとしてもコードを修正する必要がなくなります**:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/asm.zig
     // Save a pointer to guest registers
     asm volatile (std.fmt.comptimePrint(
@@ -271,6 +280,7 @@ export fn asmVmEntry() callconv(.Naked) u8 {
 RSP は VMCS Host-State に保存する必要があるという意味で特別です。
 VMWRITE をアセンブリから呼び出すのは面倒なため、ここでは C calling convention の関数を実装します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 export fn setHostStack(rsp: u64) callconv(.C) void {
     vmwrite(vmcs.host.rsp, rsp) catch {};
@@ -279,6 +289,7 @@ export fn setHostStack(rsp: u64) callconv(.C) void {
 
 これを `asmVmEntry()` から CALL します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/asm.zig
     // Set host stack
     asm volatile (
@@ -306,6 +317,7 @@ PUSH を挟むため、`setHostStack()` に渡す引数には `+8(RSP)` を指�
 結果は RDI に入れます。
 `.launch_done` が `true` であれば `RFLAGS.ZF` が `1` になります:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/asm.zig
     // Determine VMLAUNCH or VMRESUME.
     asm volatile (std.fmt.comptimePrint(
@@ -322,6 +334,7 @@ PUSH を挟むため、`setHostStack()` に渡す引数には `+8(RSP)` を指�
 `.guest_regs` からゲストのレジスタを取り出し順にセットしていきます。
 RAX に `&.guest_regs` を入れるため、RAX だけは最後にセットします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/asm.zig
     // Restore guest registers.
     asm volatile (std.fmt.comptimePrint(
@@ -380,6 +393,7 @@ RAX に `&.guest_regs` を入れるため、RAX だけは最後にセットし�
 この時点で `RFLAGS.ZF` には VMLAUNCH と VMRESUME のどちらを実行するべきかが格納されています。
 その値に応じて適切な方を呼び出しましょう:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/asm.zig
     // VMLAUNCH or VMRESUME.
     asm volatile (
@@ -394,6 +408,7 @@ VM Entry が成功すれば処理はゲストに移るため、このあとの�
 VMX 拡張命令が失敗した場合には続く命令が実行されます。
 そのため、続けてエラーハンドリングを書きます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/asm.zig
     // Set return value to 1.
     asm volatile (
@@ -427,6 +442,7 @@ VM Exit した時点ではスタックは先ほどの図の黄色部分のよう
 最も上には `&.guest_regs` が積んであります。
 ゲストの状態を保存するために使うため、まずはこれを取り出しましょう:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/asm.zig
 pub fn asmVmExit() callconv(.Naked) void {
     // Disable IRQ.
@@ -447,6 +463,7 @@ RAX はスクラッチレジスタとして使います。
 
 続いてゲストのレジスタを `guest_regs` に保存します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/asm.zig
     // Save guest registers.
     asm volatile (std.fmt.comptimePrint(
@@ -509,6 +526,7 @@ RAX はスクラッチレジスタとして使います。
 
 ゲストの状態を保存したら、スタックに積んでいたゲストの callee-saved レジスタを復元します。
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/asm.zig
     // Restore callee saved registers.
     asm volatile (
@@ -525,6 +543,7 @@ RAX はスクラッチレジスタとして使います。
 よって、ここで RET すると `vmentry()` に復帰することができます。
 呼び出し側は、**あたかも `asmVmEntry()` を関数呼び出ししたかのように処理を続行することができます**:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/asm.zig
     // Return to caller of asmVmEntry()
     asm volatile (
@@ -539,6 +558,7 @@ RAX はスクラッチレジスタとして使います。
 このあとは、VM Exit した要因に応じて適切な処理をしてあげます。
 VM Exit のハンドラ関数を定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
     switch (exit_info.basic_reason) {
@@ -565,6 +585,7 @@ fn stepNextInst(_: *Self) VmxError!void {
 
 `ExitInfo` は VMCS **VM-Exit Information** カテゴリの **Basic VM-Exit Information** フィールドから取得することができます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 pub fn loop(self: *Self) VmxError!void {
     while (true) {
@@ -579,6 +600,7 @@ Exit ハンドラを呼び出したあとは、`while` ループの先頭に戻�
 
 最後に、`setupHostState()` で `vmwrite()` を使って VM Exit 時のエントリポイントを設定しておきます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 let vmam = @import("asm.zig");
 
@@ -595,6 +617,7 @@ fn setupHostState(_: *Vcpu) VmxError!void {
 VMCS Execution Controls の Primary Processor-based Controls における `.hlt` は `true` に設定して、HLT 命令で VM Exit するようにしておいてください。
 この状態でゲストを実行すると、以下のような出力になります:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] main    | Entered VMX root operation.
 [INFO ] main    | Starting the virtual machine...

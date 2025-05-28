@@ -5,6 +5,7 @@
 それにより VMX Non-root Operation でゲストが実行できることを目標とします。
 
 > [!IMPORTANT]
+>
 > 本チャプターの最終コードは [`whiz-vmm-vmlaunch`](https://github.com/smallkirby/ymir/tree/whiz-vmm-vmlaunch) ブランチにあります。
 
 ## Table of Contents
@@ -19,6 +20,7 @@
 
 まずは本チャプターにおいてゲストとして実行する関数を定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 export fn blobGuest() callconv(.Naked) noreturn {
     while (true) asm volatile ("hlt");
@@ -48,6 +50,7 @@ Calling Convention は `.Naked` にしています。
 
 **Pin-Based VM-Execution Controls**[^pbec] (以下 *Pin-Based Controls*) は例外などの非同期イベントを制御する 32bit のデータ構造です:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmcs.zig
 pub const PinExecCtrl = packed struct(u32) {
     const Self = @This();
@@ -84,6 +87,7 @@ pub const PinExecCtrl = packed struct(u32) {
 <details>
 <summary>一応ここにも定義を示しておきます:</summary>
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmcs.zig
 pub const ctrl = enum(u32) {
     // Natural-width fields.
@@ -166,6 +170,7 @@ pub const ctrl = enum(u32) {
 
 Execution Control を設定する関数において Pin-Based Controls を設定します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(_: *Vcpu, _: Allocator) VmxError!void {
     const basic_msr = am.readMsrVmxBasic();
@@ -194,6 +199,7 @@ Pin-Based Controls では、`IA32_VMX_BASIC` MSR の 55-th bit (`.true_control`)
 
 今後も *Allowed 0/1-settings* は頻繁に登場するため、VMCS フィールドに対してこれらの settings を適用するヘルパー関数を用意します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn adjustRegMandatoryBits(control: anytype, mask: u64) @TypeOf(control) {
     var ret: u32 = @bitCast(control);
@@ -211,6 +217,7 @@ fn adjustRegMandatoryBits(control: anytype, mask: u64) @TypeOf(control) {
 **Primary Processor-Based Controls** (32bits) と **Secondary Processor-Based Controls** (64bits) の2つがあります。
 本チャプターでは Primary の方だけを設定します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmcs.zig
 pub const PrimaryProcExecCtrl = packed struct(u32) {
     const Self = @This();
@@ -258,6 +265,7 @@ pub const PrimaryProcExecCtrl = packed struct(u32) {
 
 同様に `setupExecCtrls()` で Primary Processor-Based Controls を設定します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(_: *Vcpu, _: Allocator) VmxError!void {
     ...
@@ -289,6 +297,7 @@ Pin-Based Controls と同様に、Reserved Bits は MSR を参照して設定す
 Control Registers は VM Exit した際の CR0, CR3, CR4 の値を制御します。
 本シリーズでは VM Exit 後のホストの状態は VMLAUNCH 直前の状態と同じにしたいため、現在のホストの状態をそのまま設定します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupHostState(_: *Vcpu) VmxError!void {
     // Control registers.
@@ -304,6 +313,7 @@ fn setupHostState(_: *Vcpu) VmxError!void {
 この2つのフィールドは VM Exit 直後に VMM のレジスタにセットされ、実行コンテキストを復元します。
 今はとりあえずゲストを動かすことが目標であるため、一時的な値をセットします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
     // RSP / RIP
     try vmwrite(vmcs.host.rip, &vmexitBootstrapHandler);
@@ -316,6 +326,7 @@ VMM はまだレジスタの復元をしていないことに注意してくだ�
 この関数が呼び出された時点で RBP やその他の汎用レジスタは一切セットされていません。
 そのため、この関数は関数のプロローグを消すために `.Naked` calling convention を使っています:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 const temp_stack_size: usize = mem.page_size;
 var temp_stack: [temp_stack_size + 0x10]u8 align(0x10) = [_]u8{0} ** (temp_stack_size + 0x10);
@@ -343,6 +354,7 @@ VM Exit が発生すると、その原因は VMCS VM-Exit Information カテゴ�
 <details>
 <summary>VM Exit Reason and Host</summary>
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmcs.zig
 pub const ExitInfo = packed struct(u32) {
     basic_reason: ExitReason,
@@ -485,6 +497,7 @@ pub const host = enum(u32) {
 実際にアドレス変換に使われる場合には Base まで指定するという区別であると推測されます。
 GDTR / IDTR はそもそも Base しか持たないため、セレクタは指定できません:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupHostState(_: *Vcpu) VmxError!void {
     ...
@@ -508,6 +521,7 @@ fn setupHostState(_: *Vcpu) VmxError!void {
 
 セグメントレジスタのセレクタは以下のアセンブリ関数で取得します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/asm.zig
 const Segment = enum {
     cs,
@@ -560,6 +574,7 @@ GDTR と IDTR の Base はそれぞれ [SGDT](https://www.felixcloutier.com/x86/
 <details>
 <summary>SIDT/SGDT の実装</summary>
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/asm.zig
 const SgdtRet = packed struct {
     limit: u16,
@@ -605,6 +620,7 @@ pub inline fn sidt() SidtRet {
 `IA32_PAT` はページのキャッシュ属性を定義することができる MSR ですがやはり本シリーズでは使いません。
 `IA32_EFER` (address: `0xC0000080`) は 64bit モードの有効化等に必須の MSR であるため、この MSR だけ設定します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupHostState(_: *Vcpu) VmxError!void {
     ...
@@ -623,6 +639,7 @@ fn setupHostState(_: *Vcpu) VmxError!void {
 Control Registers は VM Entry した際のゲストの CR0, CR3, CR4 の値を制御します。
 本チャプターではこれらの値はホストと共有することにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupGuestState(_: *Vcpu) VmxError!void {
     // Control registers.
@@ -643,6 +660,7 @@ Base はどのセグメントでも利用しないため、適当に `0` を入�
 LDTR だけは `0xDEAD00` を入れておきます。
 これは実際に使うことはありませんが、**現在動いているのが VMM なのかゲストなのかを区別するためのマーカーとして使います**:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
     try vmwrite(vmcs.guest.cs_base, 0);
     try vmwrite(vmcs.guest.ss_base, 0);
@@ -658,6 +676,7 @@ LDTR だけは `0xDEAD00` を入れておきます。
 
 Limit に関しても使わないので、とりあえずとり得る最大値を入れておきます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
     try vmwrite(vmcs.guest.cs_limit, @as(u64, std.math.maxInt(u32)));
     try vmwrite(vmcs.guest.ss_limit, @as(u64, std.math.maxInt(u32)));
@@ -676,6 +695,7 @@ Limit に関しても使わないので、とりあえずとり得る最大値�
 利用するセグメントは CS だけです。
 そのため、CS にだけホストと同じセレクタを入れておきます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
     try vmwrite(vmcs.guest.cs_sel, am.readSegSelector(.cs));
     try vmwrite(vmcs.guest.ss_sel, 0);
@@ -692,6 +712,7 @@ Limit に関しても使わないので、とりあえずとり得る最大値�
 しかしフォーマットが微妙に異なるので改めて VMCS 用に定義します。
 各フィールドの意味については [GDTのチャプター](../kernel/gdt.md) のものと同じであるためそちらを参照してください:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/common.zig
 pub const SegmentRights = packed struct(u32) {
     const gdt = @import("../gdt.zig");
@@ -716,6 +737,7 @@ pub const SegmentRights = packed struct(u32) {
 正直今回は CS だけ正しく設定できていればよいのですが、せっかくなので他のセグメントも一緒に設定してしまいます。
 
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
     const cs_right = vmx.SegmentRights{
         .rw = true,
@@ -781,6 +803,7 @@ RFLAGS も初期化する必要があります。
 その中でも今回は `IA32_EFER` だけを設定します。
 この MSR は 64bit モードを有効化するために必須です:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
     try vmwrite(vmcs.guest.rip, &blobGuest);
     try vmwrite(vmcs.guest.efer, am.readMsr(.efer));
@@ -791,6 +814,7 @@ RFLAGS も初期化する必要があります。
 このフィールドは VMCS shadowing をする場合に利用されます。
 利用しない場合には `0xFFFF_FFFF_FFFF_FFFF` を入れておく決まりがあるため、従います:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
     try vmwrite(vmcs.guest.vmcs_link_pointer, std.math.maxInt(u64));
 ```
@@ -800,6 +824,7 @@ RFLAGS も初期化する必要があります。
 このカテゴリは VM Entry におけるプロセッサの挙動を制御します[^entryctrl]。
 設定する項目が少ない癒やし枠です:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmcs.zig
 pub const EntryCtrl = packed struct(u32) {
     pub const Self = @This();
@@ -839,6 +864,7 @@ pub const EntryCtrl = packed struct(u32) {
 このフィールドは VM Entry 後にゲストが IA-32e モードで動作することを示します。
 これが有効になっている場合、VM Entry 後に `IA32_EFER.LMA` (Long Mode Activate) ビットがセットされ、64bit モードとして動作することができます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupEntryCtrls(_: *Vcpu) VmxError!void {
     const basic_msr = am.readMsrVmxBasic();
@@ -861,6 +887,7 @@ fn setupEntryCtrls(_: *Vcpu) VmxError!void {
 しかし、Secondary は設定項目が1つしかない上に本シリーズでは Primary しか使いません。
 こいつも設定する項目が少ない癒やし枠その2です:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmcs.zig
 pub const PrimaryExitCtrl = packed struct(u32) {
     const Self = @This();
@@ -905,6 +932,7 @@ pub const PrimaryExitCtrl = packed struct(u32) {
 このフィールドは VM Exit 後にホストが 64bit モードで動作することを示します。
 これが有効になっている場合、VM Exit 後に `IA32_EFER.LME` (Long Mode Enable) と `IA32_EFER.LMA` (Long Mode Activate) ビットがセットされ、64bit モードとして動作することができます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExitCtrls(_: *Vcpu) VmxError!void {
     const basic_msr = am.readMsrVmxBasic();
@@ -926,6 +954,7 @@ fn setupExitCtrls(_: *Vcpu) VmxError!void {
 以上で VMCS の設定ができました。
 最後に VMLAUNCH 命令を実行して VMX Non-root Operation に遷移します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
 pub fn loop(_: *Self) VmxError!void {
     const rflags = asm volatile (
@@ -954,6 +983,7 @@ VM Entry は2通りの失敗をする可能性があります:
 `Vmx` に `Vcpu.loop()` を呼び出す関数を追加します。
 のちのチャプターで扱いますが、Ymir は一度 VM を動かし始めると原則としてホスト側での割り込みを禁止するようにします:
 
+<!-- i18n:skip -->
 ```ymir/vmx.zig
 pub fn loop(self: *Self) Error!void {
     arch.disableIntr();
@@ -963,6 +993,7 @@ pub fn loop(self: *Self) Error!void {
 
 これを `kernelMain()` から呼び出します:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 // Launch
 log.info("Starting the virtual machine...", .{});
@@ -971,6 +1002,7 @@ try vm.loop();
 
 出力は以下のようになります:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] main    | Entered VMX root operation.
 [INFO ] main    | Starting the virtual machine...
@@ -979,6 +1011,7 @@ try vm.loop();
 無限 HLT ループで止まっているようです。
 この状態で QEMU monitor でレジスタの状態を確認してみましょう:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] main    | Starting the virtual machine...
 QEMU 8.2.2 monitor - type 'help' for more information
@@ -1013,6 +1046,7 @@ VMCS Guest-State でこの値はマーカーとして `0xDEAD00` に設定して
 
 また、RIP の値 `0xFFFFFFFF8010A6B1` について `addr2line` でコードのどの部分に該当するかを確認してみます:
 
+<!-- i18n:skip -->
 ```sh
 > addr2line -e ./zig-out/bin/ymir.elf 0xFFFFFFFF8010A6B1
 /home/lysithea/ymir/ymir/arch/x86/vmx/vcpu.zig:390
@@ -1029,6 +1063,7 @@ VMCS Guest-State でこの値はマーカーとして `0xDEAD00` に設定して
 もう1つ実験として、Execution Control カテゴリの Primary Processor-Based Controls において、`.hlt` フィールドを `true` に設定してみましょう。
 これによってゲストが HLT を実行すると VM Exit するようになります:
 
+<!-- i18n:skip -->
 ```diff
      var ppb_exec_ctrl = try vmcs.PrimaryProcExecCtrl.store();
 -    ppb_exec_ctrl.hlt = false;
@@ -1038,6 +1073,7 @@ VMCS Guest-State でこの値はマーカーとして `0xDEAD00` に設定して
 
 実行すると以下の出力になります:
 
+<!-- i18n:skip -->
 ```txt
 [INFO ] main    | Starting the virtual machine...
 [DEBUG] vcpu    | [VMEXIT handler]
