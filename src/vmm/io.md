@@ -697,7 +697,6 @@ fn handleIoIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
 }
 
 fn handleIoOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
-    const regs = &vcpu.guest_regs;
     switch (qual.port) {
         0x0020...0x0021 => try handlePicOut(vcpu, qual),
         0x0040...0x0047 => try handlePitOut(vcpu, qual),
