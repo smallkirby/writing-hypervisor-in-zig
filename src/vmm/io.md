@@ -527,7 +527,7 @@ pub const Pic = struct {
         phase1,         // After ICW1 is sent.
         phase2,         // After ICW2 is sent.
         phase3,         // After ICW3 is sent.
-        initialized,    // After ICW4 is sent and intialization is complete.
+        initialized,    // After ICW4 is sent and initialization is complete.
     };
 
     pub fn new() Pic {
