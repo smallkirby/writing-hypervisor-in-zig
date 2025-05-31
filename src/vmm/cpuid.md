@@ -41,7 +41,7 @@ x64 は [CISC](https://en.wikipedia.org/wiki/Complex_instruction_set_computer) �
 幸いなことに、VMCS VM-Exit Information には **Exit Instruction Length** フィールドが存在し、
 VM Exit を発生させた命令の長さを取得することができます。
 わざわざ自分で x64 命令セットのデコーダを書く必要がないのは非常に助かります。
-`stepNextInst()` ではこのフィールドの値を読み取って、RIP に加算することで次の命令を指すようにします:
+この関数は既に定義済みなので、ここでは念のため説明します:
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
@@ -120,6 +120,8 @@ switch (Leaf.from(regs.rax)) {
 }
 ```
 
+すべてのスイッチ プロングが実装されるまで、これはコンパイルされないことに注意してください。
+
 ## Leaf ごとの対応
 
 Leaf ごとにゲストに見せたい値を定義していきます。
@@ -164,8 +166,8 @@ Leaf `0x1` は CPU のバージョンとサポートする機能に関する情�
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cpuid.zig
-    .version_info => {
-        const orig = Leaf.query(.version_info, null);
+    .vers_and_feat_info => {
+        const orig = Leaf.query(.vers_and_feat_info, null);
         setValue(&regs.rax, orig.eax); // Version information.
         setValue(&regs.rbx, orig.ebx); // Brand index / CLFLUSH line size / Addressable IDs / Initial APIC ID
         setValue(&regs.rcx, @as(u32, @bitCast(feature_info_ecx)));
