@@ -610,11 +610,10 @@ fn handlePicOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
                 pic.primary_phase = .phase2;
             },
             .phase2 =>
-                if (dx != (1 << 2)) vcpu.abort(),
-                else pic.primary_phase = .phase3,
+                if (dx != (1 << 2)) { vcpu.abort(); },
+                else { pic.primary_phase = .phase3; },
             .phase3 => pic.primary_phase = .inited,
         },
-
         // Secondary PIC command.
         0xA0 => switch (dx) {
             0x11 => pic.secondary_phase = .phase1,
@@ -632,8 +631,8 @@ fn handlePicOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
                 pic.secondary_phase = .phase2;
             },
             .phase2 =>
-                if (dx != 2) vcpu.abort(),
-                else pic.secondary_phase = .phase3,
+                if (dx != 2) { vcpu.abort(); },
+                else { pic.secondary_phase = .phase3; },
             .phase3 => pic.secondary_phase = .inited,
         },
         else => vcpu.abort(),
