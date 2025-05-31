@@ -78,6 +78,12 @@ Qualification の `.string` で表現されるような [OUTS](https://www.felix
 今のところはどのポートに対するハンドラも定義していないため、全ポートアクセスを `else` で捕捉し、アボートすることにします:
 
 ```ymir/arch/x86/vmx/io.zig
+const std = @import("std");
+const Vcpu = @import("vcpu.zig").Vcpu;
+const QualIo = @import("common.zig").qual.QualIo;
+const VmxError = @import("common.zig").VmxError;
+const log = std.log.scoped(.io);
+
 pub fn handleIo(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     return switch (qual.direction) {
         .in => try handleIoIn(vcpu, qual),
@@ -109,6 +115,10 @@ VM Exit ハンドラである `Vcpu.handleExit()` では、Exit Reason が `.io`
 取得した Qualification を先ほどのハンドラに渡せば、雛形の完成です:
 
 ```ymir/arch/x86/vmx/vcpu.zig
+const io = @import("io.zig");
+...
+pub const Vcpu = struct {
+    ...
     fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
         switch (exit_info.basic_reason) {
             .io => {
@@ -239,6 +249,8 @@ pub const Serial = struct {
 読み込みで使われるレジスタは、RX / DLL / IER / DLH / IIR / LCR / MCR / LSR / MSR / SR です:
 
 ```ymir/arch/x86/vmx/io.zig
+const am = @import("../asm.zig");
+
 fn handleSerialIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     const regs = &vcpu.guest_regs;
     switch (qual.port) {
@@ -278,7 +290,7 @@ fn handleSerialIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
 よって分岐の数は少なくなります:
 
 ```ymir/arch/x86/vmx/io.zig
-const sr = arch.serial;
+const sr = @import("../serial.zig");
 
 fn handleSerialOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     const regs = &vcpu.guest_regs;
