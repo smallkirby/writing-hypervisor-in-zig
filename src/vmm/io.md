@@ -245,6 +245,16 @@ pub const Serial = struct {
 };
 ```
 
+```ymir/arch/x86/vmx/vcpu.zig
+pub const Vcpu = struct {
+    ...
+    /// 8250 serial port.
+    serial: io.Serial = io.Serial.new(),
+
+    ...
+};
+```
+
 まずは読み込みアクセスについて仮想化します。
 読み込みで使われるレジスタは、RX / DLL / IER / DLH / IIR / LCR / MCR / LSR / MSR / SR です:
 
@@ -469,6 +479,16 @@ pub const Pic = struct {
             .secondary_mask = 0xFF,
         };
     }
+};
+```
+
+```ymir/arch/x86/vmx/vcpu.zig
+pub const Vcpu = struct {
+    ...
+    /// PIC
+    pic: io.Pic = io.Pic.new(),
+
+    ...
 };
 ```
 
