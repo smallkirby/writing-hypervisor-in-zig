@@ -523,11 +523,11 @@ pub const Pic = struct {
     secondary_base: u8 = 0,
 
     const InitPhase = enum {
-        uninitialized,  // ICW1 が送信される前
-        phase1,         // ICW1 が送信された後
-        phase2,         // ICW2 が送信された後
-        phase3,         // ICW3 が送信された後
-        inited,         // ICW4 が送信され初期化終了
+        uninitialized,  // Before ICW1 is sent.
+        phase1,         // After ICW1 is sent.
+        phase2,         // After ICW2 is sent.
+        phase3,         // After ICW3 is sent.
+        inited,         // After ICW4 is sent and intialization is complete.
     };
 
     pub fn new() Pic {
