@@ -408,6 +408,49 @@ fn handlePitOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
 }
 ```
 
+<details>
+<summary>命令の定義: `in`、`ink`、`out`、`out`:</summary>
+
+```ymir/arch/x86/asm.zig
+...
+pub inline fn inw(port: u16) u16 {
+    return asm volatile (
+        \\inw %[port], %[ret]
+        : [ret] "={ax}" (-> u16),
+        : [port] "{dx}" (port),
+    );
+}
+
+pub inline fn inl(port: u16) u32 {
+    return asm volatile (
+        \\inl %[port], %[ret]
+        : [ret] "={eax}" (-> u32),
+        : [port] "{dx}" (port),
+    );
+}
+...
+pub inline fn outw(value: u16, port: u16) void {
+    asm volatile (
+        \\outw %[value], %[port]
+        :
+        : [value] "{ax}" (value),
+          [port] "{dx}" (port),
+    );
+}
+
+pub inline fn outl(value: u32, port: u16) void {
+    asm volatile (
+        \\outl %[value], %[port]
+        :
+        : [value] "{eax}" (value),
+          [port] "{dx}" (port),
+    );
+}
+...
+```
+
+</details>
+
 このへんは、前述した I/O Bitmap を使ってパススルーすることで、より簡単にかつ効率的に実装することができます。
 興味がある人はぜひ [本家 Ymir](https://github.com/smallkirby/ymir) を参照しつつ実装してみてください。
 今回は、唯一アクセスサイズによる分岐だけをおこないパススルーしています。
