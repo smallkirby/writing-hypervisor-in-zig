@@ -213,6 +213,10 @@ Ymir では IRQ 割り込みをベクタ `0x20` から `0x2F` の間にリマッ
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
+const isr = @import("../isr.zig");
+const intr = @import("../interrupt.zig");
+const bits = ymir.bits;
+
 fn intrSubscriberCallback(self_: *anyopaque, ctx: *isr.Context) void {
     const self: *Self = @alignCast(@ptrCast(self_));
     const vector = ctx.vector;
@@ -289,6 +293,8 @@ IRQ 0 から 15 の順番で、注入対象かどうかを確認します:
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
+const IrqLine = @import("../pic.zig").IrqLine;
+
 fn injectExtIntr(self: *Self) VmxError!bool {
     ...
     const is_secondary_masked = bits.isset(self.pic.primary_mask, IrqLine.secondary);
