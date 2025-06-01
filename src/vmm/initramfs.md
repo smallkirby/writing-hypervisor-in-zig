@@ -192,7 +192,7 @@ pub const layout = struct {
 };
 ```
 
-`loadKernel()` で initramfs をロードします:
+`loadKernel() で initramfs をロードし、`kernelMain` から `initrd` を渡します:
 
 <!-- i18n:skip -->
 ```ymir/vmx.zig
@@ -202,6 +202,26 @@ fn loadKernel(self: *Self, kernel: []u8, initrd: []u8) Error!void {
     bp.hdr.ramdisk_image = linux.layout.initrd;
     bp.hdr.ramdisk_size = @truncate(initrd.len);
     try loadImage(guest_mem, initrd, linux.layout.initrd);
+    ...
+}
+
+pub fn setupGuestMemory(
+    self: *Self,
+    guest_image: []u8,
+    initrd: []u8,
+    allocator: Allocator,
+    page_allocator: *PageAllocator,
+) Error!void {
+    ...
+    try self.loadKernel(guest_image, initrd);
+    ...
+}
+```
+
+```ymir/main.zig
+fn kernelMain(boot_info: surtr.BootInfo) !void {
+    ...
+    try vm.setupGuestMemory(guest_kernel, initrd, general_allocator, &mem.page_allocator_instance);
     ...
 }
 ```
