@@ -157,8 +157,14 @@ Subscriber として適当な型 `A` と適当なハンドラ `blobSubscriber()`
 <!-- i18n:skip -->
 ```ymir/main.tmp.zig
 const A = struct { value: u64 };
-var something: A = .{ .value = 0xDEAD };
-try arch.intr.subscribe(&something, blobSubscriber);
+
+fn kernelMain(boot_info: surtr.BootInfo) !void {
+    ...
+    // Just before VM creation
+    var something: A = .{ .value = 0xDEAD };
+    try arch.intr.subscribe(&something, blobSubscriber);
+    ...
+}
 
 fn blobSubscriber(p: *anyopaque, _: *arch.intr.Context) void {
     const self: *A = @alignCast(@ptrCast(p));
