@@ -49,5 +49,5 @@ renderer = ["html"]
 command = "mdbook-mermaid"
 
 [preprocessor.gettext]
-before = ["toc", "codename"]
+before = ["toc", "codename", "mermaid"]
 after = ["links", "callouts"]

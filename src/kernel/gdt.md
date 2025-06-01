@@ -172,6 +172,7 @@ Linux と異なり、GS も現在は使う予定がありません。
 
 Figure 3-8 で示される GDT エントリを定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/gdt.zig
 pub const SegmentDescriptor = packed struct(u64) {
     /// Lower 16 bits of the segment limit.
@@ -230,6 +231,7 @@ pub const Granularity = enum(u1) {
 
 続いて、TSS 用のエントリを作成します。他のディスクリプタとは異なり、TSS Descriptor は 16byte なので新しい構造体を定義します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/gdt.zig
 const TssDescriptor = packed struct(u128) {
     /// Lower 16 bits of the segment limit.
@@ -284,6 +286,7 @@ CS/SS を除く使わない Segment Selector には *NULL segment selector* を�
 
 それではコードセグメント・データセグメントを初期化していきます:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/gdt.zig
 const max_num_gdt = 0x10;
 
@@ -296,6 +299,7 @@ GDT のエントリ数は可変であり自由に決めることができる[^nu
 この個数分だけ GDT エントリの配列を用意します。
 `newNull()` は空のエントリを作成する関数です:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/gdt.zig
 pub fn newNull() SegmentDescriptor {
     return @bitCast(@as(u64, 0));
@@ -334,6 +338,7 @@ Segment Descriptor エントリはフィールド数も多くて初期化がめ�
 必要なエントリを初期化しましょう。
 今回はコード・データセグメント用の2つを作成し、CS は前者を、DS/ES/FS/GS は後者を指すようにします:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/gdt.zig
 pub const kernel_ds_index: u16 = 0x01;
 pub const kernel_cs_index: u16 = 0x02;
@@ -367,6 +372,7 @@ CS と DS の違いは `executable` かどうかだけです。
 
 続いて、TSS を設定します。TSS セグメントは使わないため適当な領域を1ページ分確保し、TSS Descriptor がそこを指すように設定します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/gdt.zig
 /// Unused TSS segment.
 const tssUnused: [4096]u8 align(4096) = [_]u8{0} ** 4096;
@@ -406,6 +412,7 @@ fn loadKernelTss() void {
 
 GDT 自体の初期化が終わったため、GDT Register に GDT のアドレスを設定します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/gdt.zig
 const GdtRegister = packed struct {
     limit: u16,
@@ -438,6 +445,7 @@ GDTR は GDT のアドレスとサイズのみを持ちます。
 
 `am.lgdt()` は [LGDT](https://www.felixcloutier.com/x86/lgdt:lidt) 命令をするだけのアセンブリ関数です:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/asm.zig
 pub inline fn lgdt(gdtr: u64) void {
     asm volatile (
@@ -454,6 +462,7 @@ GDT の初期化は終わりましたが、まだ新しいセグメントの設�
 なぜならば、**セグメントの *Base* は Segment Register の Hidden Part にキャッシュされているから**です。
 Segment Register の selector 部に新しく GDT のインデックスを設定し Hidden Part をフラッシュすることで、初めて新しいセグメント設定が使われるようになります:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/gdt.zig
 fn loadKernelDs() void {
     asm volatile (
@@ -479,6 +488,7 @@ DI レジスタを使って代入しているため、DI レジスタを [clobbe
 ただし、CS レジスタに関しては直接 MOV はできません。
 そのため、[Long Return](https://docs.oracle.com/cd/E19620-01/805-4693/instructionset-68/index.html) することで CS を設定します:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/gdt.zig
 fn loadKernelCs() void {
     asm volatile (
@@ -507,6 +517,7 @@ RIP は変更させたくないため `lret` の直後のアドレスを PUSH �
 以上で GDT の更新が反映されるようになります。
 `init()` から呼び出すようにしておきましょう:
 
+<!-- i18n:skip -->
 ```ymir/arch/x86/gdt.zig
 pub fn init() void {
     ...
@@ -520,6 +531,7 @@ pub fn init() void {
 
 実装した GDT の初期化関数を `kernelMain()` から呼び出すようにします:
 
+<!-- i18n:skip -->
 ```ymir/main.zig
 arch.gdt.init();
 log.info("Initialized GDT.", .{});
@@ -528,6 +540,7 @@ log.info("Initialized GDT.", .{});
 実行すると、見た目は何も変わらず HLT ループまで到達すると思います。
 そこで QEMU monitor を立ち上げ、レジスタをチェックしてみましょう:
 
+<!-- i18n:skip -->
 ```txt
 QEMU 8.2.2 monitor - type 'help' for more information
 (qemu) info registers
