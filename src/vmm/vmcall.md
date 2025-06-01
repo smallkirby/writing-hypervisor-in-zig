@@ -87,6 +87,22 @@ fn vmcHello(_: *Vcpu) VmxError!void {
 }
 ```
 
+次に、VMCALL ケースを `Vcpu.handleExit` 関数に追加します:
+
+```ymir/arch/x86/vmx/vcpu.zig
+const vmc = @import("vmc.zig");
+
+pub const Vcpu = struct {
+    ...
+    fn handleExit(self: *Self, exit_info: vmcs.ExitInfo) VmxError!void {
+        switch (exit_info.basic_reason) {
+            .vmcall => {
+                try vmc.handleVmcall(self);
+                try self.stepNextInst();
+            },
+            ...
+```
+
 ## ymirsh
 
 最後に、VMCALL を呼び出すためのユーザランドプログラムを実装します。
