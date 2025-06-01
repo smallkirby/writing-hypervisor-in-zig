@@ -40,6 +40,10 @@ VMCALL Service の `0` には `hello` という名前をつけて、ロゴとメ
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmc.zig
+const vmx = @import("common.zig");
+const Vcpu = @import("vcpu.zig").Vcpu;
+const VmxError = vmx.VmxError;
+
 const VmcallNr = enum(u64) {
     hello = 0,
 
@@ -62,6 +66,9 @@ pub fn handleVmcall(vcpu: *Vcpu) VmxError!void {
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmc.zig
+const std = @import("std");
+const log = std.log.scoped(.vmc);
+
 const logo =
     \\   ____     __ ,---.    ,---..-./`) .-------.
     \\   \   \   /  /|    \  /    |\ .-.')|  _ _   \
