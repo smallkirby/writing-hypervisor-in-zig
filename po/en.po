@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Writing Hypervisor in Zig\n"
 "POT-Creation-Date: 2025-06-01T13:48:09+09:00\n"
-"PO-Revision-Date: 2025-06-01 22:17+0900\n"
+"PO-Revision-Date: 2025-06-01 22:48+0900\n"
 "Last-Translator: smallkirby <ssmallkirby@gmail.com>\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -11853,7 +11853,7 @@ msgstr ""
 
 #: src/vmm/vmcs.md:109
 msgid "VM Entry 直後のプロセッサのモードが IA-32e モードかどうか"
-msgstr "VM Entry 直後のプロセッサのモードが IA-32e モードかどうか"
+msgstr "Whether the processor is in IA-32e mode immediately after VM entry"
 
 #: src/vmm/vmcs.md:110
 msgid "**MSR Area**: VM Entry 時にロードするホストの MSR 一覧"
@@ -12022,7 +12022,7 @@ msgid ""
 "[VMPTRLD](https://www.felixcloutier.com/x86/vmptrld) 命令: 状態を _Active + "
 "Current + Clear_ にする"
 msgstr ""
-"[VMPTRLD](https://www.felixcloutier.com/x86/vmptrld) 命令: Set the state to "
+"[VMPTRLD](https://www.felixcloutier.com/x86/vmptrld): Set the state to "
 "_Active + Current + Clear_"
 
 #: src/vmm/vmcs.md:252
@@ -12306,9 +12306,7 @@ msgstr ""
 "checked the state that VMCS has and set VMCS to the current logical core. "
 "Although VMCS is still in a fresh state, we tried to VMLAUNCH it and "
 "confirmed that an error occurs. In the process, we also succeeded in "
-"actually reading fields from VMCS.\n"
-"\n"
-"Translated with DeepL.com (free version)"
+"actually reading fields from VMCS."
 
 #: src/vmm/vmcs.md:691
 msgid ""
