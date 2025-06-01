@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Writing Hypervisor in Zig\n"
 "POT-Creation-Date: 2025-06-01T13:48:09+09:00\n"
-"PO-Revision-Date: 2025-06-01 21:34+0900\n"
+"PO-Revision-Date: 2025-06-01 22:17+0900\n"
 "Last-Translator: smallkirby <ssmallkirby@gmail.com>\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -11512,7 +11512,7 @@ msgstr ""
 
 #: src/vmm/vmcs.md:1
 msgid "VMCS の基礎"
-msgstr "VMCS の基礎"
+msgstr "Basics of VMCS"
 
 #: src/vmm/vmcs.md:3
 msgid ""
@@ -11521,22 +11521,18 @@ msgid ""
 "ズではすべての項目を扱うわけではありません。 Ymir が Linux をブートするために"
 "必要な項目についてのみ触れることとします。"
 msgstr ""
-"本チャプターでは、VMX における最も重要なデータ構造である VMCS について概観し"
-"ます。 なお、VMCS が制御する項目は膨大であるため、本チャプターおよび本シリー"
-"ズではすべての項目を扱うわけではありません。 Ymir が Linux をブートするために"
-"必要な項目についてのみ触れることとします。"
+"This chapter provides an overview of VMCS, the most critical data structure "
+"in VMX. Since VMCS controls a vast number of settings, this chapter and the "
+"series as a whole will not cover all of them. We will focus only on the "
+"fields necessary for Ymir to boot Linux."
 
 #: src/vmm/vmcs.md:9
-#, fuzzy
-#| msgid ""
-#| "\\[!IMPORTANT\\] 本チャプターの最終コードは [`whiz-vmm-vmcs`](https://"
-#| "github.com/smallkirby/ymir/tree/whiz-vmm-vmcs) ブランチにあります。"
 msgid ""
 "本チャプターの最終コードは [`whiz-vmm-vmcs`](https://github.com/smallkirby/"
 "ymir/tree/whiz-vmm-vmcs) ブランチにあります。"
 msgstr ""
-"\\[!IMPORTANT\\] 本チャプターの最終コードは [`whiz-vmm-vmcs`](https://github."
-"com/smallkirby/ymir/tree/whiz-vmm-vmcs) ブランチにあります。"
+"The source code for this chapter is in [`whiz-vmm-vmcs`](https://github.com/"
+"smallkirby/ymir/tree/whiz-vmm-vmcs) branch."
 
 #: src/vmm/vmcs.md:13
 msgid "[VMCS 概略](#vmcs-概略)"
@@ -11584,7 +11580,7 @@ msgstr "[VMREAD / VMWRITE](#vmread--vmwrite)"
 
 #: src/vmm/vmcs.md:27
 msgid "VMCS 概略"
-msgstr "VMCS 概略"
+msgstr "Overview of VMCS"
 
 #: src/vmm/vmcs.md:29
 msgid ""
@@ -11592,13 +11588,13 @@ msgid ""
 "における vCPU の挙動や VM Exit と VM Entry 時の挙動に関する設定を司るデータ構"
 "造です。"
 msgstr ""
-"**VMCS: Virtual-Machine Control Data Structures** は VMX Non-root Operation "
-"における vCPU の挙動や VM Exit と VM Entry 時の挙動に関する設定を司るデータ構"
-"造です。"
+"**VMCS: Virtual-Machine Control Data Structures** is a data structure that "
+"manages the behavior of the vCPU during VMX Non-root Operation, as well as "
+"the settings related to VM Exit and VM Entry events."
 
 #: src/vmm/vmcs.md:31
 msgid "VMCS は以下の6つのカテゴリに分類されます:"
-msgstr "VMCS は以下の6つのカテゴリに分類されます:"
+msgstr "VMCS is classified to the below 6 categories:"
 
 #: src/vmm/vmcs.md:33
 msgid "Category"
@@ -11613,8 +11609,8 @@ msgid ""
 "ゲストのプロセッサの状態を保持する。VM Entry でロードされ VM Exit で保存され"
 "る。"
 msgstr ""
-"ゲストのプロセッサの状態を保持する。VM Entry でロードされ VM Exit で保存され"
-"る。"
+"It holds the guest processor's state. This state is loaded on VM Entry and "
+"saved on VM Exit."
 
 #: src/vmm/vmcs.md:36
 msgid "**Host-State**"
@@ -11622,7 +11618,7 @@ msgstr "**Host-State**"
 
 #: src/vmm/vmcs.md:36
 msgid "ホストのプロセッサの状態を保持する。VM Exit でロードされる。"
-msgstr "ホストのプロセッサの状態を保持する。VM Exit でロードされる。"
+msgstr "It holds the host processor's state, which is loaded during VM Exit."
 
 #: src/vmm/vmcs.md:37
 msgid "**VM-Execution Control**"
@@ -11630,7 +11626,7 @@ msgstr "**VM-Execution Control**"
 
 #: src/vmm/vmcs.md:37
 msgid "VMX Non-root Operation の挙動を制御する。"
-msgstr "VMX Non-root Operation の挙動を制御する。"
+msgstr "It controls the behavior of VMX Non-root Operation."
 
 #: src/vmm/vmcs.md:38
 msgid "**VM-Exit Control**"
@@ -11638,7 +11634,7 @@ msgstr "**VM-Exit Control**"
 
 #: src/vmm/vmcs.md:38
 msgid "VM Exit 時の挙動を制御する。"
-msgstr "VM Exit 時の挙動を制御する。"
+msgstr "It controls the behavior of VM Exit."
 
 #: src/vmm/vmcs.md:39
 msgid "**VM-Entry Control**"
@@ -11646,7 +11642,7 @@ msgstr "**VM-Entry Control**"
 
 #: src/vmm/vmcs.md:39
 msgid "VM Entry 時の挙動を制御する。"
-msgstr "VM Entry 時の挙動を制御する。"
+msgstr "It controls the behavior of VM Entry."
 
 #: src/vmm/vmcs.md:40
 msgid "**VM-Exit Information**"
@@ -11654,7 +11650,7 @@ msgstr "**VM-Exit Information**"
 
 #: src/vmm/vmcs.md:40
 msgid "VM Exit 時の情報を保持する。"
-msgstr "VM Exit 時の情報を保持する。"
+msgstr "It holds information related to VM Exit."
 
 #: src/vmm/vmcs.md:42 src/vmm/vmlaunch.md:648 src/vmm/msr.md:72
 #: src/vmm/msr.md:78 src/vmm/msr.md:79 src/vmm/msr.md:80 src/vmm/msr.md:81
@@ -11669,9 +11665,10 @@ msgid ""
 "態が自動的にロードされることで、ゲストは VM Exit の直前の状態から実行を再開す"
 "ることができます。 保存・復帰されるプロセッサの状態には以下が含まれます:"
 msgstr ""
-"このカテゴリはゲストのプロセッサの状態を保持します。 VM Entry 時にこれらの状"
-"態が自動的にロードされることで、ゲストは VM Exit の直前の状態から実行を再開す"
-"ることができます。 保存・復帰されるプロセッサの状態には以下が含まれます:"
+"This category holds the guest processor's state. These states are "
+"automatically loaded at VM Entry, allowing the guest to resume execution "
+"from the exact state it was in just before VM Exit. The processor states "
+"saved and restored include the following:"
 
 #: src/vmm/vmcs.md:49
 msgid "RSP, RIP, RFLAGS"
@@ -11679,19 +11676,20 @@ msgstr "RSP, RIP, RFLAGS"
 
 #: src/vmm/vmcs.md:50
 msgid "Segment Registers の一部フィールド"
-msgstr "Segment Registers の一部フィールド"
+msgstr "Some field of segment registers"
 
 #: src/vmm/vmcs.md:51 src/vmm/vmcs.md:70
 msgid "一部の MSR"
-msgstr "一部の MSR"
+msgstr "Some MSRs"
 
 #: src/vmm/vmcs.md:53
 msgid ""
 "なお、RAX, RBX, ... 等の汎用レジスタは VMCS には保存されません。 これらのレジ"
 "スタは VMM がソフトウェア的に保存およびロードしてあげる必要があります。"
 msgstr ""
-"なお、RAX, RBX, ... 等の汎用レジスタは VMCS には保存されません。 これらのレジ"
-"スタは VMM がソフトウェア的に保存およびロードしてあげる必要があります。"
+"Note that general-purpose registers like RAX, RBX, etc., are not saved in "
+"the VMCS. The VMM must handle saving and loading these registers in a "
+"software manner."
 
 #: src/vmm/vmcs.md:56
 msgid ""
@@ -11701,11 +11699,10 @@ msgid ""
 "RDMSR/WRMSR すると VM Exit が発生し、VMM が実際に読み込み・書き込みする値を制"
 "御することができます。"
 msgstr ""
-"また、保存される MSR もごく一部です。 MSR へアクセスする [RDMSR](https://www."
-"felixcloutier.com/x86/rdmsr) / [WRMSR](https://www.felixcloutier.com/x86/"
-"wrmsr) 命令は、特権命令として指定することができます。 この場合、ゲストが "
-"RDMSR/WRMSR すると VM Exit が発生し、VMM が実際に読み込み・書き込みする値を制"
-"御することができます。"
+"Also, only a limited set of MSRs are saved. RDMSR and WRMSR instructions can "
+"be marked as privileged instructions. In this case, when the guest executes "
+"RDMSR/WRMSR, a VM Exit occurs, allowing the VMM to control the values that "
+"are actually read or written."
 
 #: src/vmm/vmcs.md:60 src/vmm/vmlaunch.md:306 src/vmm/msr.md:98
 #: src/vmm/msr.md:99 src/vmm/msr.md:100 src/vmm/msr.md:103 src/vmm/msr.md:104
@@ -11721,9 +11718,9 @@ msgid ""
 "ロードされ、VMM は VM Entry する直前の状態から実行を再開することができます。 "
 "復帰されるプロセッサの状態には以下が含まれます:"
 msgstr ""
-"このカテゴリは VMM のプロセッサの状態を保持します。 これらの値は VM Exit 時に"
-"ロードされ、VMM は VM Entry する直前の状態から実行を再開することができます。 "
-"復帰されるプロセッサの状態には以下が含まれます:"
+"This category holds the VMM processor state. These values are loaded during "
+"VM Exit, allowing the VMM to resume execution from the state just before VM "
+"Entry. The processor states restored include the following:"
 
 #: src/vmm/vmcs.md:67
 msgid "RSP, RIP"
@@ -11731,11 +11728,11 @@ msgstr "RSP, RIP"
 
 #: src/vmm/vmcs.md:68
 msgid "Segment Selector"
-msgstr "Segment Selector"
+msgstr "Segment selector"
 
 #: src/vmm/vmcs.md:69
 msgid "FS / GS / TR / GDTR / IDTR の Base"
-msgstr "FS / GS / TR / GDTR / IDTR の Base"
+msgstr "_Base_ part of FS / GS / TR / GDTR / IDTR"
 
 #: src/vmm/vmcs.md:72
 msgid ""
@@ -11744,10 +11741,9 @@ msgid ""
 "の値を適切に設定する必要があります。 VM-Exit 時には、これらの値が自動的にロー"
 "ドされます。"
 msgstr ""
-"**Host-State は Guest-State の場合と異なり、VM Entry の際に自動的に保存される"
-"ことがありません**。 そのため、VM Entry する前に VMM はソフトウェア的にこれら"
-"の値を適切に設定する必要があります。 VM-Exit 時には、これらの値が自動的にロー"
-"ドされます。"
+"**Unlike Guest-State, Host-State is not automatically saved during VM Entry."
+"** Therefore, before VM Entry, the VMM must set these values appropriately "
+"in a software manner. These values are automatically loaded during VM Exit."
 
 #: src/vmm/vmcs.md:76 src/vmm/vmlaunch.md:59
 msgid "VM-Execution Control"
@@ -11760,26 +11756,27 @@ msgid ""
 "フィールドのみを概観し、必要になった際に都度説明することにします。 このカテゴ"
 "リは以下のフィールドを含みます:"
 msgstr ""
-"このカテゴリは VMX Non-root Operation におけるプロセッサの挙動を制御します。 "
-"設定項目は6カテゴリの中でおそらく最も多いです。 そのため、ここでは代表的な"
-"フィールドのみを概観し、必要になった際に都度説明することにします。 このカテゴ"
-"リは以下のフィールドを含みます:"
+"This category controls the processor behavior during VMX Non-root Operation. "
+"It likely contains the most configuration fields among the six categories. "
+"Therefore, we will provide an overview of only the representative fields "
+"here and explain others as needed. This category includes the following "
+"fields:"
 
 #: src/vmm/vmcs.md:83
 msgid ""
 "**Pin-Based VM-Execution Controls**: 割り込み・例外等の非同期イベントを制御す"
 "る"
 msgstr ""
-"**Pin-Based VM-Execution Controls**: 割り込み・例外等の非同期イベントを制御す"
-"る"
+"**Pin-Based VM-Execution Controls**: It controls async events such as "
+"interrupts and exceptions"
 
 #: src/vmm/vmcs.md:84
 msgid ""
 "**Processor-Based VM-Execution Controls**: 主に特定の命令で発生するイベントを"
 "制御する"
 msgstr ""
-"**Processor-Based VM-Execution Controls**: 主に特定の命令で発生するイベントを"
-"制御する"
+"**Processor-Based VM-Execution Controls**: It mainly controls events "
+"generated by special instructions"
 
 #: src/vmm/vmcs.md:85
 msgid ""
@@ -11787,29 +11784,30 @@ msgid ""
 "(https://www.felixcloutier.com/x86/hlt), [INVLPG](https://www.felixcloutier."
 "com/x86/invlpg), MOV to CR などのこと"
 msgstr ""
-"\"特別な命令\" とは [RDTSCP](https://www.felixcloutier.com/x86/rdtscp), [HLT]"
-"(https://www.felixcloutier.com/x86/hlt), [INVLPG](https://www.felixcloutier."
-"com/x86/invlpg), MOV to CR などのこと"
+"\"Special instructions\" refer to instructions such as [RDTSCP](https://www."
+"felixcloutier.com/x86/rdtscp), [HLT](https://www.felixcloutier.com/x86/hlt), "
+"[INVLPG](https://www.felixcloutier.com/x86/invlpg), and MOV to control "
+"registers (CR)."
 
 #: src/vmm/vmcs.md:86
 msgid "**Exception Bitmap**: どの例外で VM Exit するかを制御する"
-msgstr "**Exception Bitmap**: どの例外で VM Exit するかを制御する"
+msgstr "**Exception Bitmap**: It controls which exception to trigger VM Exit"
 
 #: src/vmm/vmcs.md:87
 msgid "**I/O-Bitmap**: どの I/O ポートアクセスで VM Exit するかを制御する"
-msgstr "**I/O-Bitmap**: どの I/O ポートアクセスで VM Exit するかを制御する"
+msgstr "**I/O-Bitmap**: It controls which I/O port accesses trigger VM Exit."
 
 #: src/vmm/vmcs.md:88
 msgid "**MSR-Bitmap**: どの MSR アクセスで VM Exit するかを制御する"
-msgstr "**MSR-Bitmap**: どの MSR アクセスで VM Exit するかを制御する"
+msgstr "**MSR-Bitmap**: It controls which MSR accesses trigger VM Exit."
 
 #: src/vmm/vmcs.md:89
 msgid ""
 "**EPTP: Extended-Page-Table Pointer**: EPT の Lv4 テーブルを指すポインタ。"
 "EPT については別のチャプターで詳しく扱う"
 msgstr ""
-"**EPTP: Extended-Page-Table Pointer**: EPT の Lv4 テーブルを指すポインタ。"
-"EPT については別のチャプターで詳しく扱う"
+"**EPTP: Extended-Page-Table Pointer**: Pointer to the level 4 table of EPT. "
+"EPT will be covered in detail in a separate chapter."
 
 #: src/vmm/vmcs.md:91 src/vmm/vmlaunch.md:899
 msgid "VM-Exit Control"
@@ -11819,27 +11817,28 @@ msgstr "VM-Exit Control"
 msgid ""
 "このカテゴリは VM Exit 時の挙動を制御します。 制御する項目は以下を含みます:"
 msgstr ""
-"このカテゴリは VM Exit 時の挙動を制御します。 制御する項目は以下を含みます:"
+"This category controls the behavior during VM Exit. The control items "
+"include the following:"
 
 #: src/vmm/vmcs.md:96 src/vmm/vmcs.md:108
 msgid "Debug Rgister を保存するかどうか"
-msgstr "Debug Rgister を保存するかどうか"
+msgstr "Whether DR (Debug Registers) are saved"
 
 #: src/vmm/vmcs.md:97
 msgid "VM Exit 直後のプロセッサのモードが 64bit モードかどうか"
-msgstr "VM Exit 直後のプロセッサのモードが 64bit モードかどうか"
+msgstr "Whether the processor mode immediately after VM Exit is 64-bit mode."
 
 #: src/vmm/vmcs.md:98
 msgid "**MSR Area**: VM Exit 時にロードするホストの MSR 一覧"
-msgstr "**MSR Area**: VM Exit 時にロードするホストの MSR 一覧"
+msgstr "**MSR Area**: The list of host MSRs to be loaded during VM Exit"
 
 #: src/vmm/vmcs.md:100
 msgid ""
 "他のカテゴリに比べて項目数が少なく、Ymir でもそこまで使う機能は多くないで"
 "す。 VMCS における癒やし枠です。"
 msgstr ""
-"他のカテゴリに比べて項目数が少なく、Ymir でもそこまで使う機能は多くないで"
-"す。 VMCS における癒やし枠です。"
+"Compared to other categories, this one has fewer fields and features, and "
+"Ymir doesn’t use many of them. It’s the “comfort zone” of VMCS."
 
 #: src/vmm/vmcs.md:103 src/vmm/vmlaunch.md:838
 msgid "VM-Entry Control"
@@ -11849,7 +11848,8 @@ msgstr "VM-Entry Control"
 msgid ""
 "このカテゴリは VM Entry 時の挙動を制御します。 制御する項目は以下を含みます:"
 msgstr ""
-"このカテゴリは VM Entry 時の挙動を制御します。 制御する項目は以下を含みます:"
+"This category controls the behavior during VM Entry. The control items "
+"include the following:"
 
 #: src/vmm/vmcs.md:109
 msgid "VM Entry 直後のプロセッサのモードが IA-32e モードかどうか"
@@ -11857,17 +11857,18 @@ msgstr "VM Entry 直後のプロセッサのモードが IA-32e モードかど�
 
 #: src/vmm/vmcs.md:110
 msgid "**MSR Area**: VM Entry 時にロードするホストの MSR 一覧"
-msgstr "**MSR Area**: VM Entry 時にロードするホストの MSR 一覧"
+msgstr "Whether the processor mode immediately after VM Entry is IA-32e mode."
 
 #: src/vmm/vmcs.md:111
 msgid ""
 "**Event Injection**: VM Entry 時に任意の割り込みをゲストに対して注入できる"
 msgstr ""
-"**Event Injection**: VM Entry 時に任意の割り込みをゲストに対して注入できる"
+"**Event Injection**: It can inject an arbitrary interrupts into the guest on "
+"VM Entry"
 
 #: src/vmm/vmcs.md:113
 msgid "こちらも VM-Exit Control と同様に癒やし枠です。"
-msgstr "こちらも VM-Exit Control と同様に癒やし枠です。"
+msgstr "Like the VM-Exit Control category, this one is also a “comfort zone.”"
 
 #: src/vmm/vmcs.md:115
 msgid "VM-Exit Information"
@@ -11878,40 +11879,40 @@ msgid ""
 "このカテゴリは VM Exit 時の情報を保持します。 このカテゴリは唯一 read-only で"
 "す。 保持する情報には以下が含まれます:"
 msgstr ""
-"このカテゴリは VM Exit 時の情報を保持します。 このカテゴリは唯一 read-only で"
-"す。 保持する情報には以下が含まれます:"
+"This category stores information related to VM Exit. It is the only read-"
+"only category. The stored information includes the following:"
 
 #: src/vmm/vmcs.md:121
 msgid "**Basic VM-Exit Information**: VM Exit の原因"
-msgstr "**Basic VM-Exit Information**: VM Exit の原因"
+msgstr "**Basic VM-Exit Information**: The cause of the VM Exit"
 
 #: src/vmm/vmcs.md:122
 msgid ""
 "I/O アクセス / CPUID / MSR アクセス / EPT Violation などの大まかな理由が分か"
 "る"
 msgstr ""
-"I/O アクセス / CPUID / MSR アクセス / EPT Violation などの大まかな理由が分か"
-"る"
+"Provides a general reason for VM Exit, such as I/O access, CPUID, MSR "
+"access, or EPT violation."
 
 #: src/vmm/vmcs.md:123
 msgid ""
 "**VM-Instruction Error Field**: VMX 拡張命令でエラーコードが利用できる場合"
 "に、ここにエラーコードが入る"
 msgstr ""
-"**VM-Instruction Error Field**: VMX 拡張命令でエラーコードが利用できる場合"
-"に、ここにエラーコードが入る"
+"**VM-Instruction Error Field**: When an error code is available from a VMX "
+"extended instruction, it is stored here."
 
 #: src/vmm/vmcs.md:124
 msgid "**VM Exit は全く関係ない**"
-msgstr "**VM Exit は全く関係ない**"
+msgstr "**Completely not related to VM Exit**"
 
 #: src/vmm/vmcs.md:126
 msgid ""
 "Read-only であることからも分かるように、このカテゴリは特に VMM が設定する必要"
 "はありません。"
 msgstr ""
-"Read-only であることからも分かるように、このカテゴリは特に VMM が設定する必要"
-"はありません。"
+"As it is read-only, this category does not require any configuration by a "
+"VMM."
 
 #: src/vmm/vmcs.md:128
 msgid "VMCS Region"
@@ -11919,15 +11920,15 @@ msgstr "VMCS Region"
 
 #: src/vmm/vmcs.md:130
 msgid "VMCS を設定するための雛形を `Vcpu` に追加しておきます:"
-msgstr "VMCS を設定するための雛形を `Vcpu` に追加しておきます:"
+msgstr "A template for setting up VMCS will be added to `Vcpu`:"
 
 #: src/vmm/vmcs.md:158
 msgid ""
 "VMCS は **VMCS Region** と呼ばれる領域に設定します。 これは [VMXON Region](./"
 "vmx_root.md#vmxon) と似たような構造を持っています:"
 msgstr ""
-"VMCS は **VMCS Region** と呼ばれる領域に設定します。 これは [VMXON Region](./"
-"vmx_root.md#vmxon) と似たような構造を持っています:"
+"The VMCS is put in an area called the **VMCS region**. It has a structure "
+"similar to the [VMXON region](./vmx_root.md#vmxon):"
 
 #: src/vmm/vmcs.md:161
 msgid ""
@@ -11946,24 +11947,25 @@ msgid ""
 "であり、VMM側で知る必要/知る方法はありません。 「レイアウトが分からないデータ"
 "構造にどのように書き込むのか」については、のちほど説明します。"
 msgstr ""
-"**VMCS Revision Identifier** は VMXON Region に設定した値と同じであり、 VMCS "
-"のバージョン番号を表します。 この値は `IA32_VMX_BASIC` MSR から取得することが"
-"できます。 VMX-Abort Indicator は本シリーズでは使いません。 その後からは "
-"VMCS の設定項目が続きます。 各フィールドのレイアウトについては完全に実装依存"
-"であり、VMM側で知る必要/知る方法はありません。 「レイアウトが分からないデータ"
-"構造にどのように書き込むのか」については、のちほど説明します。"
+"The **VMCS Revision Identifier** is the same value set in the VMXON region "
+"and represents the VMCS version number. This value can be obtained from the "
+"`IA32_VMX_BASIC` MSR. The VMX-Abort Indicator is not used in this series. "
+"Following this are the VMCS configuration fields. The layout of each field "
+"is entirely implementation-dependent, and the VMM neither needs to know nor "
+"can determine it. How to write to a data structure with an unknown layout "
+"will be explained later."
 
 #: src/vmm/vmcs.md:172
 msgid "VMCS Region を定義します:"
-msgstr "VMCS Region を定義します:"
+msgstr "Define a VMCS region as below:"
 
 #: src/vmm/vmcs.md:193
 msgid ""
 "続いて確保した VMCS Region をセットしていきます。 VMCS は以下の遷移図で表され"
 "る状態を持っています:"
 msgstr ""
-"続いて確保した VMCS Region をセットしていきます。 VMCS は以下の遷移図で表され"
-"る状態を持っています:"
+"Next, we set the allocated VMCS region. The VMCS has states represented by "
+"the following state transition diagram:"
 
 #: src/vmm/vmcs.md:196 src/vmm/vmentry_vmexit.md:84
 msgid ""
@@ -11987,61 +11989,64 @@ msgid ""
 "を直接的に知る方法はありません[^launched]。 そのため、この状態はソフトウェア"
 "的に記憶する必要があります。"
 msgstr ""
-"_Active_ / _Inactive_ は VMCS の状態を表します。 Active な VMCS の内、論理コ"
-"アは最大で1つの **Current** VMCS を持つことができます。 Current VMCS が設定さ"
-"れている場合、論理コアはその VMCS を参照して挙動が決定されます。 _Clear_ / "
-"_Launched_ はその VMCS が利用されたかどうかを表します。 その VMCS を Current "
-"とするコアが [VMLAUNCH](https://www.felixcloutier.com/x86/vmlaunch:vmresume) "
-"命令で VM Entry すると、VMCS は Launched 状態になります。 一度 Launched に"
-"なった VMCS は再度 Clear することができません。 Launched 状態の VMCS を使っ"
-"て VM Entry するためには [VMRESUME](https://www.felixcloutier.com/x86/"
-"vmlaunch:vmresume) 命令を使います。 VMCS が Clear と Launched のどちらなのか"
-"を直接的に知る方法はありません[^launched]。 そのため、この状態はソフトウェア"
-"的に記憶する必要があります。"
+"_Active_ and _Inactive_ represent the VMCS state. Among active VMCSs, a "
+"logical core can have at most one **Current** VMCS. When a current VMCS is "
+"set, the logical core references that VMCS to determine its behavior. "
+"_Clear_ and _Launched_ indicate whether the VMCS has been used. When a core "
+"with the VMCS as \"current\" performs VM Entry via [VMLAUNCH](https://www."
+"felixcloutier.com/x86/vmlaunch:vmresume) instruction, the VMCS transitions "
+"to the _launched_ state. Once a VMCS becomes _launched_, it cannot be "
+"_cleared_ again. To perform VM Entry with a _launched_ VMCS, [VMRESUME]"
+"(https://www.felixcloutier.com/x86/vmlaunch:vmresume) instruction must be "
+"used. There is no direct way to determine whether a VMCS is _clear_ or "
+"_launched_[^launched]; therefore, this state must be tracked in software."
 
 #: src/vmm/vmcs.md:209
 msgid ""
 "VMCS Region を設定するというのは、VMCS の状態を _Active + Current + Clear_ に"
 "することを意味します。 これには以下の2命令を使います:"
 msgstr ""
-"VMCS Region を設定するというのは、VMCS の状態を _Active + Current + Clear_ に"
-"することを意味します。 これには以下の2命令を使います:"
+"Setting the VMCS region means putting the VMCS into the _Active + Current + "
+"Clear_ state. This involves using the following two instructions:"
 
 #: src/vmm/vmcs.md:212
 msgid ""
 "[VMCLEAR](https://www.felixcloutier.com/x86/vmclear) 命令: 状態を _Inactive "
 "+ Not Current + Clear_ にする"
 msgstr ""
-"[VMCLEAR](https://www.felixcloutier.com/x86/vmclear) 命令: 状態を _Inactive "
-"+ Not Current + Clear_ にする"
+"[VMCLEAR](https://www.felixcloutier.com/x86/vmclear): Set the state to "
+"_Inactive + Not Current + Clear_."
 
 #: src/vmm/vmcs.md:213
 msgid ""
 "[VMPTRLD](https://www.felixcloutier.com/x86/vmptrld) 命令: 状態を _Active + "
 "Current + Clear_ にする"
 msgstr ""
-"[VMPTRLD](https://www.felixcloutier.com/x86/vmptrld) 命令: 状態を _Active + "
-"Current + Clear_ にする"
+"[VMPTRLD](https://www.felixcloutier.com/x86/vmptrld) 命令: Set the state to "
+"_Active + Current + Clear_"
 
 #: src/vmm/vmcs.md:252
 msgid ""
 "どちらも、引数として VMCS Region の物理アドレスをとります。 `vmxerr()` は前"
 "チャプターで実装した VMX 拡張命令のエラーハンドリングをする関数です。"
 msgstr ""
-"どちらも、引数として VMCS Region の物理アドレスをとります。 `vmxerr()` は前"
-"チャプターで実装した VMX 拡張命令のエラーハンドリングをする関数です。"
+"Both instructions take the physical address of the VMCS region as an "
+"argument. `vmxerr()` is a function implemented in the previous chapter for "
+"handling errors from VMX extended instructions."
 
 #: src/vmm/vmcs.md:255
 msgid "以上を踏まえて、VMCS Region の確保・初期化は以下のようになります:"
-msgstr "以上を踏まえて、VMCS Region の確保・初期化は以下のようになります:"
+msgstr ""
+"Based on the above, the allocation and initialization of the VMCS region is "
+"as follows:"
 
 #: src/vmm/vmcs.md:268
 msgid "`Vm.init()` から `setupVmcs()` を呼び出すようにしておきます:"
-msgstr "`Vm.init()` から `setupVmcs()` を呼び出すようにしておきます:"
+msgstr "Make sure to call `setupVmcs()` in `Vm.init()`:"
 
 #: src/vmm/vmcs.md:278
 msgid "フィールドアクセス"
-msgstr "フィールドアクセス"
+msgstr "Access to Fields"
 
 #: src/vmm/vmcs.md:280
 msgid "VMCS-field Encoding"
@@ -12053,9 +12058,9 @@ msgid ""
 "はなく圧縮・暗号化された値が入っている可能性すらあります。 それすらも VMM は"
 "意識する必要がなく、知る方法もありません。"
 msgstr ""
-"VMCS のフィールドレイアウトは実装依存です。 もしかしたら即値が入っているので"
-"はなく圧縮・暗号化された値が入っている可能性すらあります。 それすらも VMM は"
-"意識する必要がなく、知る方法もありません。"
+"The VMCS field layout is implementation-dependent. It is even possible that "
+"the values stored are compressed or encrypted rather than immediate values. "
+"A VMM neither needs to be aware of this nor has any way to know."
 
 #: src/vmm/vmcs.md:286
 msgid ""
@@ -12065,11 +12070,11 @@ msgid ""
 "き対象の VMCS のフィールドを **VMCS-field Encoding** というエンコードされた "
 "32bit の値で指定します。"
 msgstr ""
-"レイアウトの分からない VMCS フィールドに対する読み込みや書き込みには、VMX 拡"
-"張命令である [VMREAD](https://www.felixcloutier.com/x86/vmread) / [VMWRITE]"
-"(https://www.felixcloutier.com/x86/vmwrite) を使います。 これらの命令は読み書"
-"き対象の VMCS のフィールドを **VMCS-field Encoding** というエンコードされた "
-"32bit の値で指定します。"
+"To read from or write to VMCS fields with unknown layouts, we use the VMX "
+"instructions [VMREAD](https://www.felixcloutier.com/x86/vmread) and [VMWRITE]"
+"(https://www.felixcloutier.com/x86/vmwrite). These instructions specify the "
+"target VMCS field using a 32-bit encoded value called the **VMCS-field "
+"Encoding**."
 
 #: src/vmm/vmcs.md:289
 msgid ""
@@ -12077,9 +12082,8 @@ msgid ""
 "encoding を定義してあげる必要があります。 32bit の encoding は以下の構成をし"
 "ています:"
 msgstr ""
-"というわけで、VMCS のフィールドにアクセスするためには各フィールドに対する "
-"encoding を定義してあげる必要があります。 32bit の encoding は以下の構成をし"
-"ています:"
+"Therefore, to access VMCS fields, you need to define the encoding for each "
+"field. The 32-bit encoding is structured as follows:"
 
 #: src/vmm/vmcs.md:292
 msgid ""
@@ -12094,8 +12098,8 @@ msgid ""
 "**Width** は VMCS フィールドのサイズです。 各 VMCS フィールドは _16-bit_ / "
 "_32-bit_ / _64-bit_ / _Natural Width_ という4つのサイズを持ちます。"
 msgstr ""
-"**Width** は VMCS フィールドのサイズです。 各 VMCS フィールドは _16-bit_ / "
-"_32-bit_ / _64-bit_ / _Natural Width_ という4つのサイズを持ちます。"
+"**Width** refers to the size of the VMCS field. Each VMCS field has one of "
+"four sizes: _16-bit_, _32-bit_, _64-bit_, or _natural width_."
 
 #: src/vmm/vmcs.md:298
 msgid ""
@@ -12104,10 +12108,10 @@ msgid ""
 "この場合には Access Type に `1:high` を指定します。 それ以外の場合には `0:"
 "full` を指定します。"
 msgstr ""
-"**Access Type** はフィールドに対するアクセス幅です。 4つあるフィールドの "
-"_Width_ のうち、64-bit フィールドに限って 32bit アクセスすることができます。 "
-"この場合には Access Type に `1:high` を指定します。 それ以外の場合には `0:"
-"full` を指定します。"
+"**Access Type** specifies the access width for the field. Among the four "
+"possible _Width_ types, only 64-bit fields can be accessed with 32-bit "
+"width. In this case, `1:high` is specified for access type. For all other "
+"cases, `0:full` is used."
 
 #: src/vmm/vmcs.md:303
 msgid ""
@@ -12116,10 +12120,9 @@ msgid ""
 "うと、異なる _Type_ 等を持つフィールドは同じ _Index_ を持っている場合がありま"
 "す。"
 msgstr ""
-"**Index** は各フィールドに割り当てられた番号です。 この値は _Access Type_ / "
-"_Type_ / _Width_ が同じフィールドの中でユニークに割り振られています。 逆に言"
-"うと、異なる _Type_ 等を持つフィールドは同じ _Index_ を持っている場合がありま"
-"す。"
+"**Index** is the number assigned to each field. This value is unique within "
+"fields that share the same _access type_, _type_, and _width_. Conversely, "
+"fields with different _Type_ values may share the same _Index_."
 
 #: src/vmm/vmcs.md:307
 msgid ""
@@ -12127,9 +12130,9 @@ msgid ""
 "Control / VM-Entry Control / VM-Entry Control はまとめて _control_ というタイ"
 "プになっています。"
 msgstr ""
-"**Type** はフィールドのカテゴリです。 6つあるカテゴリの内、VM-Execution "
-"Control / VM-Entry Control / VM-Entry Control はまとめて _control_ というタイ"
-"プになっています。"
+"**Type** refers to the field category. Among the six categories, VM-"
+"Execution Control, VM-Exit Control, and VM-Entry Control are collectively "
+"classified under the _control_ type."
 
 #: src/vmm/vmcs.md:310
 msgid ""
@@ -12137,9 +12140,9 @@ msgid ""
 "VMCS_ に記載されています。 そのリストをもとに各フィールドの encoding を計算す"
 "るヘルパー関数を定義します[^encoding]:"
 msgstr ""
-"各フィールドに対する Encoding の内容は _SDM Appendix B FIELD ENCODING IN "
-"VMCS_ に記載されています。 そのリストをもとに各フィールドの encoding を計算す"
-"るヘルパー関数を定義します[^encoding]:"
+"The encoding details for each field are listed in _SDM Appendix B FIELD "
+"ENCODING IN VMCS_. Based on this list, we define a helper function to "
+"calculate the encoding for each field[^encoding]:"
 
 #: src/vmm/vmcs.md:380
 msgid ""
@@ -12150,16 +12153,16 @@ msgid ""
 "フィールドの encoding 定義は [Ymir のリポジトリを参照](https://github.com/"
 "smallkirby/ymir/blob/master/ymir/arch/x86/vmx/vmcs.zig) してください。"
 msgstr ""
-"`eg()` / `eh()` / `ec()` / `er()` はそれぞれの _Type_ に対する encoding を計"
-"算する関数です。 これらのヘルパー関数を使うと、フィールドの encoding を定義す"
-"ることができます。 しかし、フィールドの数はとても多いです。 200 個ほどありま"
-"す。 そのため、ここで定義部分のスニペットを載せることはしないでおきます。 全"
-"フィールドの encoding 定義は [Ymir のリポジトリを参照](https://github.com/"
-"smallkirby/ymir/blob/master/ymir/arch/x86/vmx/vmcs.zig) してください。"
+"`eg()`, `eh()`, `ec()`, and `er()` are functions that calculate the encoding "
+"for each respective _Type_. Using these helper functions, you can define the "
+"encoding for VMCS fields. However, there are many fields - around 200 in "
+"total. Therefore, we will not include the full snippet here. Please refer to "
+"the [Ymir repository](https://github.com/smallkirby/ymir/blob/master/ymir/"
+"arch/x86/vmx/vmcs.zig) for the complete encoding definitions."
 
 #: src/vmm/vmcs.md:470
 msgid "地獄コードですね。"
-msgstr "地獄コードですね。"
+msgstr "It’s definitely some hellish code."
 
 #: src/vmm/vmcs.md:474
 msgid "VMREAD / VMWRITE"
@@ -12174,12 +12177,12 @@ msgid ""
 "64bit としています。 また、VMREAD 自体が VMX 拡張命令であるため RFLAGS を使っ"
 "たエラーハンドリングをしています:"
 msgstr ""
-"VMCS encoding が定義できたため、VMCS フィールドにアクセスするための関数を定義"
-"します。 まずは [VMREAD](https://www.felixcloutier.com/x86/vmread) です。 引"
-"数として encoding を受取り、読み取ったフィールドの値を返します。 本来であれば"
-"フィールドの _Width_ に応じて適切な型を返すべきですが、面倒なので全て一律 "
-"64bit としています。 また、VMREAD 自体が VMX 拡張命令であるため RFLAGS を使っ"
-"たエラーハンドリングをしています:"
+"With the VMCS encoding defined, let's create a function to access VMCS "
+"fields. First, [VMREAD](https://www.felixcloutier.com/x86/vmread) "
+"instruction. It takes an encoding as an argument and returns the value of "
+"the read field. Ideally, the return type should match the field's _Width_, "
+"but for simplicity, we uniformly use 64-bit for all fields. Also, since "
+"VMREAD is a VMX extended instruction, error handling is done using RFLAGS:"
 
 #: src/vmm/vmcs.md:499
 msgid ""
@@ -12188,10 +12191,11 @@ msgid ""
 "ています。 これは、VMWRITE に対して `packed struct (u64)` のような Packed "
 "Struct を渡したい場面が多く、その都度 `@bitCast()` を呼ぶ手間を省くためです:"
 msgstr ""
-"続いて [VMWRITE](https://www.felixcloutier.com/x86/vmwrite) です。 VMWRITE は"
-"引数として encoding と書き込む値を受け取りますが、書き込む値は `anytype` とし"
-"ています。 これは、VMWRITE に対して `packed struct (u64)` のような Packed "
-"Struct を渡したい場面が多く、その都度 `@bitCast()` を呼ぶ手間を省くためです:"
+"Next is [VMWRITE](https://www.felixcloutier.com/x86/vmwrite). VMWRITE takes "
+"an encoding and the value to write as arguments, but the value is typed as "
+"`anytype`. This is because there are many cases where you want to pass a "
+"packed struct (e.g., `packed struct (u64)`) directly to VMWRITE, avoiding "
+"the need to call `@bitCast()` every time."
 
 #: src/vmm/vmcs.md:533
 msgid ""
@@ -12203,17 +12207,18 @@ msgid ""
 "しょう**。 どうせ失敗するだろうけど、こちとら VMCS をセットしたので。 どんな"
 "文句を言われるのか見てやりましょう:"
 msgstr ""
-"さて、VMCS encoding を定義したり、VMCS をセットすることはできましたが、その中"
-"身はまだ空っぽです。 でも VMCS をセットすることができたのは嬉しいです。 こう"
-"いう小さいことで喜んでいないと、世の中やっていけないですよね。 小さな幸せでと"
-"りあえず大騒ぎするのはおすすめです。 [嬉しい！楽しい！](https://www.uta-net."
-"com/song/838/) というわけで、**嬉しいので一旦このまま VMLAUNCH してしまいま"
-"しょう**。 どうせ失敗するだろうけど、こちとら VMCS をセットしたので。 どんな"
-"文句を言われるのか見てやりましょう:"
+"Now, although we've defined the VMCS encoding and set up the VMCS, its "
+"contents are still empty. But being able to set the VMCS is already "
+"something to be happy about. If we don’t celebrate these small wins, life "
+"can get tough. I highly recommend making a fuss over these little moments of "
+"joy. [Happy! Fun!](https://www.uta-net.com/song/838/) So, since we're "
+"feeling good, let's go ahead and try VMLAUNCH for now. It will probably fail "
+"anyway, but hey, we have the VMCS set. Let's see what kind of complaints it "
+"throws at us:"
 
 #: src/vmm/vmcs.md:551
 msgid "このまま実行すると...。 何も言われません。"
-msgstr "このまま実行すると...。 何も言われません。"
+msgstr "If you run it as is... nothing happens. No errors or messages."
 
 #: src/vmm/vmcs.md:554
 msgid ""
@@ -12222,10 +12227,10 @@ msgid ""
 "を返す**ためです。 単に VMLAUNCH を呼ぶのではなく、このエラーをチェックしてあ"
 "げましょう:"
 msgstr ""
-"これは [前チャプター](./vmx_root.md#vmx-instruction-error) で扱ったように、 "
-"**VMX 拡張命令である VMLAUNCH は失敗した場合に例外ではなく独自の方法でエラー"
-"を返す**ためです。 単に VMLAUNCH を呼ぶのではなく、このエラーをチェックしてあ"
-"げましょう:"
+"This is because, as covered in the [previous chapter](./vmx_root.md#vmx-"
+"instruction-error), **VMLAUNCH, a VMX extended instruction, returns errors "
+"in a special way instead of throwing exceptions when it fails**. Instead of "
+"just calling VMLAUNCH blindly, let's properly check for these errors:"
 
 #: src/vmm/vmcs.md:578
 msgid ""
@@ -12236,24 +12241,24 @@ msgid ""
 "す。 エラー番号の一覧と説明は _SDM Vol.3C 31.4 VM INSTRUCTION ERROR NUMBERS_ "
 "を参照してください:"
 msgstr ""
-"これは `RFLAGS.ZF` がセットされており、**エラーコードを利用可能であることを示"
-"しています**。 エラーコードは VMCS の **VM-Exit Information** 内の **VM-"
-"Instruction Error Field** に格納されています。 エラーコードに対応する `enum` "
-"と、VM-Instruction Error Field からエラーコードを取得するヘルパー関数を作りま"
-"す。 エラー番号の一覧と説明は _SDM Vol.3C 31.4 VM INSTRUCTION ERROR NUMBERS_ "
-"を参照してください:"
+"This means `RFLAGS.ZF` is set, indicating that **an error code is "
+"available**. The error code is stored in the **VM-Instruction Error Field** "
+"within the VMCS's **VM-Exit Information**. Let's define an `enum` for the "
+"error codes and a helper function to retrieve the error code from the VM-"
+"Instruction Error Field. For a list and description of the error codes, "
+"refer to _SDM Vol.3C 31.4 VM INSTRUCTION ERROR NUMBERS_:"
 
 #: src/vmm/vmcs.md:620
 msgid ""
 "`load()` が VMCS からエラーコードを取得する関数です。 VMREAD の初めての出番で"
 "すね。かわいい。"
 msgstr ""
-"`load()` が VMCS からエラーコードを取得する関数です。 VMREAD の初めての出番で"
-"すね。かわいい。"
+"`load()` is the function that retrieves the error code from the VMCS. This "
+"is the first time we use VMREAD - how cute."
 
 #: src/vmm/vmcs.md:652
 msgid "さて、VMLAUNCH 後にエラーコードを取得してみましょう:"
-msgstr "さて、VMLAUNCH 後にエラーコードを取得してみましょう:"
+msgstr "Now, let's try retrieving the error code after VMLAUNCH:"
 
 #: src/vmm/vmcs.md:670
 msgid ""
@@ -12270,18 +12275,19 @@ msgid ""
 "しないようにコーディングしてあげてください。 まぁそれでもこのエラーは出ると思"
 "いますが。 そのときには、ちゃんと苦しんでください。"
 msgstr ""
-"**エラー番号7番 VM entry with invalid control fields**　です。 このエラーは開"
-"発中に少なく見積もっても8000億回は見ることでしょう。 これは、VMCS の VM-"
-"Entry Control に不正な値が設定されていることを示しています。 VMLAUNCH や "
-"VMRESUME は、VM Entry する前に VMCS の各カテゴリの中身がしっかり設定されてい"
-"るかをチェックします。 もしも1つでも不正な値が設定されている場合には VM "
-"Entry に失敗します[^vmentry]。 しかも**具体的にどこがおかしいのかは一切教えて"
-"くれません**。 検査項目自体は100以上ある[^check]ため、どこがおかしいのかを特"
-"定するのは非常に大変です。 筆者は[チェック項目を1つずつコードに書き起こし]"
-"(https://github.com/smallkirby/ymir/blob/master/ymir/arch/x86/vmx/dbg.zig)、"
-"デバッグビルドのときだけ実行するようにしました。 皆さんはそもそもエラーが発生"
-"しないようにコーディングしてあげてください。 まぁそれでもこのエラーは出ると思"
-"いますが。 そのときには、ちゃんと苦しんでください。"
+"**Error number 7: VM entry with invalid control fields.** This error will "
+"likely be seen at least 800 billion times during development. It indicates "
+"that invalid values are set in the VMCS's VM-Entry Control fields. Before VM "
+"Entry, VMLAUNCH and VMRESUME check whether all categories in the VMCS are "
+"properly configured. If even one invalid value is present, VM Entry will "
+"fail[^vmentry]. Furthermore, **it does not provide any details about what "
+"exactly is wrong**. Since there are over 100 validation checks[^check], "
+"pinpointing the issue is extremely difficult. The author has [implemented "
+"each check one by one](https://github.com/smallkirby/ymir/blob/master/ymir/"
+"arch/x86/vmx/dbg.zig) and runs them only in debug builds. Please try to "
+"write your code so that this error does not occur in the first place. Well, "
+"even so, you will probably still encounter this error. When that happens, "
+"you must suffer through it properly."
 
 #: src/vmm/vmcs.md:684
 msgid ""
@@ -12293,13 +12299,16 @@ msgid ""
 "VMLAUNCH してみてエラーが発生することを確認しました。 その過程で実際に VMCS "
 "からフィールドを読み出すことにも成功しました。"
 msgstr ""
-"本チャプターでは VMCS の6つのカテゴリについてそれぞれの役割を大まかに説明しま"
-"した。 VMCS のレイアウトは実装依存であり、フィールドにアクセスするためには "
-"encoding を指定する必要があることを確認し、 encoding の定義と VMREAD/VMWIRE "
-"のヘルパー関数を定義しました。 また、VMCS が持つ状態について確認し、VMCS を現"
-"在の論理コアにセットしました。 まだ VMCS はまっさらな状態ですが、試しに "
-"VMLAUNCH してみてエラーが発生することを確認しました。 その過程で実際に VMCS "
-"からフィールドを読み出すことにも成功しました。"
+"In this chapter, we have described the six categories of VMCS, roughly "
+"describing the role of each. We confirmed that the layout of VMCS is "
+"implementation-dependent and that encoding must be specified to access the "
+"fields, and defined encoding and the VMREAD/VMWIRE helper functions. We also "
+"checked the state that VMCS has and set VMCS to the current logical core. "
+"Although VMCS is still in a fresh state, we tried to VMLAUNCH it and "
+"confirmed that an error occurs. In the process, we also succeeded in "
+"actually reading fields from VMCS.\n"
+"\n"
+"Translated with DeepL.com (free version)"
 
 #: src/vmm/vmcs.md:691
 msgid ""
@@ -12307,33 +12316,32 @@ msgid ""
 "に値をセットしていきます。 ひとまずは VMX Non-root Operation に遷移し、適当な"
 "1命令を実行できるようにすることを目的にしましょう。"
 msgstr ""
-"最後にはエラーについて不穏な説明をしましたが、次チャプター以降は実際に VMCS "
-"に値をセットしていきます。 ひとまずは VMX Non-root Operation に遷移し、適当な"
-"1命令を実行できるようにすることを目的にしましょう。"
+"Although we have given a disturbing explanation of the error at the end, "
+"from the next chapter onward, we will actually set values in VMCS. For now, "
+"our goal is to transition to VMX Non-root Operation so that we can execute "
+"one instruction in a guest."
 
 #: src/vmm/vmcs.md:694
 msgid ""
 "VMLAUNCH 命令を実行してみてエラーが発生したら Launched であると判断することは"
 "できます。"
 msgstr ""
-"VMLAUNCH 命令を実行してみてエラーが発生したら Launched であると判断することは"
-"できます。"
+"You can try executing VMLAUNCH instruction and determine that it is "
+"_launched_ if an error occurs."
 
 #: src/vmm/vmcs.md:695
 msgid ""
 "これらの関数呼び出しは全て `comptime` です。ランタイムオーバーヘッドはありま"
 "せん。"
-msgstr ""
-"これらの関数呼び出しは全て `comptime` です。ランタイムオーバーヘッドはありま"
-"せん。"
+msgstr "All these function calls are `comptime`. There is no runtime overhead."
 
 #: src/vmm/vmcs.md:696
 msgid ""
 "この理由で VM Entry が失敗する場合、VM Entry 自体が実行されないため VM Exit "
 "ではなく単なる命令の失敗として扱われます。"
 msgstr ""
-"この理由で VM Entry が失敗する場合、VM Entry 自体が実行されないため VM Exit "
-"ではなく単なる命令の失敗として扱われます。"
+"If a VM Entry fails for this reason, it is treated as a simple instruction "
+"failure rather than a VM Exit because the VM Entry itself is not executed."
 
 #: src/vmm/vmcs.md:697
 msgid "_SDM Vol.3C CHAPTER 27. VMENTRIES_"
