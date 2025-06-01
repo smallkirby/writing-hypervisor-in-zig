@@ -16,7 +16,7 @@
 ## Intel 8259 PIC
 
 本シリーズで扱う PIC は **Intel 8259A** です。
-最近の Intel CPU では 8259A 相当コントローラのが2つ搭載されているそうです。
+最近の Intel CPU では 8259A 相当のコントローラが2つ搭載されているそうです。
 それぞれ *Master PIC* と *Slave PIC* と呼ばれます。
 本シリーズでは **Primary PIC** と **Secondary PIC** と呼びます。
 それぞれが **Interrupt Requested Line (IRQ)** と呼ばれる入力線を8つずつ持ち、Secondary は Primary に対してカスケード接続されています。

@@ -425,7 +425,7 @@ pub fn allocPages(self: *PageAllocator, num_pages: usize, align_size: usize) ?[]
 
 中身はほぼ `allocate()` と同じです。
 引数はサイズをの代わりにページ数を受け取ります。
-`align_size` にはページサイズ以上のアラインメントを指定することができ、秋ページを探索する際にはこのアラインメントを考慮します。
+`align_size` にはページサイズ以上のアラインメントを指定することができ、空きページを探索する際にはこのアラインメントを考慮します。
 
 ## Allocator の作成
 
