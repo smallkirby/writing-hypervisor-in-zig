@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Writing Hypervisor in Zig\n"
-"POT-Creation-Date: 2025-06-01T12:38:02+09:00\n"
-"PO-Revision-Date: 2025-06-01 12:38+0900\n"
+"POT-Creation-Date: 2025-06-01T13:48:09+09:00\n"
+"PO-Revision-Date: 2025-06-01 14:18+0900\n"
 "Last-Translator: smallkirby <ssmallkirby@gmail.com>\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -1443,7 +1443,7 @@ msgstr ""
 #: src/bootloader/load_kernel.md:338 src/bootloader/jump_to_ymir.md:427
 #: src/kernel/serial_output.md:404 src/kernel/bit_and_test.md:274
 #: src/kernel/serial_logsystem.md:125 src/kernel/gdt.md:542
-#: src/kernel/interrupt.md:584 src/kernel/page_allocator.md:495
+#: src/kernel/interrupt.md:585 src/kernel/page_allocator.md:495
 #: src/kernel/paging.md:573 src/kernel/panic.md:156
 #: src/kernel/general_allocator.md:271 src/kernel/pic.md:587
 #: src/vmm/vmx_root.md:725 src/vmm/vmcs.md:682 src/vmm/vmlaunch.md:1104
@@ -3484,8 +3484,8 @@ msgstr ""
 
 #: src/bootloader/load_kernel.md:81 src/bootloader/load_kernel.md:305
 #: src/bootloader/jump_to_ymir.md:315 src/kernel/gdt.md:81
-#: src/kernel/gdt.md:116 src/kernel/gdt.md:420 src/kernel/interrupt.md:261
-#: src/kernel/interrupt.md:338 src/kernel/interrupt.md:442
+#: src/kernel/gdt.md:116 src/kernel/gdt.md:420 src/kernel/interrupt.md:262
+#: src/kernel/interrupt.md:339 src/kernel/interrupt.md:443
 #: src/kernel/page_allocator.md:111 src/kernel/page_allocator.md:352
 #: src/kernel/paging.md:150 src/kernel/panic.md:7 src/vmm/vmcall.md:31
 msgid "\\[!NOTE\\]"
@@ -6823,32 +6823,28 @@ msgid ""
 "るだけのようですが。 Ymir ではこれを置き換えて、割り込みの適切な処理や例外時"
 "のエラー表示等をします。"
 msgstr ""
-"本チャプターは UEFI が用意してくれたものを Ymir が置き換えていくシリーズの第2"
-"弾です。 今回は割り込みと例外を扱います。 UEFI が Surtr に処理を渡した時点"
-"で、基本的な例外設定は UEFI がしてくれています。 どの例外ハンドラもアボートす"
-"るだけのようですが。 Ymir ではこれを置き換えて、割り込みの適切な処理や例外時"
-"のエラー表示等をします。"
+"This chapter is the second in a series where we replace components initially "
+"set up by UEFI with Ymir's ones. This time, we'll focus on interrupts and "
+"exceptions. When UEFI transfers control to Surtr, it has already set up "
+"basic exception handlers - though they all seem to just abort. We'll replace "
+"these with proper interrupt handlers."
 
 #: src/kernel/interrupt.md:9
 msgid ""
 "なお、本チャプターは _SDM Vol.3A Chapter 6 INTERRUPT AND EXCEPTION HANDLING_ "
 "に基づいています。 より詳細を知りたい人はあわせて参照してください。"
 msgstr ""
-"なお、本チャプターは _SDM Vol.3A Chapter 6 INTERRUPT AND EXCEPTION HANDLING_ "
-"に基づいています。 より詳細を知りたい人はあわせて参照してください。"
+"This chapter is based on _SDM Vol.3A Chapter 6: INTERRUPT AND EXCEPTION "
+"HANDLING_. If you're interested in the details, it's worth reading alongside "
+"this post."
 
 #: src/kernel/interrupt.md:14
-#, fuzzy
-#| msgid ""
-#| "\\[!IMPORTANT\\] 本チャプターの最終コードは [`whiz-ymir-interrupt`]"
-#| "(https://github.com/smallkirby/ymir/tree/whiz-ymir-interrupt) ブランチにあ"
-#| "ります。"
 msgid ""
 "本チャプターの最終コードは [`whiz-ymir-interrupt`](https://github.com/"
 "smallkirby/ymir/tree/whiz-ymir-interrupt) ブランチにあります。"
 msgstr ""
-"\\[!IMPORTANT\\] 本チャプターの最終コードは [`whiz-ymir-interrupt`](https://"
-"github.com/smallkirby/ymir/tree/whiz-ymir-interrupt) ブランチにあります。"
+"The source code for this branch is in [`whiz-ymir-interrupt`](https://github."
+"com/smallkirby/ymir/tree/whiz-ymir-interrupt) branch."
 
 #: src/kernel/interrupt.md:18
 msgid "[割り込みと例外の基礎](#割り込みと例外の基礎)"
@@ -6888,7 +6884,7 @@ msgstr "[IDT にハンドラのセット](#idt-にハンドラのセット)"
 
 #: src/kernel/interrupt.md:29
 msgid "割り込みと例外の基礎"
-msgstr "割り込みと例外の基礎"
+msgstr "Overview of Interrupt and Exception"
 
 #: src/kernel/interrupt.md:31
 msgid ""
@@ -6899,23 +6895,25 @@ msgid ""
 "されるのは Instruction Boundary に制限されるため、命令の途中で割り込みハンド"
 "ラが呼び出されることはありません。"
 msgstr ""
-"CPU は **割り込み (Interrupts)** と **例外 (Excetpions)**  という2つのイベン"
-"ト[^call]を受け取ることができます。 割り込みはハードウェアからの信号によって"
-"任意のタイミングで発生[^timing]するのに対し、 例外は CPU が instruction を実"
-"行するタイミングでエラーを検知して発生します。 なお、どちらもハンドラが呼び出"
-"されるのは Instruction Boundary に制限されるため、命令の途中で割り込みハンド"
-"ラが呼び出されることはありません。"
+"CPU can receive two types of events: **interrupts** and **exceptions** "
+"[^call]. Interrupts are generated asynchronously by hardware "
+"signals[^timing], while exceptions occur synchronously when a CPU detects an "
+"error during the execution of an instruction. It's important to note that "
+"both types of events are handled only at instruction boundaries, so an "
+"interrupt handler will never be invoked in the middle of an instruction."
 
 #: src/kernel/interrupt.md:36
 msgid "分類"
-msgstr "分類"
+msgstr "Category"
 
 #: src/kernel/interrupt.md:38
 msgid "**割り込み** は Interrupt Source によって以下の2つに分類されます:"
-msgstr "**割り込み** は Interrupt Source によって以下の2つに分類されます:"
+msgstr ""
+"**Interrupts** are categorized into the following two types based on their "
+"interrupt source:"
 
 #: src/kernel/interrupt.md:40 src/kernel/interrupt.md:51
-#: src/kernel/interrupt.md:60
+#: src/kernel/interrupt.md:61
 msgid "Name"
 msgstr "Name"
 
@@ -6925,7 +6923,7 @@ msgstr "**External Interrupts**"
 
 #: src/kernel/interrupt.md:42
 msgid "CPU 内部から発生する割り込み。"
-msgstr "CPU 内部から発生する割り込み。"
+msgstr "Interrupts that originate from outside the CPU."
 
 #: src/kernel/interrupt.md:43
 msgid "**Software-generated Interrupts**"
@@ -6936,8 +6934,9 @@ msgid ""
 "ソフトウェアから [INT](https://www.felixcloutier.com/x86/intn:into:int3:"
 "int1) 命令で発生。任意の番号の割り込みを発生可能。"
 msgstr ""
-"ソフトウェアから [INT](https://www.felixcloutier.com/x86/intn:into:int3:"
-"int1) 命令で発生。任意の番号の割り込みを発生可能。"
+"Generated by software using [INT](https://www.felixcloutier.com/x86/intn:"
+"into:int3:int1) instruction. Allows generationg an interrupt with any "
+"specified vector number."
 
 #: src/kernel/interrupt.md:45
 msgid ""
@@ -6947,19 +6946,20 @@ msgid ""
 "せることができます。 ただし、INT 命令による例外には **Error Code** がスタック"
 "に PUSH されないという制約があります。"
 msgstr ""
-"**例外** も Interrupt Source によって3種類に分類されますが、そんなに使い分け"
-"ることがないので省略します。 割り込みと同様に [INT](https://www."
-"felixcloutier.com/x86/intn:into:int3:int1) 命令で任意の vector の例外を発生さ"
-"せることができます。 ただし、INT 命令による例外には **Error Code** がスタック"
-"に PUSH されないという制約があります。"
+"**Exceptions** are also classified into three types based on their interrupt "
+"source, but these distinctions are rarely used in practice, so we’ll skip "
+"the details here. Similar to interrupts, exceptions can be triggered using "
+"[INT](https://www.felixcloutier.com/x86/intn:into:int3:int1) instruction "
+"with any specified vector. However, one important caveat is that exceptions "
+"generated via INT instruction **do not push an Error Code** onto the stack."
 
 #: src/kernel/interrupt.md:49
 msgid ""
 "例外には、例外を発生させたタスクの再開が可能かどうかに応じて以下の3つのクラス"
 "があります:"
 msgstr ""
-"例外には、例外を発生させたタスクの再開が可能かどうかに応じて以下の3つのクラス"
-"があります:"
+"Exceptions are categorized into the following three classes based on whether "
+"the task that caused the exception can be resumed:"
 
 #: src/kernel/interrupt.md:51
 msgid "Can Resume?"
@@ -6997,8 +6997,8 @@ msgstr "**Aborts**"
 msgid "No"
 msgstr "No"
 
-#: src/kernel/interrupt.md:55 src/kernel/interrupt.md:64
-#: src/kernel/interrupt.md:71 src/kernel/interrupt.md:77
+#: src/kernel/interrupt.md:55 src/kernel/interrupt.md:65
+#: src/kernel/interrupt.md:72 src/kernel/interrupt.md:78
 msgid "\\-"
 msgstr "\\-"
 
@@ -7007,222 +7007,218 @@ msgid ""
 "例外は CPU が定義するものであるため、例外の種類はアーキテクチャに依存しま"
 "す。 x64 では以下のように例外が定義されています:"
 msgstr ""
-"例外は CPU が定義するものであるため、例外の種類はアーキテクチャに依存しま"
-"す。 x64 では以下のように例外が定義されています:"
+"Since exceptions are defined by CPU, their types depend on the architecture. "
+"On x64, exceptions are defined as follows:"
 
-#: src/kernel/interrupt.md:60
-msgid "Vector"
-msgstr "Vector"
-
-#: src/kernel/interrupt.md:60
+#: src/kernel/interrupt.md:61
 msgid "Class"
 msgstr "Class"
 
-#: src/kernel/interrupt.md:62
+#: src/kernel/interrupt.md:63
 msgid "0"
 msgstr "0"
 
-#: src/kernel/interrupt.md:62
+#: src/kernel/interrupt.md:63
 msgid "\\#DE: Divide Error"
 msgstr "\\#DE: Divide Error"
 
-#: src/kernel/interrupt.md:62 src/kernel/interrupt.md:67
-#: src/kernel/interrupt.md:68 src/kernel/interrupt.md:69
-#: src/kernel/interrupt.md:72 src/kernel/interrupt.md:73
-#: src/kernel/interrupt.md:74 src/kernel/interrupt.md:75
-#: src/kernel/interrupt.md:76 src/kernel/interrupt.md:78
-#: src/kernel/interrupt.md:79 src/kernel/interrupt.md:81
-#: src/kernel/interrupt.md:82 src/kernel/interrupt.md:83
+#: src/kernel/interrupt.md:63 src/kernel/interrupt.md:68
+#: src/kernel/interrupt.md:69 src/kernel/interrupt.md:70
+#: src/kernel/interrupt.md:73 src/kernel/interrupt.md:74
+#: src/kernel/interrupt.md:75 src/kernel/interrupt.md:76
+#: src/kernel/interrupt.md:77 src/kernel/interrupt.md:79
+#: src/kernel/interrupt.md:80 src/kernel/interrupt.md:82
+#: src/kernel/interrupt.md:83 src/kernel/interrupt.md:84
 msgid "Fault"
 msgstr "Fault"
 
-#: src/kernel/interrupt.md:63
+#: src/kernel/interrupt.md:64
 msgid "1"
 msgstr "1"
 
-#: src/kernel/interrupt.md:63
+#: src/kernel/interrupt.md:64
 msgid "\\#DB: Debug"
 msgstr "\\#DB: Debug"
 
-#: src/kernel/interrupt.md:63
+#: src/kernel/interrupt.md:64
 msgid "Fault/Trap"
 msgstr "Fault/Trap"
 
-#: src/kernel/interrupt.md:64
+#: src/kernel/interrupt.md:65
 msgid "2"
 msgstr "2"
 
-#: src/kernel/interrupt.md:64
+#: src/kernel/interrupt.md:65
 msgid "NMI: Non-Maskable Interrupt"
 msgstr "NMI: Non-Maskable Interrupt"
 
-#: src/kernel/interrupt.md:65
+#: src/kernel/interrupt.md:66
 msgid "3"
 msgstr "3"
 
-#: src/kernel/interrupt.md:65
+#: src/kernel/interrupt.md:66
 msgid "\\#BP: Breakpoint"
 msgstr "\\#BP: Breakpoint"
 
-#: src/kernel/interrupt.md:65 src/kernel/interrupt.md:66
+#: src/kernel/interrupt.md:66 src/kernel/interrupt.md:67
 msgid "Trap"
 msgstr "Trap"
 
-#: src/kernel/interrupt.md:66
+#: src/kernel/interrupt.md:67
 msgid "4"
 msgstr "4"
 
-#: src/kernel/interrupt.md:66
+#: src/kernel/interrupt.md:67
 msgid "\\#OF: Overflow"
 msgstr "\\#OF: Overflow"
 
-#: src/kernel/interrupt.md:67
+#: src/kernel/interrupt.md:68
 msgid "5"
 msgstr "5"
 
-#: src/kernel/interrupt.md:67
+#: src/kernel/interrupt.md:68
 msgid "\\#BR: BOUND Range Exceeded"
 msgstr "\\#BR: BOUND Range Exceeded"
 
-#: src/kernel/interrupt.md:68
+#: src/kernel/interrupt.md:69
 msgid "6"
 msgstr "6"
 
-#: src/kernel/interrupt.md:68
+#: src/kernel/interrupt.md:69
 msgid "\\#UD: Invalid Opcode"
 msgstr "\\#UD: Invalid Opcode"
 
-#: src/kernel/interrupt.md:69
+#: src/kernel/interrupt.md:70
 msgid "7"
 msgstr "7"
 
-#: src/kernel/interrupt.md:69
+#: src/kernel/interrupt.md:70
 msgid "\\#NM: Device Not Available"
 msgstr "\\#NM: Device Not Available"
 
-#: src/kernel/interrupt.md:70
+#: src/kernel/interrupt.md:71
 msgid "8"
 msgstr "8"
 
-#: src/kernel/interrupt.md:70
+#: src/kernel/interrupt.md:71
 msgid "\\#DF: Double Fault"
 msgstr "\\#DF: Double Fault"
 
-#: src/kernel/interrupt.md:70 src/kernel/interrupt.md:80
+#: src/kernel/interrupt.md:71 src/kernel/interrupt.md:81
 msgid "Abort"
 msgstr "Abort"
 
-#: src/kernel/interrupt.md:71
+#: src/kernel/interrupt.md:72
 msgid "9"
 msgstr "9"
 
-#: src/kernel/interrupt.md:72
+#: src/kernel/interrupt.md:73
 msgid "10"
 msgstr "10"
 
-#: src/kernel/interrupt.md:72
+#: src/kernel/interrupt.md:73
 msgid "\\#TS: Invalid TSS"
 msgstr "\\#TS: Invalid TSS"
 
-#: src/kernel/interrupt.md:73
+#: src/kernel/interrupt.md:74
 msgid "11"
 msgstr "11"
 
-#: src/kernel/interrupt.md:73
+#: src/kernel/interrupt.md:74
 msgid "\\#NP: Segment Not Present"
 msgstr "\\#NP: Segment Not Present"
 
-#: src/kernel/interrupt.md:74
+#: src/kernel/interrupt.md:75
 msgid "12"
 msgstr "12"
 
-#: src/kernel/interrupt.md:74
+#: src/kernel/interrupt.md:75
 msgid "\\#SS: Stack-Segment Fault"
 msgstr "\\#SS: Stack-Segment Fault"
 
-#: src/kernel/interrupt.md:75
+#: src/kernel/interrupt.md:76
 msgid "13"
 msgstr "13"
 
-#: src/kernel/interrupt.md:75
+#: src/kernel/interrupt.md:76
 msgid "\\#GP: General Protection"
 msgstr "\\#GP: General Protection"
 
-#: src/kernel/interrupt.md:76
+#: src/kernel/interrupt.md:77
 msgid "14"
 msgstr "14"
 
-#: src/kernel/interrupt.md:76
+#: src/kernel/interrupt.md:77
 msgid "\\#PF: Page Fault"
 msgstr "\\#PF: Page Fault"
 
-#: src/kernel/interrupt.md:77
+#: src/kernel/interrupt.md:78
 msgid "15"
 msgstr "15"
 
-#: src/kernel/interrupt.md:78
+#: src/kernel/interrupt.md:79
 msgid "16"
 msgstr "16"
 
-#: src/kernel/interrupt.md:78
+#: src/kernel/interrupt.md:79
 msgid "\\#MF: x87 FPU Floating-Point Error"
 msgstr "\\#MF: x87 FPU Floating-Point Error"
 
-#: src/kernel/interrupt.md:79
+#: src/kernel/interrupt.md:80
 msgid "17"
 msgstr "17"
 
-#: src/kernel/interrupt.md:79
+#: src/kernel/interrupt.md:80
 msgid "\\#AC: Alignment Check"
 msgstr "\\#AC: Alignment Check"
 
-#: src/kernel/interrupt.md:80
+#: src/kernel/interrupt.md:81
 msgid "18"
 msgstr "18"
 
-#: src/kernel/interrupt.md:80
+#: src/kernel/interrupt.md:81
 msgid "\\#MC: Machine Check"
 msgstr "\\#MC: Machine Check"
 
-#: src/kernel/interrupt.md:81
+#: src/kernel/interrupt.md:82
 msgid "19"
 msgstr "19"
 
-#: src/kernel/interrupt.md:81
+#: src/kernel/interrupt.md:82
 msgid "\\#XM: SIMD Floating-Point Exception"
 msgstr "\\#XM: SIMD Floating-Point Exception"
 
-#: src/kernel/interrupt.md:82
+#: src/kernel/interrupt.md:83
 msgid "20"
 msgstr "20"
 
-#: src/kernel/interrupt.md:82
+#: src/kernel/interrupt.md:83
 msgid "\\#VE: Virtualization Exception"
 msgstr "\\#VE: Virtualization Exception"
 
-#: src/kernel/interrupt.md:83
+#: src/kernel/interrupt.md:84
 msgid "21"
 msgstr "21"
 
-#: src/kernel/interrupt.md:83
+#: src/kernel/interrupt.md:84
 msgid "\\#CP: Control Protection Exception"
 msgstr "\\#CP: Control Protection Exception"
 
-#: src/kernel/interrupt.md:85
+#: src/kernel/interrupt.md:86
 msgid ""
 "割り込みと例外の vector は 0 から 255 までの 256 個です。 そのうちの 0 から "
 "31 までが例外に割当てられているか予約されているため、割り込みとして使えるの"
 "は 32 から 255 までです。"
 msgstr ""
-"割り込みと例外の vector は 0 から 255 までの 256 個です。 そのうちの 0 から "
-"31 までが例外に割当てられているか予約されているため、割り込みとして使えるの"
-"は 32 から 255 までです。"
+"Interrupt and exception vectors range from 0 to 255, totaling 256. Of these, "
+"vectors 0 through 31 are reserved, so usable interrupt vectors range from 32 "
+"to 255."
 
-#: src/kernel/interrupt.md:88
+#: src/kernel/interrupt.md:89
 msgid "Interrupt Descriptor Table"
 msgstr "Interrupt Descriptor Table"
 
-#: src/kernel/interrupt.md:90
+#: src/kernel/interrupt.md:91
 msgid ""
 "**IDT: Interrupt Descriptor Table** は割り込みと例外のハンドラを保持するテー"
 "ブルです。 GDT と同様に **Gate Descriptor** という 8byte のエントリから成る配"
@@ -7232,19 +7228,20 @@ msgid ""
 "ドラ呼び出し時に割り込みを無効化する ( `RFLAGS.IF` をクリアする) かどうかで"
 "す。 **本シリーズでは Interrupt Gate だけを使います**。"
 msgstr ""
-"**IDT: Interrupt Descriptor Table** は割り込みと例外のハンドラを保持するテー"
-"ブルです。 GDT と同様に **Gate Descriptor** という 8byte のエントリから成る配"
-"列[^idt-size]です。 Gate Descriptor には _Task Gate_ / _Interrupt Gate_ / "
-"_Trap Gate_ という3つの種類があります。 Task Gate は HW タスクスイッチに使わ"
-"れますが本シリーズでは使いません。 Interrupt Gate と Trap Gate の違いは、ハン"
-"ドラ呼び出し時に割り込みを無効化する ( `RFLAGS.IF` をクリアする) かどうかで"
-"す。 **本シリーズでは Interrupt Gate だけを使います**。"
+"**IDT: Interrupt Descriptor Table** is a table that holds handlers for "
+"interrupts and exceptions. Like GDT, it consists of an array of 8-byte "
+"entries called **Gate Descriptors**[^idt-size]. There are three types of "
+"gate descriptors: _Task Gate_, _Interrupt Gate_, and _Trap Gate_. Task gates "
+"are used for hardware task switching, which we will not cover in this "
+"series. The difference between interrupt gates and trap gates is whether "
+"interrupts are disabled (by clearing `RFLAGS.IF`) when the handler is "
+"called. **In this series, we only use interrupt gates**."
 
-#: src/kernel/interrupt.md:97
+#: src/kernel/interrupt.md:98
 msgid "Gate Descriptor は以下の構造を持ちます:"
-msgstr "Gate Descriptor は以下の構造を持ちます:"
+msgstr "A gate descriptor has the following structure:"
 
-#: src/kernel/interrupt.md:99
+#: src/kernel/interrupt.md:100
 msgid ""
 "![64-Bit IDT Descriptors](../assets/sdm/idt_gate_descriptors.png) _SDM "
 "Vol.3A 6.14.1 Figure 6-8. 64-Bit IDT Gate Descriptors_"
@@ -7252,23 +7249,23 @@ msgstr ""
 "![64-Bit IDT Descriptors](../assets/sdm/idt_gate_descriptors.png) _SDM "
 "Vol.3A 6.14.1 Figure 6-8. 64-Bit IDT Gate Descriptors_"
 
-#: src/kernel/interrupt.md:102
+#: src/kernel/interrupt.md:103
 msgid ""
 "_Offset_ / _Segment Selector_ / _DPL_ 以外は固定値です。 **Segment "
 "Selector** は例外・割り込みハンドラが位置するセグメントを選択するためのセレク"
 "タです。 Segment Selector が指定するセグメント内のオフセットは **Offset** に"
 "よって指定されます。"
 msgstr ""
-"_Offset_ / _Segment Selector_ / _DPL_ 以外は固定値です。 **Segment "
-"Selector** は例外・割り込みハンドラが位置するセグメントを選択するためのセレク"
-"タです。 Segment Selector が指定するセグメント内のオフセットは **Offset** に"
-"よって指定されます。"
+"Except for _Offset_, _Segment Selector_, and _DPL_, the other values are "
+"fixed. **Segment Selector** selects the segment where the exception or "
+"interrupt handler resides. The offset within the segment specified by the "
+"segment selector is given by the **Offset**."
 
-#: src/kernel/interrupt.md:106
+#: src/kernel/interrupt.md:107
 msgid "ハンドラの呼び出し"
-msgstr "ハンドラの呼び出し"
+msgstr "How Handler is Called"
 
-#: src/kernel/interrupt.md:108
+#: src/kernel/interrupt.md:109
 msgid ""
 "割り込みが発生した場合、その vector に対応する Gate Descriptor が IDT から取"
 "得されます。 IDT には **Segment Selector** が入っており、ハンドラがあるセグメ"
@@ -7276,13 +7273,14 @@ msgid ""
 "のハンドラのオフセットは _Offset_ で指定されます。 つまり、Logical to Linear "
 "変換と全く同じ方法でハンドラの物理アドレスが計算されます:"
 msgstr ""
-"割り込みが発生した場合、その vector に対応する Gate Descriptor が IDT から取"
-"得されます。 IDT には **Segment Selector** が入っており、ハンドラがあるセグメ"
-"ントを指定します。 FS/GS 等の Segment Selector と全く同じです。 セグメント内"
-"のハンドラのオフセットは _Offset_ で指定されます。 つまり、Logical to Linear "
-"変換と全く同じ方法でハンドラの物理アドレスが計算されます:"
+"When an interrupt occurs, the gate descriptor corresponding to its vector is "
+"retrieved from the IDT. The IDT contains the **Segment Selector**, which "
+"specifies the segment where the handler resides - just like FS/GS segment "
+"selectors. The handler's offset within the segment is specified by _Offset_. "
+"In other words, the handler's physical address is calculated using the exact "
+"same method as logical to linear address translation:"
 
-#: src/kernel/interrupt.md:114
+#: src/kernel/interrupt.md:115
 msgid ""
 "![Interrupt Procedure Call](../assets/sdm/interrupt_procedure_call.png) _SDM "
 "Vol.3A 6.12.1 Figure 6-3. Interrupt Procedure Call_"
@@ -7290,55 +7288,55 @@ msgstr ""
 "![Interrupt Procedure Call](../assets/sdm/interrupt_procedure_call.png) _SDM "
 "Vol.3A 6.12.1 Figure 6-3. Interrupt Procedure Call_"
 
-#: src/kernel/interrupt.md:117
+#: src/kernel/interrupt.md:118
 msgid "Gate Descriptor の実装"
-msgstr "Gate Descriptor の実装"
+msgstr "Implementation of Gate Descriptor"
 
-#: src/kernel/interrupt.md:119
+#: src/kernel/interrupt.md:120
 msgid ""
 "まずは Gate Descriptor 構造体を定義します。 一応 `GateType` も定義しますが、"
 "本シリーズでは Interrupt Gate しか使いません:"
 msgstr ""
-"まずは Gate Descriptor 構造体を定義します。 一応 `GateType` も定義しますが、"
-"本シリーズでは Interrupt Gate しか使いません:"
+"First, let's define a gate descriptor structure. We'll also define "
+"`GateType`, although in this series we only use interrupt gate:"
 
-#: src/kernel/interrupt.md:162
+#: src/kernel/interrupt.md:163
 msgid ""
 "続いて、IDT を定義します。 GDT と同様に `.data` セクションに確保される配列と"
 "します。 なお、GDT の [NULL Descriptor](./gdt.md#null-descriptor) とは異なり "
 "0 番目の要素も実際に使うことができます:"
 msgstr ""
-"続いて、IDT を定義します。 GDT と同様に `.data` セクションに確保される配列と"
-"します。 なお、GDT の [NULL Descriptor](./gdt.md#null-descriptor) とは異なり "
-"0 番目の要素も実際に使うことができます:"
+"Next, let's define IDT. Similar to GDT, it will be an array allocated in the "
+"`.data` section. Unlike the GDT's [NULL Descriptor](./gdt.md#null-"
+"descriptor), the element at index 0 can actually be used:"
 
-#: src/kernel/interrupt.md:172
+#: src/kernel/interrupt.md:173
 msgid "最後に、IDT にエントリを追加する関数を用意します:"
-msgstr "最後に、IDT にエントリを追加する関数を用意します:"
+msgstr "Finally, let's create a function to add entries to IDT:"
 
-#: src/kernel/interrupt.md:194
+#: src/kernel/interrupt.md:195
 msgid ""
 "`Isr` は後述する割り込みハンドラの関数型です。 ハンドラはコード領域に置かれる"
 "ため、セグメントは CS を指定します (下位 3bit は RPL/TI[^ti] なのでその分だけ"
 "シフトします)。"
 msgstr ""
-"`Isr` は後述する割り込みハンドラの関数型です。 ハンドラはコード領域に置かれる"
-"ため、セグメントは CS を指定します (下位 3bit は RPL/TI[^ti] なのでその分だけ"
-"シフトします)。"
+"`Isr` refers to the function type of the interrupt handlers described later. "
+"Since handlers reside in the code segment, the segment selector uses CS (the "
+"lower 3 bits are for RPL/TI[^ti], so we shift accordingly)."
 
-#: src/kernel/interrupt.md:198
+#: src/kernel/interrupt.md:199
 msgid "空の IDT の初期化"
-msgstr "空の IDT の初期化"
+msgstr "Initialization of Empty IDT"
 
-#: src/kernel/interrupt.md:200
+#: src/kernel/interrupt.md:201
 msgid ""
 "一旦ちゃんとしたハンドラを設定する前に、空の IDT を初期化して使ってみましょ"
 "う。 IDT の初期化関数を用意します:"
 msgstr ""
-"一旦ちゃんとしたハンドラを設定する前に、空の IDT を初期化して使ってみましょ"
-"う。 IDT の初期化関数を用意します:"
+"Before setting up proper handlers, let's initialize an empty IDT and try "
+"using it. Here's a function to initialize the IDT:"
 
-#: src/kernel/interrupt.md:221
+#: src/kernel/interrupt.md:222
 msgid ""
 "IDT 自体のアドレスは **IDTR: Interrupt Descriptor Table Register** にセットし"
 "ます。 GDT における GDTR に対応するレジスタです。 やはり GDT と同様に、Zig "
@@ -7346,27 +7344,28 @@ msgid ""
 "`init()` の中で IDT のアドレスをセットします。 `am.lidt()` は [LIDT](https://"
 "www.felixcloutier.com/x86/lgdt:lidt) を実行するためのアセンブリ関数です。"
 msgstr ""
-"IDT 自体のアドレスは **IDTR: Interrupt Descriptor Table Register** にセットし"
-"ます。 GDT における GDTR に対応するレジスタです。 やはり GDT と同様に、Zig "
-"0.13.0 時点のバグのせいで `.base = &idt` というような定義ができないため、 "
-"`init()` の中で IDT のアドレスをセットします。 `am.lidt()` は [LIDT](https://"
-"www.felixcloutier.com/x86/lgdt:lidt) を実行するためのアセンブリ関数です。"
+"The address of the IDT itself is set in **IDTR: Interrupt Descriptor Table "
+"Register**, which corresponds to GDTR for GDT. Similar to GDT, due to a bug "
+"in Zig 0.13.0, you cannot define `.base = &idt` directly, so the IDT address "
+"is set inside the `init()` function. The `am.lidt()` function is an assembly "
+"that executes [LIDT](https://www.felixcloutier.com/x86/lgdt:lidt) "
+"instruction."
 
-#: src/kernel/interrupt.md:227
+#: src/kernel/interrupt.md:228
 msgid "`kernelMain()` から呼び出して初期化します:"
-msgstr "`kernelMain()` から呼び出して初期化します:"
+msgstr "Call it from `kernelMain()` to initialize:"
 
-#: src/kernel/interrupt.md:235
+#: src/kernel/interrupt.md:236
 msgid ""
 "これで空の IDT を設定できました。 実際に例外を起こしてみましょう。 Zig で定数"
 "値を使って `#DE: Devide Error` を引き起こすのは少し面倒なため、今回は `#GP: "
 "General Protection Fault` を引き起こしてみます:"
 msgstr ""
-"これで空の IDT を設定できました。 実際に例外を起こしてみましょう。 Zig で定数"
-"値を使って `#DE: Devide Error` を引き起こすのは少し面倒なため、今回は `#GP: "
-"General Protection Fault` を引き起こしてみます:"
+"With this, the empty IDT is set up. Let's trigger an exception to test it. "
+"Since causing a `#DE: Divide Error` in Zig is a bit tricky, we'll generate a "
+"`#GP: General Protection Fault` this time:"
 
-#: src/kernel/interrupt.md:245
+#: src/kernel/interrupt.md:246
 msgid ""
 "`0xDEAD000000000000` というアドレスは、**Canonical Form** ではありません。 "
 "Canonical Form は仮想アドレスが満たすべきフォーマットのことで、 _Most "
@@ -7375,14 +7374,14 @@ msgid ""
 "なのに対し、それより上位のビットが `0x00000000` ではないため `#GP` が発生しま"
 "す。"
 msgstr ""
-"`0xDEAD000000000000` というアドレスは、**Canonical Form** ではありません。 "
-"Canonical Form は仮想アドレスが満たすべきフォーマットのことで、 _Most "
-"Significant Implemented Bit_ (おそらく最近のCPUだと 47-th bit) とそれより高位"
-"のビットが全て同じであることを要求します。 今回のアドレスは 47-th bit が `0` "
-"なのに対し、それより上位のビットが `0x00000000` ではないため `#GP` が発生しま"
-"す。"
+"The address `0xDEAD000000000000` is not in **Canonical Form**. Canonical "
+"form is the required format for virtual addresses, where the _Most "
+"Significant Implemented Bit_ (likely the 47th bit on recent CPUs) and all "
+"higher bits must be the same. In this case, the 47th bit is `0`, but the "
+"higher bits are not `0x00000000`, which causes a `#GP` (General Protection "
+"Fault)."
 
-#: src/kernel/interrupt.md:249
+#: src/kernel/interrupt.md:250
 msgid ""
 "実行すると、おそらく QEMU が終了します。 これは **Triple Fault** が発生したた"
 "めです。 まず、指定したアドレスから値を取得しようとして `#GP` が発生します。 "
@@ -7394,84 +7393,78 @@ msgid ""
 "ドレス解決時に `#GP` が発生し、最終的には Triple Fault が発生します。 Triple "
 "Fault はシステムをシャットダウンするため、QEMU が終了します。"
 msgstr ""
-"実行すると、おそらく QEMU が終了します。 これは **Triple Fault** が発生したた"
-"めです。 まず、指定したアドレスから値を取得しようとして `#GP` が発生します。 "
-"CPU は `#GP` のベクタである 13 番目のエントリを IDT から取得します。 現在 "
-"IDT は全て 0 で埋めてあるため、_Segment Selector_ が 0 (_NULL Segment "
-"Selector_) として解釈されます。 Null Segment Selector を使ったメモリアクセス"
-"は `#GP` を発生させようとしますが[^deref-null]、 2回連続の `#GP` なので "
-"`#DF: Double Fault` が発生します[^double-fault]。 ここでもやはりハンドラのア"
-"ドレス解決時に `#GP` が発生し、最終的には Triple Fault が発生します。 Triple "
-"Fault はシステムをシャットダウンするため、QEMU が終了します。"
+"When you run this, QEMU will likely exit. This is because a **Triple Fault** "
+"has occurred. First, the CPU tries to read from the specified address and "
+"triggers a `#GP`. The CPU then fetches the 13th entry (the vector for `#GP`) "
+"from the IDT. Since the IDT is filled with zeros, the _Segment Selector_ is "
+"interpreted as 0 (the NULL Segment Selector). Attempting memory access with "
+"a NULL segment selector causes another `#GP`[^deref-null], but since this is "
+"the second consecutive `#GP`, a `#DF: Double Fault` is triggered[^double-"
+"fault]. At this point, resolving the handler's address also causes a `#GP`, "
+"ultimately leading to a triple fault. A triple fault shuts down the system, "
+"causing QEMU to exit."
 
-#: src/kernel/interrupt.md:259
+#: src/kernel/interrupt.md:260
 msgid ""
 "なにはともあれ、UEFI の用意した IDT から Ymir の IDT に置き換えること自体には"
 "成功しているようです。"
 msgstr ""
-"なにはともあれ、UEFI の用意した IDT から Ymir の IDT に置き換えること自体には"
-"成功しているようです。"
+"In any case, it seems we have successfully replaced the UEFI-provided IDT "
+"with Ymir's own IDT."
 
-#: src/kernel/interrupt.md:263
-#, fuzzy
-#| msgid ""
-#| "\\[!NOTE\\] UEFI の用意する IDT `main.zig` において、IDT と GDT の初期化を"
-#| "する関数呼び出しをコメントアウトした状態で `#GP` を発生させると、UEFI が用"
-#| "意してくれた IDT が使われます。 このハンドラは、例外の種類とレジスタの状態"
-#| "をダンプしてくれるものです:"
+#: src/kernel/interrupt.md:264
 msgid ""
 "`main.zig` において、IDT と GDT の初期化をする関数呼び出しをコメントアウトし"
 "た状態で `#GP` を発生させると、UEFI が用意してくれた IDT が使われます。 この"
 "ハンドラは、例外の種類とレジスタの状態をダンプしてくれるものです:"
 msgstr ""
-"\\[!NOTE\\] UEFI の用意する IDT `main.zig` において、IDT と GDT の初期化をす"
-"る関数呼び出しをコメントアウトした状態で `#GP` を発生させると、UEFI が用意し"
-"てくれた IDT が使われます。 このハンドラは、例外の種類とレジスタの状態をダン"
-"プしてくれるものです:"
+"In `main.zig`, if you comment out the function calls that initialize the IDT "
+"and GDT and then trigger a `#GP`, the UEFI-provided IDT will be used. This "
+"handler dumps the exception type along with the register state:"
 
-#: src/kernel/interrupt.md:286
+#: src/kernel/interrupt.md:287
 msgid ""
 "なお、IDT の初期化だけをコメントアウトするとやはり Triple Fault が発生しま"
 "す。 GDT のコメントアウトも必要です。クイズとして理由を考えてみるのも良いかも"
 "しれません。"
 msgstr ""
-"なお、IDT の初期化だけをコメントアウトするとやはり Triple Fault が発生しま"
-"す。 GDT のコメントアウトも必要です。クイズとして理由を考えてみるのも良いかも"
-"しれません。"
+"Note that if you only comment out the IDT initialization, a triple fault "
+"will still occur. You also need to comment out the GDT initialization. It "
+"might be a good exercise to think about why this happens."
 
-#: src/kernel/interrupt.md:289
+#: src/kernel/interrupt.md:290
 msgid "割り込みハンドラの共通部分"
-msgstr "割り込みハンドラの共通部分"
+msgstr "Common Parts of Interrupt Handlers"
 
-#: src/kernel/interrupt.md:291
+#: src/kernel/interrupt.md:292
 msgid ""
 "ここからは、作成した IDT にセットする割り込みハンドラを書いていきます。 割り"
 "込みハンドラは **ISR: Interrupt Service Routine** とも呼ばれます。 短くて書き"
 "やすいので以降は ISR と呼びます。"
 msgstr ""
-"ここからは、作成した IDT にセットする割り込みハンドラを書いていきます。 割り"
-"込みハンドラは **ISR: Interrupt Service Routine** とも呼ばれます。 短くて書き"
-"やすいので以降は ISR と呼びます。"
+"From here, we'll write interrupt handlers to set in the IDT. Interrupt "
+"handlers are also called **ISR: Interrupt Service Routines**. Since it's "
+"shorter and easier to write, we'll refer to them as ISRs from now on."
 
-#: src/kernel/interrupt.md:295
+#: src/kernel/interrupt.md:296
 msgid ""
 "ISR には vector に関わらず共通でするべき処理があります。 レジスタの退避・復帰"
 "などです。 そのため、Ymir では共通の処理を呼び出した後に vector に対応する個"
 "別のハンドラを呼び出すような ISR を作成します。"
 msgstr ""
-"ISR には vector に関わらず共通でするべき処理があります。 レジスタの退避・復帰"
-"などです。 そのため、Ymir では共通の処理を呼び出した後に vector に対応する個"
-"別のハンドラを呼び出すような ISR を作成します。"
+"ISRs share some common tasks regardless of the vector, such as saving and "
+"restoring registers. Therefore, in Ymir, the ISR calls a common handler "
+"first, then dispatches to the specific handler corresponding to the vector."
 
-#: src/kernel/interrupt.md:299
+#: src/kernel/interrupt.md:300
 msgid ""
 "以下では ISR の共通部分を実装していきましょう。 ISR の共通部分は以下のように"
 "生成します:"
 msgstr ""
-"以下では ISR の共通部分を実装していきましょう。 ISR の共通部分は以下のように"
-"生成します:"
+"Let's implement the common part of the ISR below. The common ISR section is "
+"generated as follows:"
 
-#: src/kernel/interrupt.md:332
+#: src/kernel/interrupt.md:333
 msgid ""
 "`generateIsr()` は、割り込み vector を受取り、その vector に対応する ISR を生"
 "成します。 全 ISR に「共通」の処理ではありますが、**関数自体は vector の個数"
@@ -7480,31 +7473,26 @@ msgid ""
 "つの関数しか用意しない場合、現在処理されている割り込み vector を知る方法があ"
 "りません。 これを避けるため、vector ごとに関数を生成します。"
 msgstr ""
-"`generateIsr()` は、割り込み vector を受取り、その vector に対応する ISR を生"
-"成します。 全 ISR に「共通」の処理ではありますが、**関数自体は vector の個数"
-"分だけ生成する**ということです。 これがなぜかというと、CPU は ISR の呼び出し"
-"時に vector をスタックやレジスタに保存してくれないからです。 全 ISR に対して1"
-"つの関数しか用意しない場合、現在処理されている割り込み vector を知る方法があ"
-"りません。 これを避けるため、vector ごとに関数を生成します。"
+"`generateIsr()` takes an interrupt vector as input and generates the ISR "
+"corresponding to that vector. Although this is a common part for all ISRs, "
+"**the function itself is generated separately for each vector**. This is "
+"because a CPU does not save the vector number on the stack or registers when "
+"calling the ISR. If you only have one function for all ISRs, there’s no way "
+"to know which interrupt vector is currently being handled. To avoid this, we "
+"generate a separate function for each vector."
 
-#: src/kernel/interrupt.md:340
-#, fuzzy
-#| msgid ""
-#| "\\[!NOTE\\] 関数を返す関数 Zig では構造体を返す関数はとても簡単かつ自然に"
-#| "書くことができます。 一方で、関数を返す場合には `struct` のメンバ関数ポイ"
-#| "ンタを返すという少し歪な方法を取る必要があります。 もっと良い方法をご存知"
-#| "の方がいれば教えてください。"
+#: src/kernel/interrupt.md:341
 msgid ""
 "Zig では構造体を返す関数はとても簡単かつ自然に書くことができます。 一方で、関"
 "数を返す場合には `struct` のメンバ関数ポインタを返すという少し歪な方法を取る"
 "必要があります。 もっと良い方法をご存知の方がいれば教えてください。"
 msgstr ""
-"\\[!NOTE\\] 関数を返す関数 Zig では構造体を返す関数はとても簡単かつ自然に書く"
-"ことができます。 一方で、関数を返す場合には `struct` のメンバ関数ポインタを返"
-"すという少し歪な方法を取る必要があります。 もっと良い方法をご存知の方がいれば"
-"教えてください。"
+"In Zig, returning a struct from a function is straightforward and natural. "
+"However, when returning a function, you need to create a struct first and "
+"then return a member function pointer, which is somewhat awkward. If you "
+"know a better approach, please let me know."
 
-#: src/kernel/interrupt.md:344
+#: src/kernel/interrupt.md:345
 msgid ""
 "ISR では、まず [CLI](https://www.felixcloutier.com/x86/cli) 命令で割り込みを"
 "無効化します。 CPU は Interrupt Gate 経由で ISR にジャンプする時には _RFLAGS."
@@ -7512,13 +7500,13 @@ msgid ""
 "よって、Trap Gate 内で割り込みを禁止したい場合には明示的に CLI する必要があり"
 "ます[^cli]。"
 msgstr ""
-"ISR では、まず [CLI](https://www.felixcloutier.com/x86/cli) 命令で割り込みを"
-"無効化します。 CPU は Interrupt Gate 経由で ISR にジャンプする時には _RFLAGS."
-"IF_ をクリアしますが、 Trap Gate 経由でジャンプするときにはクリアしません。 "
-"よって、Trap Gate 内で割り込みを禁止したい場合には明示的に CLI する必要があり"
-"ます[^cli]。"
+"In an ISR, the first step is to disable interrupts using [CLI](https://www."
+"felixcloutier.com/x86/cli) instruction. When a CPU jumps to an ISR via an "
+"interrupt gate, it clears _RFLAGS.IF_ flag automatically, but it does not do "
+"so when jumping via a trap gate. Therefore, if you want to disable "
+"interrupts within a trap gate, you need to explicitly execute CLI[^cli]."
 
-#: src/kernel/interrupt.md:349
+#: src/kernel/interrupt.md:350
 msgid ""
 "続いて、例外が **Error Code** を提供しない場合にはダミーのエラーコードを "
 "PUSH します。 一部の例外は Error Code によって例外の原因などを少し詳しく通知"
@@ -7528,41 +7516,44 @@ msgid ""
 "例外にもダミーのエラーコードを PUSH します。 各例外の Error Code の有無や意味"
 "は _SDM Vol.3A 6.15 Exception and Interrupt Reference_ を参照してください。"
 msgstr ""
-"続いて、例外が **Error Code** を提供しない場合にはダミーのエラーコードを "
-"PUSH します。 一部の例外は Error Code によって例外の原因などを少し詳しく通知"
-"してくれます。 例えば、`#PF: Page Fault` はフォルトを起こしたアクセスが read/"
-"write のどちらなのか等を Error Code に含めます。 Error Code を提供するものと"
-"しないもののスタックの状態を同じにするため、 ISR では Error Code を提供しない"
-"例外にもダミーのエラーコードを PUSH します。 各例外の Error Code の有無や意味"
-"は _SDM Vol.3A 6.15 Exception and Interrupt Reference_ を参照してください。"
+"Next, if an exception does not provide an **Error Code**, a dummy error code "
+"is pushed onto the stack. Some exceptions come with an error code that "
+"provides more details about the cause of the exception. For example, `#PF: "
+"Page Fault` includes information such as whether the faulting access was a "
+"read or write in its error code. To keep the stack layout consistent between "
+"exceptions that do and do not provide an error code, the ISR pushes a dummy "
+"error code for those. For details on which exceptions provide an error code "
+"and their meanings, refer to _SDM Vol.3A 6.15 Exception and Interrupt "
+"Reference_."
 
-#: src/kernel/interrupt.md:356
+#: src/kernel/interrupt.md:357
 msgid ""
 "最後に、ISR の vectorによらない共通部分にジャンプする前に vector を PUSH しま"
 "す。 これによって、全割り込みで1つしか用意されていない関数の中でも vector を"
 "取得できます。"
 msgstr ""
-"最後に、ISR の vectorによらない共通部分にジャンプする前に vector を PUSH しま"
-"す。 これによって、全割り込みで1つしか用意されていない関数の中でも vector を"
-"取得できます。"
+"Finally, before jumping to the vector-independent common part of the ISR, "
+"the vector is pushed onto the stack. This allows the single shared function "
+"for all interrupts to identify the vector."
 
-#: src/kernel/interrupt.md:359
+#: src/kernel/interrupt.md:360
 msgid "全割り込みで共通して使う部分は以下です:"
-msgstr "全割り込みで共通して使う部分は以下です:"
+msgstr "The common part used by all interrupts is as follows:"
 
-#: src/kernel/interrupt.md:422
+#: src/kernel/interrupt.md:423
 msgid ""
 "まず最初に現在のレジスタの状態を保存します。 続いて、vector ごとの関数を呼び"
 "出すための関数である `intrZigEntry()` を呼び出します。 この際、引数には現在"
 "の RSP を渡すため、RSP を RDI にコピーしています[^rsp]。 各 vector ごとの引数"
 "を呼び出したあとは、保存していたレジスタを復元します。"
 msgstr ""
-"まず最初に現在のレジスタの状態を保存します。 続いて、vector ごとの関数を呼び"
-"出すための関数である `intrZigEntry()` を呼び出します。 この際、引数には現在"
-"の RSP を渡すため、RSP を RDI にコピーしています[^rsp]。 各 vector ごとの引数"
-"を呼び出したあとは、保存していたレジスタを復元します。"
+"First, save the current register state. Then call `intrZigEntry()`, the "
+"function responsible for dispatching to the vector-specific handlers. At "
+"this point, the current RSP is passed as an argument by copying RSP into "
+"RDI[^rsp]. After calling the vector-specific handler, the saved registers "
+"are restored."
 
-#: src/kernel/interrupt.md:427
+#: src/kernel/interrupt.md:428
 msgid ""
 "最後に、[IRET](https://www.felixcloutier.com/x86/iret:iretd:iretq) 命令で割り"
 "込みから復帰します。 IRET はスタックの上から順に RIP / CS / RFLAGS を POP す"
@@ -7570,13 +7561,14 @@ msgid ""
 "の3つは ISR に入る際に CPU が自動的に PUSH してくれるものです。 ISR を呼び出"
 "す直前に CPU はスタックに以下のものを積んでくれます:"
 msgstr ""
-"最後に、[IRET](https://www.felixcloutier.com/x86/iret:iretd:iretq) 命令で割り"
-"込みから復帰します。 IRET はスタックの上から順に RIP / CS / RFLAGS を POP す"
-"る命令です。 この3つをスタックに積んだ覚えがないと思ったあなた、正解です。 こ"
-"の3つは ISR に入る際に CPU が自動的に PUSH してくれるものです。 ISR を呼び出"
-"す直前に CPU はスタックに以下のものを積んでくれます:"
+"Finally, return from the interrupt using [IRET](https://www.felixcloutier."
+"com/x86/iret:iretd:iretq) instruction. IRET pops RIP, CS, and RFLAGS from "
+"the stack in that order. If you're wondering where these three values were "
+"pushed onto the stack, you're correct - CPU automatically pushes them when "
+"entering the ISR. Just before calling the ISR, the CPU pushes the following "
+"onto the stack:"
 
-#: src/kernel/interrupt.md:433
+#: src/kernel/interrupt.md:434
 msgid ""
 "![Stack Usage on Transfers to Interrupt and Exception-Handling Routines](../"
 "assets/sdm/intr_stack.png) _SDM Vol.3A 6.4 Figure 6-4. Stack Usage on "
@@ -7586,7 +7578,7 @@ msgstr ""
 "assets/sdm/intr_stack.png) _SDM Vol.3A 6.4 Figure 6-4. Stack Usage on "
 "Transfers to Interrupt and Exception-Handling Routines_"
 
-#: src/kernel/interrupt.md:436
+#: src/kernel/interrupt.md:437
 msgid ""
 "本シリーズでは Ymir はユーザランドを実装しないため、 `with No Privilege-"
 "Level Change` の場合のみを考えれば良いです。 たとえ Error Code が提供されない"
@@ -7595,22 +7587,14 @@ msgid ""
 "PUSH していました。 よって、IRET する前には vector と Error Code をスタックか"
 "ら取り除くために `add $0x10, %%rsp` を行っています。"
 msgstr ""
-"本シリーズでは Ymir はユーザランドを実装しないため、 `with No Privilege-"
-"Level Change` の場合のみを考えれば良いです。 たとえ Error Code が提供されない"
-"場合でも、ISR の共通部分でダミーの Error Code を PUSH していたため、 スタック"
-"は必ずこの図のとおりになります。 加えて、Ymir の ISR ではこれに vector も "
-"PUSH していました。 よって、IRET する前には vector と Error Code をスタックか"
-"ら取り除くために `add $0x10, %%rsp` を行っています。"
+"Since Ymir does not implement userland in this series, we only consider the "
+"case of \"No Privilege-Level Change.\" Even if an error code is not "
+"provided, the common part of the ISR pushes a dummy error code, so the stack "
+"layout always matches the diagram. Additionally, Ymir's ISR also pushes the "
+"vector onto the stack. Therefore, before executing IRET, we remove the "
+"vector and error code from the stack by performing `add $0x10, %%rsp`."
 
-#: src/kernel/interrupt.md:444
-#, fuzzy
-#| msgid ""
-#| "\\[!NOTE\\] スタックのアライン x64 の命令の中には、スタックが 16byte にア"
-#| "ラインされていることを要求する命令があります。 その一例は [MOVAPS]"
-#| "(https://www.felixcloutier.com/x86/movaps) 命令です。 この命令はスタック"
-#| "が 16byte にアラインされていない場合に `#GP` を発生させます。 ISR から "
-#| "`intrZigEntry()` を呼び出す際にはスタックを 16byte にアラインする操作を挟"
-#| "んでいます。"
+#: src/kernel/interrupt.md:445
 msgid ""
 "x64 の命令の中には、スタックが 16byte にアラインされていることを要求する命令"
 "があります。 その一例は [MOVAPS](https://www.felixcloutier.com/x86/movaps) 命"
@@ -7618,25 +7602,25 @@ msgid ""
 "生させます。 ISR から `intrZigEntry()` を呼び出す際にはスタックを 16byte にア"
 "ラインする操作を挟んでいます。"
 msgstr ""
-"\\[!NOTE\\] スタックのアライン x64 の命令の中には、スタックが 16byte にアライ"
-"ンされていることを要求する命令があります。 その一例は [MOVAPS](https://www."
-"felixcloutier.com/x86/movaps) 命令です。 この命令はスタックが 16byte にアライ"
-"ンされていない場合に `#GP` を発生させます。 ISR から `intrZigEntry()` を呼び"
-"出す際にはスタックを 16byte にアラインする操作を挟んでいます。"
+"Some x64 instructions require the stack to be 16-byte aligned. One example "
+"is [MOVAPS](https://www.felixcloutier.com/x86/movaps) instruction, which "
+"raises a `#GP` if the stack is not properly aligned. When calling "
+"`intrZigEntry()` from the ISR, we ensure the stack is aligned to 16 bytes."
 
-#: src/kernel/interrupt.md:449
+#: src/kernel/interrupt.md:450
 msgid "vector 固有のハンドラ"
-msgstr "vector 固有のハンドラ"
+msgstr "Vector-Specific Handler"
 
-#: src/kernel/interrupt.md:451
+#: src/kernel/interrupt.md:452
 msgid ""
 "ISR の共通部分が完成したので、各 vector に対応するハンドラを呼び出します。 先"
 "程の共通 ISR で呼び出していた `intrZigEntry()` は以下のように定義します:"
 msgstr ""
-"ISR の共通部分が完成したので、各 vector に対応するハンドラを呼び出します。 先"
-"程の共通 ISR で呼び出していた `intrZigEntry()` は以下のように定義します:"
+"With the common part of the ISR completed, let's call the handler "
+"corresponding to each vector. The `intrZigEntry()` function, which was "
+"called from the common ISR earlier, is defined as follows:"
 
-#: src/kernel/interrupt.md:495
+#: src/kernel/interrupt.md:496
 msgid ""
 "引数の `Context` は ISR が呼び出された直後のレジスタの状態です。 "
 "**`intrZigEntry()` を呼び出す直前のスタックが、そのまま `Context` の中身にな"
@@ -7644,59 +7628,59 @@ msgid ""
 "めです。 vector 固有のハンドラ内では、これらの `Context` の情報を使うことがで"
 "きます。"
 msgstr ""
-"引数の `Context` は ISR が呼び出された直後のレジスタの状態です。 "
-"**`intrZigEntry()` を呼び出す直前のスタックが、そのまま `Context` の中身にな"
-"ります**。 先ほど `intrZigEntry()` に RSP の値を引数と渡していたのは、このた"
-"めです。 vector 固有のハンドラ内では、これらの `Context` の情報を使うことがで"
-"きます。"
+"The `Context` argument represents the register state immediately after the "
+"ISR is invoked. **The stack just before calling `intrZigEntry()` directly "
+"corresponds to the contents of `Context`**. This is why we passed the RSP "
+"value as an argument to `intrZigEntry()`. Inside the vector-specific "
+"handler, you can access this `Context` information."
 
-#: src/kernel/interrupt.md:500
+#: src/kernel/interrupt.md:501
 msgid ""
 "`callconv(.C)` とすることで、第1引数が必ず RDI (今回は RSP の値) になるように"
 "します。 これをしないと、Zig が最適化のためにどのレジスタ(またはスタック)を"
 "使って引数を渡すのかを変える可能性があります。 `intr.dispatch()` は以下のよう"
 "に vector 固有のハンドラを呼び出します:"
 msgstr ""
-"`callconv(.C)` とすることで、第1引数が必ず RDI (今回は RSP の値) になるように"
-"します。 これをしないと、Zig が最適化のためにどのレジスタ(またはスタック)を"
-"使って引数を渡すのかを変える可能性があります。 `intr.dispatch()` は以下のよう"
-"に vector 固有のハンドラを呼び出します:"
+"By specifying `callconv(.C)`, we ensure that the first argument is always "
+"passed in RDI (which in this case is the RSP value). Without this, Zig might "
+"choose different registers or stack locations to pass arguments for "
+"optimization purposes. The `intr.dispatch()` function calls the vector-"
+"specific handler as follows:"
 
-#: src/kernel/interrupt.md:515
+#: src/kernel/interrupt.md:516
 msgid ""
 "`handlers` は vector ごとのハンドラを保持する配列です。 `dispatch()` は登録さ"
 "れたハンドラのうち、vector に対応するものを呼び出します。 仮にハンドラが登録"
 "されていなかった場合には、デフォルトの `unhandledHandler()` を呼び出すことに"
 "します:"
 msgstr ""
-"`handlers` は vector ごとのハンドラを保持する配列です。 `dispatch()` は登録さ"
-"れたハンドラのうち、vector に対応するものを呼び出します。 仮にハンドラが登録"
-"されていなかった場合には、デフォルトの `unhandledHandler()` を呼び出すことに"
-"します:"
+"`handlers` is an array holding pointers to the handlers for each vector. The "
+"`dispatch()` function calls the handler registered for the given vector. If "
+"no handler is registered, it calls the default `unhandledHandler()`."
 
-#: src/kernel/interrupt.md:554
+#: src/kernel/interrupt.md:555
 msgid ""
 "このハンドラは、`Context` に保存された状態をダンプしたあと、無限 HLT ループす"
 "るだけです。"
 msgstr ""
-"このハンドラは、`Context` に保存された状態をダンプしたあと、無限 HLT ループす"
-"るだけです。"
+"This handler simply dumps the state saved in `Context` and then enters an "
+"infinite HLT loop."
 
-#: src/kernel/interrupt.md:556
+#: src/kernel/interrupt.md:557
 msgid "IDT にハンドラのセット"
-msgstr "IDT にハンドラのセット"
+msgstr "Setting Handlers in IDT"
 
-#: src/kernel/interrupt.md:558
+#: src/kernel/interrupt.md:559
 msgid ""
 "ISR の共通部分、およびそこから vector 固有のハンドラを呼び出す部分が完成しま"
 "した。 残る処理は IDT に ISR をセットすることだけです。 全 IDT エントリに対し"
 "て ISR をセットしましょう:"
 msgstr ""
-"ISR の共通部分、およびそこから vector 固有のハンドラを呼び出す部分が完成しま"
-"した。 残る処理は IDT に ISR をセットすることだけです。 全 IDT エントリに対し"
-"て ISR をセットしましょう:"
+"The common part of the ISR and the vector-specific handler dispatching are "
+"now complete. The remaining task is to set the ISR in the IDT. Let's set the "
+"ISR for all IDT entries:"
 
-#: src/kernel/interrupt.md:579
+#: src/kernel/interrupt.md:580
 msgid ""
 "`inline for` を使って、256 回だけ `idt.setGate()` を呼び出します。 `inline "
 "for` が必要なのは、`isr.generateIsr()` が関数を返すためコンパイル時に `for` "
@@ -7705,14 +7689,14 @@ msgid ""
 "れます。 最後に、[STI](https://www.felixcloutier.com/x86/sti) で `RFLAGS.IF` "
 "をセットして割り込みを有効化します。"
 msgstr ""
-"`inline for` を使って、256 回だけ `idt.setGate()` を呼び出します。 `inline "
-"for` が必要なのは、`isr.generateIsr()` が関数を返すためコンパイル時に `for` "
-"が評価される必要があるためです。 `generateIsr(i)` を使って生成された ISR は、"
-"先ほど実装した `idt.setGate()` によって Interrupt Gate として IDT にセットさ"
-"れます。 最後に、[STI](https://www.felixcloutier.com/x86/sti) で `RFLAGS.IF` "
-"をセットして割り込みを有効化します。"
+"Using `inline for`, we call `idt.setGate()` 256 times. The `inline for` is "
+"necessary because `isr.generateIsr()` returns a function, so the loop needs "
+"to be evaluated at compile time. Each ISR generated by `generateIsr(i)` is "
+"set in the IDT as an interrupt gate via the previously implemented `idt."
+"setGate()`. Finally, we enable interrupts by setting `RFLAGS.IF` with [STI]"
+"(https://www.felixcloutier.com/x86/sti) instruction."
 
-#: src/kernel/interrupt.md:586
+#: src/kernel/interrupt.md:587
 msgid ""
 "本チャプターでは vector に関わらず共通な部分と vector 固有の部分に分けて ISR "
 "を実装しました。 全ての割り込みに対して ISR を生成し、IDT に登録しました。 登"
@@ -7721,18 +7705,19 @@ msgid ""
 "`unhandledHandler()` によって処理されます。 先ほどの `#GP` を発生させるコード"
 "をもう一度実行すると、以下のようになります:"
 msgstr ""
-"本チャプターでは vector に関わらず共通な部分と vector 固有の部分に分けて ISR "
-"を実装しました。 全ての割り込みに対して ISR を生成し、IDT に登録しました。 登"
-"録された ISR は、各 vector ごとのハンドラを呼び出します。 現在はまだ vector "
-"ごとのハンドラをひとつも登録していないため、全ての割り込みが "
-"`unhandledHandler()` によって処理されます。 先ほどの `#GP` を発生させるコード"
-"をもう一度実行すると、以下のようになります:"
+"In this chapter, we implemented the ISR by separating the common parts "
+"shared across all vectors from the vector-specific parts. We generated an "
+"ISR for every interrupt and registered them in the IDT. The registered ISRs "
+"call the corresponding handler for each vector. Since no vector-specific "
+"handlers have been registered yet, all interrupts are handled by "
+"`unhandledHandler()`. Running the earlier code that triggers `#GP` again "
+"results in the following:"
 
-#: src/kernel/interrupt.md:620
+#: src/kernel/interrupt.md:621
 msgid "ちゃんとレジスタの状態がダンプされていますね。"
-msgstr "ちゃんとレジスタの状態がダンプされていますね。"
+msgstr "The register state is properly dumped as expected."
 
-#: src/kernel/interrupt.md:622
+#: src/kernel/interrupt.md:623
 msgid ""
 "なお、本シリーズでは **Ymir で例外が発生することは想定しません**。 のちのチャ"
 "プターで扱いますが、カーネルは全ての物理アドレス空間を初期化時にマップするた"
@@ -7740,83 +7725,86 @@ msgid ""
 "ため、その時になったら今回実装した vector ごとのハンドラを登録する仕組みが活"
 "躍することになります。"
 msgstr ""
-"なお、本シリーズでは **Ymir で例外が発生することは想定しません**。 のちのチャ"
-"プターで扱いますが、カーネルは全ての物理アドレス空間を初期化時にマップするた"
-"め、`#PF` も発生しません (Linuxと同じです)。 一方で割り込みはいくつか登録する"
-"ため、その時になったら今回実装した vector ごとのハンドラを登録する仕組みが活"
-"躍することになります。"
+"Note that in this series, **exceptions occurring in Ymir are not expected**. "
+"As will be covered in later chapters, the kernel maps the entire virtual "
+"address space during initialization, so `#PF` (Page Fault) will not occur, "
+"just like in Linux. On the other hand, since some interrupts will be "
+"registered, the vector-specific handler registration mechanism implemented "
+"here will be useful when that time comes."
 
-#: src/kernel/interrupt.md:626
+#: src/kernel/interrupt.md:627
 msgid ""
 "以上で UEFI が提供する IDT から独自の IDT に切り替えることができました。 "
 "UEFI に依存しているものは、残すところページテーブルだけです。 しかし、ページ"
 "テーブルを切り替えるにはその過程の中でページアロケータが必要になります。 次"
 "チャプターではページアロケータを実装していきましょう。"
 msgstr ""
-"以上で UEFI が提供する IDT から独自の IDT に切り替えることができました。 "
-"UEFI に依存しているものは、残すところページテーブルだけです。 しかし、ページ"
-"テーブルを切り替えるにはその過程の中でページアロケータが必要になります。 次"
-"チャプターではページアロケータを実装していきましょう。"
-
-#: src/kernel/interrupt.md:631
-msgid ""
-"本シリーズでは割り込みと例外を区別する必要がない場合にまとめて _割り込み_ と"
-"呼びます。"
-msgstr ""
-"本シリーズでは割り込みと例外を区別する必要がない場合にまとめて _割り込み_ と"
-"呼びます。"
+"With this, we've successfully switched from the UEFI-provided IDT to our own "
+"custom IDT. The only remaining dependency on UEFI is the page table. "
+"However, switching page tables requires a page allocator. In the next "
+"chapter, we'll implement the page allocator."
 
 #: src/kernel/interrupt.md:632
 msgid ""
-"割り込み信号は任意のタイミングで CPU に通知される可能性があるものの、 実際に"
-"割り込みが CPU から報告されるのは instruction boundary であることが保証されま"
-"す。 つまり、命令の実行途中で割り込みが発生することはありません。 例外に関し"
-"ても同様です。"
+"本シリーズでは割り込みと例外を区別する必要がない場合にまとめて _割り込み_ と"
+"呼びます。"
 msgstr ""
-"割り込み信号は任意のタイミングで CPU に通知される可能性があるものの、 実際に"
-"割り込みが CPU から報告されるのは instruction boundary であることが保証されま"
-"す。 つまり、命令の実行途中で割り込みが発生することはありません。 例外に関し"
-"ても同様です。"
+"In this series, we refer to both interrupts and exceptions collectively as "
+"\"interrupts\" whenever there is no need to distinguish between them."
 
-#: src/kernel/interrupt.md:636
+#: src/kernel/interrupt.md:633
 msgid ""
-"GDT が最大で \\\\(2^{13} = 8192\\\\) 個のエントリを持てるのに対し、割り込みは"
-"最大256個しかないため IDT も 256 個のエントリしか意味を持ちません。"
+"割り込み信号は任意のタイミングで CPU に通知される可能性があるものの、 実際に"
+"割り込みが CPU から報告されるのは instruction boundary であることが保証されま"
+"す。 つまり、命令の実行途中で割り込みが発生することはありません。 例外に関し"
+"ても同様です。"
 msgstr ""
-"GDT が最大で \\\\(2^{13} = 8192\\\\) 個のエントリを持てるのに対し、割り込みは"
-"最大256個しかないため IDT も 256 個のエントリしか意味を持ちません。"
+"Interrupt signals can be delivered to a CPU at any time, but it is "
+"guaranteed that the CPU will report the interrupt only at an instruction "
+"boundary. In other words, an interrupt will never occur in the middle of "
+"executing an instruction. The same applies to exceptions as well."
 
 #: src/kernel/interrupt.md:637
 msgid ""
-"_Segment Selector_ の _TI_ が `0` なら GDT が、`1` なら LDT が使われます。"
+"GDT が最大で \\\\(2^{13} = 8192\\\\) 個のエントリを持てるのに対し、割り込みは"
+"最大256個しかないため IDT も 256 個のエントリしか意味を持ちません。"
 msgstr ""
-"_Segment Selector_ の _TI_ が `0` なら GDT が、`1` なら LDT が使われます。"
+"While GDT can hold up to \\\\(2^{13} = 8192\\\\\\) entries, IDT only needs "
+"to support up to 256 entries because there are at most 256 interrupt vectors."
 
 #: src/kernel/interrupt.md:638
+msgid ""
+"_Segment Selector_ の _TI_ が `0` なら GDT が、`1` なら LDT が使われます。"
+msgstr ""
+"If the _TI_ bit of the _segment selector_ is `0`, the GDT is used; if it is "
+"`1`, the LDT is used."
+
+#: src/kernel/interrupt.md:639
 msgid "SDM Vol.3A 5.4.1"
 msgstr "SDM Vol.3A 5.4.1"
 
-#: src/kernel/interrupt.md:639
+#: src/kernel/interrupt.md:640
 msgid ""
 "厳密には、Double Fault を発生させる例外の組み合わせは非常に限られています。 "
 "詳しくは SDM か [Double Faults - Writing an OS in Rust](https://os.phil-opp."
 "com/double-fault-exceptions/#causes-of-double-faults) を参照してください。"
 msgstr ""
-"厳密には、Double Fault を発生させる例外の組み合わせは非常に限られています。 "
-"詳しくは SDM か [Double Faults - Writing an OS in Rust](https://os.phil-opp."
-"com/double-fault-exceptions/#causes-of-double-faults) を参照してください。"
-
-#: src/kernel/interrupt.md:641
-msgid ""
-"ところで Ymir では Interrupt Gate しか扱わないため、やっぱりこの CLI は不要で"
-"すね..."
-msgstr ""
-"ところで Ymir では Interrupt Gate しか扱わないため、やっぱりこの CLI は不要で"
-"すね..."
+"Strictly speaking, the combinations of exceptions that cause a double fault "
+"are very limited. For more details, refer to the Intel SDM or [Double Faults "
+"- Writing an OS in Rust](https://os.phil-opp.com/double-fault-exceptions/"
+"#causes-of-double-faults)."
 
 #: src/kernel/interrupt.md:642
+msgid ""
+"ところで Ymir では Interrupt Gate しか扱わないため、やっぱりこの CLI は不要で"
+"すね..."
+msgstr ""
+"By the way, since Ymir only uses interrupt gates, this CLI is actually "
+"unnecessary..."
+
+#: src/kernel/interrupt.md:643
 msgid "x64 では RSP に直接 MOV できません。"
-msgstr "x64 では RSP に直接 MOV できません。"
+msgstr "On x64, you cannot MOV directly to RSP."
 
 #: src/kernel/page_allocator.md:4
 msgid ""
@@ -19578,6 +19566,9 @@ msgstr ""
 "distributed under the [MIT License](https://opensource.org/license/mit). "
 "However, snippets of code used in this blog are distributed under CC0 1.0 "
 "Universal."
+
+#~ msgid "Vector"
+#~ msgstr "Vector"
 
 #~ msgid ""
 #~ "```ymir/arch/x86/gdt.zig\n"

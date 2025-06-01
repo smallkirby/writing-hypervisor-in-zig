@@ -48,6 +48,7 @@ CPU は **割り込み (Interrupts)** と **例外 (Excetpions)**  という2つ
 例外は CPU が定義するものであるため、例外の種類はアーキテクチャに依存します。
 x64 では以下のように例外が定義されています:
 
+<!-- i18n:skip -->
 | Vector | Name | Class |
 |---|---|---|
 | 0 | #DE: Divide Error | Fault |
