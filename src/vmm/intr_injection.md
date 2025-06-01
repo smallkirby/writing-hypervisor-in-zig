@@ -386,6 +386,8 @@ pub const EntryIntrInfo = packed struct(u32) {
 fn injectExtIntr(self: *Self) VmxError!bool {
     ...
     for (0..15) |i| {
+        ...
+
         const intr_info = vmx.EntryIntrInfo{
             .vector = irq.delta() + if (irq.isPrimary()) self.pic.primary_base else self.pic.secondary_base,
             .type = .external,
