@@ -244,6 +244,15 @@ pub fn loop(self: *Self) VmxError!void {
 }
 ```
 
+`VmxError.InterruptFull` を追加することを忘れないでください。
+
+```ymir/arch/x86/vmx/common.zig
+pub const VmxError = error{
+    ...
+    InterruptFull,
+};
+```
+
 ## IRQ Injection
 
 IRQ をゲストに注入する関数を定義します。
