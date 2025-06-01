@@ -40,10 +40,10 @@ buildroot は組み込み用 Linux をビルドするためのツールチェイ
 cpio ファイルは、以下の手順で展開および圧縮することができます[^lysithea]:
 
 ```bash
-# 展開
+# extract (to path x, from buildroot at path y)
 mkdir x && cd x
-cpio -idv 2>/dev/null <../x
-# 圧縮
+cpio -idv 2>/dev/null <y/output/images/rootfs.cpio
+# compress (from path x, to ../rootfs.cpio)
 cd x
 find . -print0 | cpio --owner root --null -o --format=newc > ../rootfs.cpio
 ```
@@ -56,8 +56,8 @@ Linux はカーネルのブート後に FS の `/init` を実行します。
 本シリーズではネットワークはサポートしないため、ネットワーク関連のスクリプトを削除しましょう:
 
 ```bash
-rm ./x/etc/init.d/S41dhcpcd
-rm ./x/extracted/etc/init.d/S40network
+rm -f ./x/etc/init.d/S41dhcpcd
+rm -f ./x/extracted/etc/init.d/S40network
 ```
 
 また、以下の起動スクリプトを代わりに `S999whiz` として追加します:
