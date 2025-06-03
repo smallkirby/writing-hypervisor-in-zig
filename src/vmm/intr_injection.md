@@ -157,8 +157,14 @@ Subscriber として適当な型 `A` と適当なハンドラ `blobSubscriber()`
 <!-- i18n:skip -->
 ```ymir/main.tmp.zig
 const A = struct { value: u64 };
-var something: A = .{ .value = 0xDEAD };
-try arch.intr.subscribe(&something, blobSubscriber);
+
+fn kernelMain(boot_info: surtr.BootInfo) !void {
+    ...
+    // Just before VM creation
+    var something: A = .{ .value = 0xDEAD };
+    try arch.intr.subscribe(&something, blobSubscriber);
+    ...
+}
 
 fn blobSubscriber(p: *anyopaque, _: *arch.intr.Context) void {
     const self: *A = @alignCast(@ptrCast(p));
@@ -213,6 +219,10 @@ Ymir では IRQ 割り込みをベクタ `0x20` から `0x2F` の間にリマッ
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
+const isr = @import("../isr.zig");
+const intr = @import("../interrupt.zig");
+const bits = ymir.bits;
+
 fn intrSubscriberCallback(self_: *anyopaque, ctx: *isr.Context) void {
     const self: *Self = @alignCast(@ptrCast(self_));
     const vector = ctx.vector;
@@ -232,6 +242,15 @@ pub fn loop(self: *Self) VmxError!void {
     intr.subscribe(self, intrSubscriberCallback) catch return error.InterruptFull;
     ...
 }
+```
+
+`VmxError.InterruptFull` を追加することを忘れないでください。
+
+```ymir/arch/x86/vmx/common.zig
+pub const VmxError = error{
+    ...
+    InterruptFull,
+};
 ```
 
 ## IRQ Injection
@@ -257,7 +276,7 @@ fn injectExtIntr(self: *Self) VmxError!bool {
     // 1. No interrupts to inject.
     if (pending == 0) return false;
     // 2. PIC is not initialized.
-    if (self.pic.primary_phase != .inited) return false;
+    if (self.pic.primary_phase != .initialized) return false;
 
     // 3. Guest is blocking interrupts.
     const eflags: am.FlagsRegister = @bitCast(try vmread(vmcs.guest.rflags));
@@ -289,6 +308,8 @@ IRQ 0 から 15 の順番で、注入対象かどうかを確認します:
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
+const IrqLine = @import("../pic.zig").IrqLine;
+
 fn injectExtIntr(self: *Self) VmxError!bool {
     ...
     const is_secondary_masked = bits.isset(self.pic.primary_mask, IrqLine.secondary);
@@ -365,6 +386,8 @@ pub const EntryIntrInfo = packed struct(u32) {
 fn injectExtIntr(self: *Self) VmxError!bool {
     ...
     for (0..15) |i| {
+        ...
+
         const intr_info = vmx.EntryIntrInfo{
             .vector = irq.delta() + if (irq.isPrimary()) self.pic.primary_base else self.pic.secondary_base,
             .type = .external,
