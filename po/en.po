@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Writing Hypervisor in Zig\n"
-"POT-Creation-Date: 2025-06-07T21:39:46+09:00\n"
-"PO-Revision-Date: 2025-06-08 22:09+0900\n"
+"POT-Creation-Date: 2025-06-08T22:11:21+09:00\n"
+"PO-Revision-Date: 2025-06-08 22:12+0900\n"
 "Last-Translator: smallkirby <ssmallkirby@gmail.com>\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -164,7 +164,7 @@ msgid "[Japanese](/index.md)"
 msgstr ""
 
 #: src/intro.md:13
-msgid "[English (WIP)](/en/index.md)"
+msgid "[English](/en/index.md)"
 msgstr ""
 
 #: src/intro.md:15
@@ -573,10 +573,18 @@ msgid "Log"
 msgstr "Log"
 
 #: src/intro.md:168
+msgid "2025.06.08"
+msgstr ""
+
+#: src/intro.md:168
+msgid "英語バージョン公開"
+msgstr ""
+
+#: src/intro.md:169
 msgid "2024.11.17"
 msgstr "2024.11.17"
 
-#: src/intro.md:168
+#: src/intro.md:169
 msgid "公開"
 msgstr "Published"
 
@@ -2060,12 +2068,6 @@ msgid "QEMUの出力からログ出力が消えるはずです。"
 msgstr "The log output should disappear from the QEMU output."
 
 #: src/bootloader/uefi_log.md:405
-#, fuzzy
-#| msgid ""
-#| "本チャプターでは UEFI の Simple Text Output Protocol を利用した出力を実装"
-#| "しました。 この出力を Zig のログシステムに組み込むことで、ログのスコープや"
-#| "レベルを自由に変更できるようになりました。 ログカンスは、もちろんフォー"
-#| "マット文字列も利用できます。 今後の開発が捗ること間違いなしですね。"
 msgid ""
 "本チャプターでは UEFI の Simple Text Output Protocol を利用した出力を実装しま"
 "した。 この出力を Zig のログシステムに組み込むことで、ログのスコープやレベル"
@@ -7627,13 +7629,6 @@ msgstr ""
 "called from the common ISR earlier, is defined as follows:"
 
 #: src/kernel/interrupt.md:496
-#, fuzzy
-#| msgid ""
-#| "引数の `Context` は ISR が呼び出された直後のレジスタの状態です。 "
-#| "**`intrZigEntry()` を呼び出す直前のスタックが、そのまま `Context` の中身に"
-#| "なります**。 先ほど `intrZigEntry()` に RSP の値を引数と渡していたのは、こ"
-#| "のためです。 vector 固有のハンドラ内では、これらの `Context` の情報を使う"
-#| "ことができます。"
 msgid ""
 "引数の `Context` は ISR が呼び出された直後のレジスタの状態です。 "
 "**`intrZigEntry()` を呼び出す直前のスタックが、そのまま `Context` の中身にな"
@@ -8385,11 +8380,6 @@ msgstr ""
 "Now, let's implement a function that allocates memory in page-sized units:"
 
 #: src/kernel/page_allocator.md:438
-#, fuzzy
-#| msgid ""
-#| "中身はほぼ `allocate()` と同じです。 引数はサイズをの代わりにページ数を受"
-#| "け取ります。 `align_size` にはページサイズ以上のアラインメントを指定するこ"
-#| "とができ、秋ページを探索する際にはこのアラインメントを考慮します。"
 msgid ""
 "中身はほぼ `allocate()` と同じです。 引数はサイズをの代わりにページ数を受け取"
 "ります。 `align_size` にはページサイズ以上のアラインメントを指定することがで"
@@ -9696,12 +9686,6 @@ msgstr ""
 "we proceed to implement the functions required by the `Allocator` interface:"
 
 #: src/kernel/general_allocator.md:199
-#, fuzzy
-#| msgid ""
-#| "`PageAllocator` の場合と異なり、`BinAllocator` はページサイズ以下の領域を"
-#| "確保する可能性があります。 よって、 `BinAllocator` 要求されたアラインを考"
-#| "慮する必要があります。 要求されるアラインは、`allocate()`の第3引数に渡され"
-#| "ます:"
 msgid ""
 "`PageAllocator` の場合と異なり、`BinAllocator` はページサイズ以下の領域を確保"
 "する可能性があります。 よって、 `BinAllocator` は要求されたアラインを考慮する"
@@ -9905,17 +9889,6 @@ msgid "Intel 8259 PIC"
 msgstr "Intel 8259 PIC"
 
 #: src/kernel/pic.md:38
-#, fuzzy
-#| msgid ""
-#| "本シリーズで扱う PIC は **Intel 8259A** です。 最近の Intel CPU では "
-#| "8259A 相当コントローラのが2つ搭載されているそうです。 それぞれ _Master "
-#| "PIC_ と _Slave PIC_ と呼ばれます。 本シリーズでは **Primary PIC** と "
-#| "**Secondary PIC** と呼びます。 それぞれが **Interrupt Requested Line "
-#| "(IRQ)** と呼ばれる入力線を8つずつ持ち、Secondary は Primary に対してカス"
-#| "ケード接続されています。 なお、最近の CPU では 8259 PIC の代わりに "
-#| "**APIC: Advanced Programmable Interrupt Controller** が広く使われていま"
-#| "す。 PIC はチップとして搭載されることはほぼなくなったものの、8259A 相当の"
-#| "機能は southbridge が依然として提供してくれているようです。"
 msgid ""
 "本シリーズで扱う PIC は **Intel 8259A** です。 最近の Intel CPU では 8259A 相"
 "当のコントローラが2つ搭載されているそうです。 それぞれ _Master PIC_ と "
