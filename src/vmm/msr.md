@@ -36,6 +36,8 @@ RDMSR は `31` / WRMSR は `32` 番の Exit Reason で VM Exit します。
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
+const msr = @import("msr.zig");
+
 fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
     switch (exit_info.basic_reason) {
         ...
@@ -173,6 +175,12 @@ MSR Area を表現する構造体を定義します:
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/msr.zig
+const std = @import("std");
+const Allocator = std.mem.Allocator;
+const ymir = @import("ymir");
+const mem = ymir.mem;
+const am = @import("asm.zig");
+
 pub const ShadowMsr = struct {
     /// Maximum number of MSR entries in a page.
     const max_num_ents = 512;
@@ -290,6 +298,13 @@ fn registerMsrs(vcpu: *Vcpu, allocator: Allocator) !void {
     try vmwrite(vmcs.ctrl.exit_msr_store_address, gm.phys());
     try vmwrite(vmcs.ctrl.entry_msr_load_address, gm.phys());
 }
+
+pub const Vcpu = struct {
+    ...
+    pub fn setupVmcs(self: *Self, allocator: Allocator) VmxError!void {
+        ...
+        try registerMsrs(self, allocator);
+        ...
 ```
 
 VM-Exit MSR-Load Area (VM Exit 時にホストの MSR にロードされる領域) は、VM Entry 前に毎回更新する必要があります。
@@ -308,6 +323,13 @@ fn updateMsrs(vcpu: *Vcpu) VmxError!void {
     try vmwrite(vmcs.ctrl.exit_msr_store_count, vcpu.guest_msr.num_ents);
     try vmwrite(vmcs.ctrl.entry_msr_load_count, vcpu.guest_msr.num_ents);
 }
+
+pub const Vcpu = struct {
+    ...
+    pub fn loop(self: *Self) VmxError!void {
+        while (true) {
+            try updateMsrs(self);
+            ...
 ```
 
 本シリーズでは MSR Area に登録する MSR の個数が変わることはありません。
@@ -332,6 +354,10 @@ RDMSR の結果は上位 32bit を RDX に、下位 32bit を RAX に格納し�
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/msr.zig
+const am = @import("../asm.zig");
+const Vcpu = @import("vcpu.zig").Vcpu;
+const log = std.log.scoped(.vcpu);
+
 /// Concatnate two 32-bit values into a 64-bit value.
 fn concat(r1: u64, r2: u64) u64 {
     return ((r1 & 0xFFFF_FFFF) << 32) | (r2 & 0xFFFF_FFFF);
@@ -359,6 +385,10 @@ fn shadowRead(vcpu: *Vcpu, msr_kind: am.Msr) void {
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/msr.zig
+const vmx = @import("common.zig");
+const VmxError = vmx.VmxError;
+const vmcs = @import("vmcs.zig");
+
 pub fn handleRdmsrExit(vcpu: *Vcpu) VmxError!void {
     const guest_regs = &vcpu.guest_regs;
     const msr_kind: am.Msr = @enumFromInt(guest_regs.rcx);
@@ -376,6 +406,8 @@ pub fn handleRdmsrExit(vcpu: *Vcpu) VmxError!void {
     }
 }
 ```
+
+注: まだ定義していない場合、`Msr.apic_base` は 0x001B、`Msr.kernel_gs_base` は 0xC0000102 です。
 
 対応していない MSR (`else`) に対する RDMSR はアボートします。
 対応する必要のある MSR は経験則で決めています。
@@ -434,6 +466,25 @@ pub fn handleWrmsrExit(vcpu: *Vcpu) VmxError!void {
 
 RDMSR よりは対応する必要のある MSR が多いです。
 `STAR` / `LSTAR` / `CSTAR` (syscall のエントリポイント) などはセットするだけして読むことはないので、当然といえば当然ですね。
+
+<details>
+<summary>新しい `Msr` エントリを忘れないでください:</summary>
+
+```ymir/arch/x86/asm.zig
+pub const Msr = enum(u32) {
+    ...
+    sysenter_cs = 0x174,
+    sysenter_esp = 0x175,
+    sysenter_eip = 0x176,
+    star = 0xC0000081,
+    lstar = 0xC0000082,
+    cstar = 0xC0000083,
+    fmask = 0xC0000084,
+    tsc_aux = 0xC0000103,
+};
+```
+
+</details>
 
 ## まとめ
 

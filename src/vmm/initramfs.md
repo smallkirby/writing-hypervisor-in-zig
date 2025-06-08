@@ -43,10 +43,10 @@ cpio ファイルは、以下の手順で展開および圧縮することがで
 
 <!-- i18n:skip -->
 ```bash
-# 展開
+# extract (to path x, from buildroot at path y)
 mkdir x && cd x
-cpio -idv 2>/dev/null <../x
-# 圧縮
+cpio -idv 2>/dev/null <y/output/images/rootfs.cpio
+# compress (from path x, to ../rootfs.cpio)
 cd x
 find . -print0 | cpio --owner root --null -o --format=newc > ../rootfs.cpio
 ```
@@ -60,8 +60,8 @@ Linux はカーネルのブート後に FS の `/init` を実行します。
 
 <!-- i18n:skip -->
 ```bash
-rm ./x/etc/init.d/S41dhcpcd
-rm ./x/extracted/etc/init.d/S40network
+rm -f ./x/etc/init.d/S41dhcpcd
+rm -f ./x/extracted/etc/init.d/S40network
 ```
 
 また、以下の起動スクリプトを代わりに `S999whiz` として追加します:
@@ -192,7 +192,7 @@ pub const layout = struct {
 };
 ```
 
-`loadKernel()` で initramfs をロードします:
+`loadKernel() で initramfs をロードし、`kernelMain` から `initrd` を渡します:
 
 <!-- i18n:skip -->
 ```ymir/vmx.zig
@@ -202,6 +202,26 @@ fn loadKernel(self: *Self, kernel: []u8, initrd: []u8) Error!void {
     bp.hdr.ramdisk_image = linux.layout.initrd;
     bp.hdr.ramdisk_size = @truncate(initrd.len);
     try loadImage(guest_mem, initrd, linux.layout.initrd);
+    ...
+}
+
+pub fn setupGuestMemory(
+    self: *Self,
+    guest_image: []u8,
+    initrd: []u8,
+    allocator: Allocator,
+    page_allocator: *PageAllocator,
+) Error!void {
+    ...
+    try self.loadKernel(guest_image, initrd);
+    ...
+}
+```
+
+```ymir/main.zig
+fn kernelMain(boot_info: surtr.BootInfo) !void {
+    ...
+    try vm.setupGuestMemory(guest_kernel, initrd, general_allocator, &mem.page_allocator_instance);
     ...
 }
 ```
