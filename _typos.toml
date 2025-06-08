@@ -1,0 +1,7 @@
+[default.extend-words]
+# THRE: Transmitter Holding Register Empty
+thre = "thre"
+# RSP for a specific ring
+pn = "pn"
+# Interrupt Stack Table
+ist = "ist"
