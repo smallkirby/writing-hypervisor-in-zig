@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Writing Hypervisor in Zig\n"
 "POT-Creation-Date: 2025-06-07T21:39:46+09:00\n"
-"PO-Revision-Date: 2025-06-08 11:35+0900\n"
+"PO-Revision-Date: 2025-06-08 12:03+0900\n"
 "Last-Translator: smallkirby <ssmallkirby@gmail.com>\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -16139,7 +16139,7 @@ msgstr ""
 
 #: src/vmm/msr.md:1
 msgid "MSR の仮想化"
-msgstr "MSR の仮想化"
+msgstr "Virtualizing MSR"
 
 #: src/vmm/msr.md:3
 msgid ""
@@ -16148,22 +16148,18 @@ msgid ""
 "す。 また、VM Entry と VM Exit の際に MSR の値を適切に保存・復元するようにし"
 "ます。"
 msgstr ""
-"本チャプターでは MSR を仮想化します。 ゲストに対して見せる MSR の値を任意に設"
-"定し、逆にゲストが MSR に書き込もうとした値をホストが変更することもできま"
-"す。 また、VM Entry と VM Exit の際に MSR の値を適切に保存・復元するようにし"
-"ます。"
+"This chapter covers MSR virtualization. You can arbitrarily set the MSR "
+"values that'll be presented to the guest, and conversely, the host can "
+"modify values the guest attempts to write to MSRs. Additionally, MSR values "
+"are properly saved and restored during VM Entry and VM Exit."
 
 #: src/vmm/msr.md:9
-#, fuzzy
-#| msgid ""
-#| "\\[!IMPORTANT\\] 本チャプターの最終コードは [`whiz-vmm-msr`](https://"
-#| "github.com/smallkirby/ymir/tree/whiz-vmm-msr) ブランチにあります。"
 msgid ""
 "本チャプターの最終コードは [`whiz-vmm-msr`](https://github.com/smallkirby/"
 "ymir/tree/whiz-vmm-msr) ブランチにあります。"
 msgstr ""
-"\\[!IMPORTANT\\] 本チャプターの最終コードは [`whiz-vmm-msr`](https://github."
-"com/smallkirby/ymir/tree/whiz-vmm-msr) ブランチにあります。"
+"The source code for this branch is in [`whiz-vmm-msr`](https://github.com/"
+"smallkirby/ymir/tree/whiz-vmm-msr) branch."
 
 #: src/vmm/msr.md:14
 msgid "[MSR の保存・復帰](#msr-の保存復帰)"
@@ -16196,34 +16192,34 @@ msgid ""
 "ません。 また、**MSR Bitmaps を無効化すると全ての MSR に対する RDMSR/WRMSR "
 "が VM Exit を発生させる** ようになります。"
 msgstr ""
-"ゲストが [RDMSR](https://www.felixcloutier.com/x86/rdmsr) / [WRMSR](https://"
-"www.felixcloutier.com/x86/wrmsr) 命令を実行しようとすると VM Exit が発生する"
-"場合があります。 VM Exit が発生するかどうかは VMCS Execution Control カテゴリ"
-"の **MSR Bitmaps** によって制御されます。 MSR Bitmaps は MSR のアドレスにマッ"
-"プされるビットマップであり、値が `1` の MSR に対して RDMSR / WRMSR が実行され"
-"ると VM Exit が発生します。 値が `0` の MSR に対する操作では VM Exit が発生し"
-"ません。 また、**MSR Bitmaps を無効化すると全ての MSR に対する RDMSR/WRMSR "
-"が VM Exit を発生させる** ようになります。"
+"When the guest tries to execute [RDMSR](https://www.felixcloutier.com/x86/"
+"rdmsr) or [WRMSR](https://www.felixcloutier.com/x86/wrmsr) instructions, a "
+"VM Exit may occur. Whether a VM Exit happens is controlled by the **MSR "
+"Bitmaps** in the VMCS Execution Control category. MSR Bitmaps are bitmaps "
+"mapped to MSR addresses, and if an RDMSR or WRMSR is executed on an MSR with "
+"a bit set to `1`, a VM Exit occurs. Operations on MSRs with bits set to `0` "
+"do not trigger a VM Exit. Additionally, **disabling MSR Bitmaps causes all "
+"RDMSR and WRMSR instructions on any MSR to trigger a VM Exit**."
 
 #: src/vmm/msr.md:29
 msgid ""
 "本シリーズでは MSR Bitmaps を無効化し、全ての MSR に対する RDMSR/WRMSR が VM "
 "Exit を発生させるようにします:"
 msgstr ""
-"本シリーズでは MSR Bitmaps を無効化し、全ての MSR に対する RDMSR/WRMSR が VM "
-"Exit を発生させるようにします:"
+"In this series, MSR Bitmaps are disabled so that all RDMSR and WRMSR "
+"instructions on all MSRs trigger a VM Exit:"
 
 #: src/vmm/msr.md:40
 msgid ""
 "RDMSR は `31` / WRMSR は `32` 番の Exit Reason で VM Exit します。 それぞれに"
 "ついて Exit ハンドラを呼び出すように変更します:"
 msgstr ""
-"RDMSR は `31` / WRMSR は `32` 番の Exit Reason で VM Exit します。 それぞれに"
-"ついて Exit ハンドラを呼び出すように変更します:"
+"RDMSR causes a VM Exit with Exit Reason `31`, and WRMSR with `32`. Let's add "
+"the switch case for each instruction:"
 
 #: src/vmm/msr.md:61
 msgid "MSR の保存・復帰"
-msgstr "MSR の保存・復帰"
+msgstr "Saving and Restoring MSR"
 
 #: src/vmm/msr.md:63
 msgid ""
@@ -16231,27 +16227,28 @@ msgid ""
 "て MSR の保存・復帰をするようにしましょう。 現在は、一部の MSR を除いて全て"
 "の MSR はゲスト・ホスト間で共有されてしまっています。"
 msgstr ""
-"MSR アクセスに対する VM Exit ハンドラの実装の前に、VM Entry / VM Exit におい"
-"て MSR の保存・復帰をするようにしましょう。 現在は、一部の MSR を除いて全て"
-"の MSR はゲスト・ホスト間で共有されてしまっています。"
+"Before implementing the VM Exit handler for MSR access, let's ensure MSR "
+"values are saved and restored during VM Entry and VM Exit. Currently, except "
+"for a few MSRs, most of them are shared between the guest and host."
 
 #: src/vmm/msr.md:66
 msgid "自動的に保存・復帰される MSR"
-msgstr "自動的に保存・復帰される MSR"
+msgstr "MSRs Automatically Saved and Restored"
 
 #: src/vmm/msr.md:68
 msgid ""
 "以下のゲストの MSR は VM Entry 時に対応する場所から自動的にロードされます:"
 msgstr ""
-"以下のゲストの MSR は VM Entry 時に対応する場所から自動的にロードされます:"
+"The following guest MSRs are automatically loaded from their respective "
+"locations during VM Entry:"
 
 #: src/vmm/msr.md:70 src/vmm/msr.md:90 src/vmm/msr.md:109
 msgid "条件"
-msgstr "条件"
+msgstr "Condition"
 
 #: src/vmm/msr.md:70 src/vmm/msr.md:90
 msgid "ロード元"
-msgstr "ロード元"
+msgstr "Source of Load"
 
 #: src/vmm/msr.md:72 src/vmm/msr.md:92 src/vmm/msr.md:111
 msgid "`IA32_DEBUGCTL`"
@@ -16259,7 +16256,7 @@ msgstr "`IA32_DEBUGCTL`"
 
 #: src/vmm/msr.md:72
 msgid "VMCS VM-Entry Control の `load debug controls` が有効"
-msgstr "VMCS VM-Entry Control の `load debug controls` が有効"
+msgstr "`load debug controls` in VMCS VM-Entry Control is enabled"
 
 #: src/vmm/msr.md:73 src/vmm/msr.md:93
 msgid "`IA32_SYSENTER_CS`"
@@ -16289,7 +16286,7 @@ msgstr "`IA32_FSBASE`"
 
 #: src/vmm/msr.md:76
 msgid "Guest-State の FS.Base"
-msgstr "Guest-State の FS.Base"
+msgstr "FS.Base in Guest-State"
 
 #: src/vmm/msr.md:77 src/vmm/msr.md:97
 msgid "`IA32_GSBASE`"
@@ -16297,7 +16294,7 @@ msgstr "`IA32_GSBASE`"
 
 #: src/vmm/msr.md:77
 msgid "Guest-State の GS.Base"
-msgstr "Guest-State の GS.Base"
+msgstr "GS.Base in Guest-State"
 
 #: src/vmm/msr.md:78 src/vmm/msr.md:98 src/vmm/msr.md:120
 msgid "`IA32_PERF_GLOBAL_CTRL`"
@@ -16305,15 +16302,15 @@ msgstr "`IA32_PERF_GLOBAL_CTRL`"
 
 #: src/vmm/msr.md:78
 msgid "VMCS VM-Entry Control の `load IA32_PERF_GLOBAL_CTRL` が有効"
-msgstr "VMCS VM-Entry Control の `load IA32_PERF_GLOBAL_CTRL` が有効"
+msgstr "`load IA32_PERF_GLOBAL_CTRL` in VMCS VM-Entry Control is enabled"
 
 #: src/vmm/msr.md:79
 msgid "VMCS VM-Entry Control の `load IA32_PAT` が有効"
-msgstr "VMCS VM-Entry Control の `load IA32_PAT` が有効"
+msgstr "`load IA32_PAT` in VMCS VM-Entry Control is enabled"
 
 #: src/vmm/msr.md:80
 msgid "VMCS VM-Entry Control の `load IA32_EFER` が有効"
-msgstr "VMCS VM-Entry Control の `load IA32_EFER` が有効"
+msgstr "`load IA32_EFER` in VMCS VM-Entry Control is enabled"
 
 #: src/vmm/msr.md:81 src/vmm/msr.md:101 src/vmm/msr.md:114
 msgid "`IA32_BNDCFGS`"
@@ -16321,7 +16318,7 @@ msgstr "`IA32_BNDCFGS`"
 
 #: src/vmm/msr.md:81
 msgid "VMCS VM-Entry Control の `load IA32_BNDCFGS` が有効"
-msgstr "VMCS VM-Entry Control の `load IA32_BNDCFGS` が有効"
+msgstr "`load IA32_BNDCFGS` in VMCS VM-Entry Control is enabled"
 
 #: src/vmm/msr.md:82 src/vmm/msr.md:102 src/vmm/msr.md:115
 msgid "`IA32_RTIT_CTL`"
@@ -16329,7 +16326,7 @@ msgstr "`IA32_RTIT_CTL`"
 
 #: src/vmm/msr.md:82
 msgid "VMCS VM-Entry Control の `load IA32_RTIT_CTL` が有効"
-msgstr "VMCS VM-Entry Control の `load IA32_RTIT_CTL` が有効"
+msgstr "`load IA32_RTIT_CTL` in VMCS VM-Entry Control is enabled"
 
 #: src/vmm/msr.md:83 src/vmm/msr.md:103 src/vmm/msr.md:116
 msgid "`IA32_S_CET`"
@@ -16337,7 +16334,7 @@ msgstr "`IA32_S_CET`"
 
 #: src/vmm/msr.md:83 src/vmm/msr.md:84
 msgid "VMCS VM-Entry Control の `load CET` が有効"
-msgstr "VMCS VM-Entry Control の `load CET` が有効"
+msgstr "`load CET` in VMCS VM-Entry Control is enabled"
 
 #: src/vmm/msr.md:84 src/vmm/msr.md:104 src/vmm/msr.md:117
 msgid "`IA32_INTERRUPT_SSP_TABLE_ADDR`"
@@ -16349,7 +16346,7 @@ msgstr "`IA32_LBR_CTRL`"
 
 #: src/vmm/msr.md:85
 msgid "VMCS VM-Entry Control の `load IA32_LBR_CTRL` が有効"
-msgstr "VMCS VM-Entry Control の `load IA32_LBR_CTRL` が有効"
+msgstr "`load IA32_LBR_CTRL` in VMCS VM-Entry Control is enabled"
 
 #: src/vmm/msr.md:86 src/vmm/msr.md:105 src/vmm/msr.md:119
 msgid "`IA32_PKRS`"
@@ -16357,17 +16354,18 @@ msgstr "`IA32_PKRS`"
 
 #: src/vmm/msr.md:86
 msgid "VMCS VM-Entry Control の `load PKRS` が有効"
-msgstr "VMCS VM-Entry Control の `load PKRS` が有効"
+msgstr "`load PKRS` in VMCS VM-Entry Control is enabled"
 
 #: src/vmm/msr.md:88
 msgid ""
 "以下のホストの MSR は VM Exit 時に対応する場所から自動的にロードされます:"
 msgstr ""
-"以下のホストの MSR は VM Exit 時に対応する場所から自動的にロードされます:"
+"The following host MSRs are automatically loaded from their respective "
+"locations during VM Exit:"
 
 #: src/vmm/msr.md:92 src/vmm/msr.md:101 src/vmm/msr.md:102
 msgid "`0` にクリアされる"
-msgstr "`0` にクリアされる"
+msgstr "Cleared to `0`"
 
 #: src/vmm/msr.md:93 src/vmm/msr.md:94 src/vmm/msr.md:95
 msgid "VMCS Host-State"
@@ -16375,76 +16373,77 @@ msgstr "VMCS Host-State"
 
 #: src/vmm/msr.md:96
 msgid "Host-State の FS.Base"
-msgstr "Host-State の FS.Base"
+msgstr "FS.Base in Host-State"
 
 #: src/vmm/msr.md:97
 msgid "Host-State の GS.Base"
-msgstr "Host-State の GS.Base"
+msgstr "GS.Base in Host-State"
 
 #: src/vmm/msr.md:98
 msgid "VMCS VM-Exit Control の `load IA32_PERF_GLOBAL_CTRL` が有効"
-msgstr "VMCS VM-Exit Control の `load IA32_PERF_GLOBAL_CTRL` が有効"
+msgstr "`load IA32_PERF_GLOBAL_CTRL` in VMCS VM-Exit Control is enabled"
 
 #: src/vmm/msr.md:99
 msgid "VMCS VM-Exit Control の `load IA32_PAT` が有効"
-msgstr "VMCS VM-Exit Control の `load IA32_PAT` が有効"
+msgstr "`load IA32_PAT` in VMCS VM-Exit Control is enabled"
 
 #: src/vmm/msr.md:100
 msgid "VMCS VM-Exit Control の `load IA32_EFER` が有効"
-msgstr "VMCS VM-Exit Control の `load IA32_EFER` が有効"
+msgstr "`load IA32_EFER` in VMCS VM-Exit Control is enabled"
 
 #: src/vmm/msr.md:101
 msgid "VMCS VM-Exit Control の `clear IA32_BNDCFGS` が有効"
-msgstr "VMCS VM-Exit Control の `clear IA32_BNDCFGS` が有効"
+msgstr "`clear IA32_BNDCFGS` in VMCS VM-Exit Control is enabled"
 
 #: src/vmm/msr.md:102
 msgid "VMCS VM-Exit Control の `clear IA32_RTIT_CTL` が有効"
-msgstr "VMCS VM-Exit Control の `clear IA32_RTIT_CTL` が有効"
+msgstr "`clear IA32_RTIT_CTL` in VMCS VM-Exit Control is enabled"
 
 #: src/vmm/msr.md:103 src/vmm/msr.md:104 src/vmm/msr.md:116 src/vmm/msr.md:117
 msgid "VMCS VM-Exit Control の `load CET` が有効"
-msgstr "VMCS VM-Exit Control の `load CET` が有効"
+msgstr "`load CET` in VMCS VM-Exit Control is enabled"
 
 #: src/vmm/msr.md:105 src/vmm/msr.md:119
 msgid "VMCS VM-Exit Control の `load PKRS` が有効"
-msgstr "VMCS VM-Exit Control の `load PKRS` が有効"
+msgstr "`load PKRS` in VMCS VM-Exit Control is enabled"
 
 #: src/vmm/msr.md:107
 msgid "以下のゲストの MSR は VM Exit 時に対応する場所に自動的にセーブされます:"
 msgstr ""
-"以下のゲストの MSR は VM Exit 時に対応する場所に自動的にセーブされます:"
+"The following guest MSRs are automatically saved to their respective "
+"locations during VM Exit:"
 
 #: src/vmm/msr.md:109
 msgid "セーブ先"
-msgstr "セーブ先"
+msgstr "Destination of Save"
 
 #: src/vmm/msr.md:111
 msgid "VMCS VM-Exit Control の `save debug controls` が有効"
-msgstr "VMCS VM-Exit Control の `save debug controls` が有効"
+msgstr "`save debug controls` in VMCS VM-Exit Control is enabled"
 
 #: src/vmm/msr.md:112
 msgid "VMCS VM-Exit Control の `save IA32_PAT` が有効"
-msgstr "VMCS VM-Exit Control の `save IA32_PAT` が有効"
+msgstr "`save IA32_PAT` in VMCS VM-Exit Control is enabled"
 
 #: src/vmm/msr.md:113
 msgid "VMCS VM-Exit Control の `save IA32_EFER` が有効"
-msgstr "VMCS VM-Exit Control の `save IA32_EFER` が有効"
+msgstr "`save IA32_EFER` in VMCS VM-Exit Control is enabled"
 
 #: src/vmm/msr.md:114
 msgid "VMCS VM-Exit Control の `load IA32_BNDCFGS` が有効"
-msgstr "VMCS VM-Exit Control の `load IA32_BNDCFGS` が有効"
+msgstr "`load IA32_BNDCFGS` in VMCS VM-Exit Control is enabled"
 
 #: src/vmm/msr.md:115
 msgid "VMCS VM-Exit Control の `load IA32_RTIT_CTL` が有効"
-msgstr "VMCS VM-Exit Control の `load IA32_RTIT_CTL` が有効"
+msgstr "`load IA32_RTIT_CTL` in VMCS VM-Exit Control is enabled"
 
 #: src/vmm/msr.md:118
 msgid "VMCS VM-Exit Control の `load IA32_LBR_CTRL` が有効"
-msgstr "VMCS VM-Exit Control の `load IA32_LBR_CTRL` が有効"
+msgstr "`load IA32_LBR_CTRL` in VMCS VM-Exit Control is enabled"
 
 #: src/vmm/msr.md:120
 msgid "VMCS VM-Exit Control の `save IA32_PERF_GLOBAL_CTRL` が有効"
-msgstr "VMCS VM-Exit Control の `save IA32_PERF_GLOBAL_CTRL` が有効"
+msgstr "`save IA32_PERF_GLOBAL_CTRL` in VMCS VM-Exit Control is enabled"
 
 #: src/vmm/msr.md:122
 msgid ""
@@ -16455,12 +16454,13 @@ msgid ""
 "の内、下記の MSR 以外は Ymir では使わないため、仮想化する必要がありません (ホ"
 "ストにいる間もゲストの MSR が見えることになります):"
 msgstr ""
-"これらの MSR は VM Entry / VM Exit 時に自動的にセーブ・ロードされます。 ロー"
-"ドする値は VMCS に保存されているため、ホスト・ゲスト間で共有される心配があり"
-"ません。 いくつかの MSR は VM-Exit/-Entry Controls において設定を有効化する必"
-"要があります。 Ymir では以下の MSR についてロードを有効化します。 上記の MSR "
-"の内、下記の MSR 以外は Ymir では使わないため、仮想化する必要がありません (ホ"
-"ストにいる間もゲストの MSR が見えることになります):"
+"These MSRs are automatically saved and loaded during VM Entry and VM Exit. "
+"Since the values are stored in the VMCS, there is no risk of sharing between "
+"host and guest. Some MSRs require enabling settings in the VM-Exit/-Entry "
+"Controls. In Ymir, auto loading is enabled for the following MSRs. Among the "
+"MSRs listed below, those not listed below are not used in Ymir, so they do "
+"not need to be virtualized (the guest's MSRs will remain visible while in "
+"the host):"
 
 #: src/vmm/msr.md:150
 msgid "MSR Area"
@@ -16471,8 +16471,9 @@ msgid ""
 "上記の MSR 以外は明示的に設定しない限り VM Entry / VM Exit 時に保存・復帰され"
 "ません。 Ymir では以下の MSR について追加で保存・復帰をすることにします:"
 msgstr ""
-"上記の MSR 以外は明示的に設定しない限り VM Entry / VM Exit 時に保存・復帰され"
-"ません。 Ymir では以下の MSR について追加で保存・復帰をすることにします:"
+"MSRs other than those listed above are not saved or restored during VM Entry/"
+"VM Exit unless explicitly configured. In Ymir, the following MSRs will be "
+"additionally saved and restored:"
 
 #: src/vmm/msr.md:155
 msgid "`IA32_TSC_AUX`"
@@ -16505,10 +16506,10 @@ msgid ""
 "す。 MSR Entry は以下のような構造を持ち、`index` で指定される MSR の `data` "
 "を保持します:"
 msgstr ""
-"VM Exit / Entry 時にロード・セーブする MSR は **MSR Area** と呼ばれる領域に保"
-"存します。 MSR Area は **MSR Entry** と呼ばれる 128bit のエントリの配列で"
-"す。 MSR Entry は以下のような構造を持ち、`index` で指定される MSR の `data` "
-"を保持します:"
+"MSRs loaded and saved during VM Exit/Entry are stored in an area called the "
+"**MSR Area**. The MSR Area is an array of 128-bit entries called **MSR "
+"entry**. Each MSR entry has the following structure and holds the `data` of "
+"the MSR specified by `index`:"
 
 #: src/vmm/msr.md:166
 msgid ""
@@ -16520,27 +16521,23 @@ msgstr ""
 
 #: src/vmm/msr.md:169
 msgid "MSR Area には以下の3種類があります:"
-msgstr "MSR Area には以下の3種類があります:"
+msgstr "There're the following three categories of MSR Area:"
 
 #: src/vmm/msr.md:171
 msgid ""
 "**VM-Entry MSR-Load Area**: VM Entry 時にゲストの MSR をロードするためのエリ"
 "ア"
-msgstr ""
-"**VM-Entry MSR-Load Area**: VM Entry 時にゲストの MSR をロードするためのエリ"
-"ア"
+msgstr "**VM-Entry MSR-Load Area**: "
 
 #: src/vmm/msr.md:172
 msgid ""
 "**VM-Exit MSR-Store Area**: VM Exit 時にゲストの MSR を保存するためのエリア"
-msgstr ""
-"**VM-Exit MSR-Store Area**: VM Exit 時にゲストの MSR を保存するためのエリア"
+msgstr "**VM-Exit MSR-Store Area**: Area for saving guest MSRs during VM Exit"
 
 #: src/vmm/msr.md:173
 msgid ""
 "**VM-Exit MSR-Load Area**: VM Exit 時にホストの MSR をロードするためのエリア"
-msgstr ""
-"**VM-Exit MSR-Load Area**: VM Exit 時にホストの MSR をロードするためのエリア"
+msgstr "**VM-Exit MSR-Load Area**: Area for loading host MSRs during VM Exit"
 
 #: src/vmm/msr.md:175
 msgid ""
@@ -16548,13 +16545,13 @@ msgid ""
 "(当然ですが)ホストは virtualization-aware であるため、VM Entry する前に手動で"
 "セーブしろということでしょう。"
 msgstr ""
-"VM Entry 時にホストの MSR をセーブするためのエリアは存在しません。 おそらく"
-"(当然ですが)ホストは virtualization-aware であるため、VM Entry する前に手動で"
-"セーブしろということでしょう。"
+"There is no area for saving host MSRs during VM Entry. Presumably (and "
+"understandably), since the host is virtualization-aware, it is expected to "
+"save them manually before VM Entry."
 
 #: src/vmm/msr.md:178
 msgid "MSR Area を表現する構造体を定義します:"
-msgstr "MSR Area を表現する構造体を定義します:"
+msgstr "Define a structure representing the MSR Area:"
 
 #: src/vmm/msr.md:250
 msgid ""
@@ -16562,9 +16559,9 @@ msgid ""
 "提供します。 3つの MSR Area のうち、ホスト用(Load)とゲスト用(Store+Load)の領"
 "域を表すメンバ変数を `Vm` に追加します:"
 msgstr ""
-"`ShadowMsr` は MSR Entry の配列を保持し、登録する MSR を操作するための API を"
-"提供します。 3つの MSR Area のうち、ホスト用(Load)とゲスト用(Store+Load)の領"
-"域を表すメンバ変数を `Vm` に追加します:"
+"`ShadowMsr` holds an array of MSR entries and provides an API to manipulate "
+"the registered MSRs. Among the three MSR Areas, member variables "
+"representing the host (Load) and guest (Store+Load) areas are added to `Vm`:"
 
 #: src/vmm/msr.md:262
 msgid ""
@@ -16576,13 +16573,14 @@ msgid ""
 "セーブされます。 ホストの MSR は現在の MSR の値をそのまま登録することにしま"
 "す。 ゲストの MSR は全て `0` に初期化します:"
 msgstr ""
-"VMCS の初期化時 (`setupVmcs()`) で、ゲストとホストの MSR Area を初期化しま"
-"す。 MSR Area の物理アドレスは VM-Exit Controls / VM-Entry Controls の `MSR-"
-"load address` / `MSR-store address` に設定します。 また、MSR Area に登録され"
-"た MSR の個数は `MSR-load count` / `MSR-store count` に設定します。 ここに登"
-"録された MSR Area の先頭から `count` 分だけ、VM Exit / VM Entry 時にロード・"
-"セーブされます。 ホストの MSR は現在の MSR の値をそのまま登録することにしま"
-"す。 ゲストの MSR は全て `0` に初期化します:"
+"During VMCS initialization (`setupVmcs()`), initialize the guest and host "
+"MSR Areas. The physical addresses of the MSR Areas are set in the VM-Exit "
+"Controls and VM-Entry Controls as `MSR-load address` and `MSR-store "
+"address`. The number of MSRs registered in the MSR Areas is set in `MSR-load "
+"count` and `MSR-store count`. Only the first `count` entries of the "
+"registered MSR Area are loaded and saved during VM Exit and VM Entry. The "
+"host MSRs are registered with their current values as is. The guest MSRs are "
+"initialized to all zeros:"
 
 #: src/vmm/msr.md:301
 msgid ""
@@ -16591,10 +16589,10 @@ msgid ""
 "に使われることになってしまいます。 VM Entry ループをする `loop()` 内の "
 "`while` ループの先頭で、以下の関数を呼び出します:"
 msgstr ""
-"VM-Exit MSR-Load Area (VM Exit 時にホストの MSR にロードされる領域) は、VM "
-"Entry 前に毎回更新する必要があります。 そうしなければ、最初に設定した値が永遠"
-"に使われることになってしまいます。 VM Entry ループをする `loop()` 内の "
-"`while` ループの先頭で、以下の関数を呼び出します:"
+"The VM-Exit MSR-Load Area (the area loaded into the host's MSRs during VM "
+"Exit) must be updated before every VM Entry. Otherwise, the initially set "
+"values would be used indefinitely. Call the following function at the "
+"beginning of the `while` loop inside the VM Entry loop `loop()`:"
 
 #: src/vmm/msr.md:319
 msgid ""
@@ -16604,11 +16602,12 @@ msgid ""
 "必要はありません。 今後 MSR Area に動的に MSR を追加で登録できるようにしたい"
 "場合に備えて、このような実装にしています。"
 msgstr ""
-"本シリーズでは MSR Area に登録する MSR の個数が変わることはありません。 この"
-"あと扱いますが、ゲストが MSR Area に登録されていない MSR に対して WRMSR をし"
-"てきた場合にはアボートするようにします。 よって、実際は MSR counts を更新する"
-"必要はありません。 今後 MSR Area に動的に MSR を追加で登録できるようにしたい"
-"場合に備えて、このような実装にしています。"
+"In this series, the number of MSRs registered in the MSR Area does not "
+"change. As will be covered later, if the guest attempts a WRMSR on an MSR "
+"not registered in the MSR Area, it will cause an abort. Therefore, there is "
+"no need to update the MSR counts in practice. This design is intended to "
+"accommodate potential future support for dynamically adding MSRs to the MSR "
+"Area."
 
 #: src/vmm/msr.md:324
 msgid ""
@@ -16616,13 +16615,14 @@ msgid ""
 "しました。 残すはゲストの RDMSR / WRMSR に応じて MSR Area に登録された MSR の"
 "値を読み書きする処理を実装することです。"
 msgstr ""
-"以上で MSR Area に登録した MSR 及び自動的に保存・復帰される MSR の設定が完了"
-"しました。 残すはゲストの RDMSR / WRMSR に応じて MSR Area に登録された MSR の"
-"値を読み書きする処理を実装することです。"
+"With this, the setup of MSRs registered in the MSR Area and those "
+"automatically saved and restored is complete. The remaining task is to "
+"implement the handling of guest RDMSR and WRMSR instructions to read and "
+"write the values of MSRs registered in the MSR Area."
 
 #: src/vmm/msr.md:327
 msgid "RDMSR ハンドラ"
-msgstr "RDMSR ハンドラ"
+msgstr "RDMSR Handler"
 
 #: src/vmm/msr.md:329
 msgid ""
@@ -16631,28 +16631,28 @@ msgid ""
 "に、下位 32bit を RAX に格納します。 ゲストに MSR の値を見せるには以下の2つの"
 "パターンがあります:"
 msgstr ""
-"RDMSR に対するハンドラを実装します。 まずは、ゲストのレジスタに RDMSR の結果"
-"を格納するためのヘルパー関数を用意します。 RDMSR の結果は上位 32bit を RDX "
-"に、下位 32bit を RAX に格納します。 ゲストに MSR の値を見せるには以下の2つの"
-"パターンがあります:"
+"Implement the handler for RDMSR. First, prepare a helper function to store "
+"the RDMSR result into the guest registers. Upper 32 bits of the RDMSR result "
+"is stored in RDX and the lower 32 bits in RAX. There are two patterns to "
+"present the MSR value to the guest:"
 
 #: src/vmm/msr.md:334
 msgid "VMCS に登録された値を返す: 自動的にロード・セーブされる MSR の場合"
-msgstr "VMCS に登録された値を返す: 自動的にロード・セーブされる MSR の場合"
+msgstr ""
+"Returns a value stored in VMCS: when a MSR is saved and loaded automatically"
 
 #: src/vmm/msr.md:335
 msgid "MSR Area に登録された値を返す: それ以外"
-msgstr "MSR Area に登録された値を返す: それ以外"
+msgstr "Returns a value registered in the MSR Area: others"
 
 #: src/vmm/msr.md:337
 msgid ""
 "前者のために `setRetVal()` を、後者のために `shadowRead()` を用意します:"
-msgstr ""
-"前者のために `setRetVal()` を、後者のために `shadowRead()` を用意します:"
+msgstr "Use `setRetVal()` for the former, and `shadowRead()` for the latter:"
 
 #: src/vmm/msr.md:364
 msgid "以上を踏まえて、RDMSR ハンドラを実装します:"
-msgstr "以上を踏まえて、RDMSR ハンドラを実装します:"
+msgstr "With this, let's implement the RDMSR handler:"
 
 #: src/vmm/msr.md:386
 msgid ""
@@ -16662,23 +16662,24 @@ msgid ""
 "た。 意外と少ない数の MSR で Linux が動くものですね。びっくり。 びっくりと言"
 "えば、この節を書いているのは11月です。 栗が美味しい季節になりましたね。"
 msgstr ""
-"対応していない MSR (`else`) に対する RDMSR はアボートします。 対応する必要の"
-"ある MSR は経験則で決めています。 `else` だけをもつ `switch` でゲストを動かし"
-"てみて、Linux がブートするまでに必要な MSR を追加していったらこうなりまし"
-"た。 意外と少ない数の MSR で Linux が動くものですね。びっくり。 びっくりと言"
-"えば、この節を書いているのは11月です。 栗が美味しい季節になりましたね。"
+"RDMSR on an unsupported MSR (`else`) causes an abort. The set of supported "
+"MSRs has been determined empirically. Initially, a `switch` with only `else` "
+"was used to run the guest, and MSRs were added one by one until Linux "
+"successfully booted. It's surprising how few MSRs are actually required for "
+"Linux to run. Speaking of surprises, as I write this section, it's November—"
+"the season when chestnuts are in peak flavor."
 
 #: src/vmm/msr.md:393
 msgid "WRMSR ハンドラ"
-msgstr "WRMSR ハンドラ"
+msgstr "WRMSR Handler"
 
 #: src/vmm/msr.md:395
 msgid "RDMSR と同様にヘルパー関数を用意します:"
-msgstr "RDMSR と同様にヘルパー関数を用意します:"
+msgstr "Let's create a helper function as we did for RDMSR:"
 
 #: src/vmm/msr.md:410
 msgid "WRMSR ハンドラを実装します:"
-msgstr "WRMSR ハンドラを実装します:"
+msgstr "Here's a WRMSR handler:"
 
 #: src/vmm/msr.md:441
 msgid ""
@@ -16686,9 +16687,9 @@ msgid ""
 "(syscall のエントリポイント) などはセットするだけして読むことはないので、当然"
 "といえば当然ですね。"
 msgstr ""
-"RDMSR よりは対応する必要のある MSR が多いです。 `STAR` / `LSTAR` / `CSTAR` "
-"(syscall のエントリポイント) などはセットするだけして読むことはないので、当然"
-"といえば当然ですね。"
+"There are more MSRs that need to be supported for WRMSR compared to RDMSR. "
+"This makes sense—MSRs like `STAR`, `LSTAR`, and `CSTAR` (used as syscall "
+"entry points) are typically written to but not read."
 
 #: src/vmm/msr.md:446
 msgid ""
@@ -16698,15 +16699,15 @@ msgid ""
 "VMCS または MSR Area に登録された値を読み書きするようにしました。 これによっ"
 "て MSR の仮想化ができたことになります。"
 msgstr ""
-"本チャプターでは、MSR Area を設定することで VM Entry / VM Exit 時にゲスト・ホ"
-"ストの MSR を適切に保存・復帰するように設定しました。 これによって、ホストと"
-"ゲスト間の MSR 空間が分離されます。 また、RDMSR / WRMSR ハンドラを実装して "
-"VMCS または MSR Area に登録された値を読み書きするようにしました。 これによっ"
-"て MSR の仮想化ができたことになります。"
+"In this chapter, we configured the MSR Area to ensure that guest and host "
+"MSRs are properly saved and restored during VM Entry and VM Exit. This "
+"separates the MSR space between the host and guest. We also implemented "
+"RDMSR and WRMSR handlers to read and write values registered in the VMCS or "
+"MSR Area. With this, MSR virtualization is complete."
 
 #: src/vmm/msr.md:451
 msgid "もはや恒例になってきましたが、最後にゲストを動かしてみましょう:"
-msgstr "もはや恒例になってきましたが、最後にゲストを動かしてみましょう:"
+msgstr "As has become customary, let's run the guest at the end:"
 
 #: src/vmm/msr.md:505
 msgid ""
@@ -16716,11 +16717,12 @@ msgid ""
 "`'nokaslr' on cmdline` と出力されているように、`BootParams` で指定したコマン"
 "ドラインもちゃんとゲストに渡っていることが分かりますね。"
 msgstr ""
-"なんと！ ついにゲストからのログが出力されました！ まだカーネルの本体がブート"
-"する前ですが、[Linux Boot Protocol のチャプター](./linux_boot.md) でコマンド"
-"ラインに `earlyprintk=serial` を出力したのでログが出力されています[^log]。 "
-"`'nokaslr' on cmdline` と出力されているように、`BootParams` で指定したコマン"
-"ドラインもちゃんとゲストに渡っていることが分かりますね。"
+"Incredible! The guest has finally started printing logs! Although the main "
+"kernel hasn't booted yet, logs are being printed because we passed "
+"`earlyprintk=serial` on the command line back in the [Linux Boot Protocol "
+"chapter](./linux_boot.md)[^log]. As you can see from the message `'nokaslr' "
+"on cmdline`, the command line specified in `BootParams` is correctly passed "
+"to the guest."
 
 #: src/vmm/msr.md:510
 msgid ""
@@ -16737,26 +16739,26 @@ msgid ""
 "blob/2d5404caa8c7bb5c4e0435f94b28834ae5456623/arch/x86/kernel/head_64.S#L38) "
 "に制御が移ります。"
 msgstr ""
-"`Decompressing Linux...` は [extract_kernel()](https://github.com/torvalds/"
-"linux/blob/2d5404caa8c7bb5c4e0435f94b28834ae5456623/arch/x86/boot/compressed/"
-"misc.c#L405) からの出力です。 この関数は `head_64.S` の [relocated()]"
+"The message `Decompressing Linux...` is printed from [extract_kernel()]"
 "(https://github.com/torvalds/linux/"
-"blob/2d5404caa8c7bb5c4e0435f94b28834ae5456623/arch/x86/boot/compressed/"
-"head_64.S#L477) から呼ばれます。 圧縮されたカーネルを展開してメモリに展開し、"
-"制御を移そうとする関数です。 ここで展開されたカーネルは `BootParams` で指定し"
-"たアドレス (`0x10_0000`) に展開されます。 `extract_kernel()` の直後にこのアド"
-"レスにジャンプし、`compress/head_64.S` ではない方の `head_64.S` の "
-"[startup_64()](https://github.com/torvalds/linux/"
-"blob/2d5404caa8c7bb5c4e0435f94b28834ae5456623/arch/x86/kernel/head_64.S#L38) "
-"に制御が移ります。"
+"blob/2d5404caa8c7bb5c4e0435f94b28834ae5456623/arch/x86/boot/compressed/misc."
+"c#L405). This function is called from [relocated()](https://github.com/"
+"torvalds/linux/blob/2d5404caa8c7bb5c4e0435f94b28834ae5456623/arch/x86/boot/"
+"compressed/head_64.S#L477) in `head_64.S`. It decompresses the compressed "
+"kernel and places it in memory, preparing to transfer control. The "
+"decompressed kernel is placed at the address specified by `BootParams` (i."
+"e., `0x10_0000`). Immediately after `extract_kernel()`, control jumps to "
+"this address, transferring execution to [startup_64()](https://github.com/"
+"torvalds/linux/blob/2d5404caa8c7bb5c4e0435f94b28834ae5456623/arch/x86/kernel/"
+"head_64.S#L38) in the other `head_64.S` (not the one in `compressed/`)."
 
 #: src/vmm/msr.md:516
 msgid ""
 "最終的に発生している Triple Fault は、CR4 の PSE ビットをセットしようとしてい"
 "る部分です:"
 msgstr ""
-"最終的に発生している Triple Fault は、CR4 の PSE ビットをセットしようとしてい"
-"る部分です:"
+"The triple fault that eventually occurs is triggered when attempting to set "
+"the PSE bit in CR4:"
 
 #: src/vmm/msr.md:530
 msgid ""
@@ -16768,21 +16770,21 @@ msgid ""
 "しまうようです。 ということで、次回はゲストによる CR アクセスを適切にハンドリ"
 "ングするようにしましょう。"
 msgstr ""
-"この `MOV to CR4` は、`CR4.VMXE` ビットをアンセットしてしまいます。 **VM "
-"Exit を引き起こさないような `MOV to CR4` が `IA32_VMX_CR4_FIXED0` または "
-"`IA32_VMX_CR4_FIXED1` で規定される CR4 のルールに従っていない場合、ゲスト側"
-"で `#GP` が発生します** (VM Exit ではありません)。[^cr4-gp]。 ゲストにはまだ"
-"割り込みハンドラがないため、`#GP` が発生するとそのまま Triple Faults になって"
-"しまうようです。 ということで、次回はゲストによる CR アクセスを適切にハンドリ"
-"ングするようにしましょう。"
+"This `MOV to CR4` clears the `CR4.VMXE` bit. **If a `MOV to CR4` does not "
+"trigger a VM Exit but results in a value that violates the constraints "
+"defined by `IA32_VMX_CR4_FIXED0` or `IA32_VMX_CR4_FIXED1`, the guest will "
+"receive a `#GP` exception** (not a VM Exit)[^cr4-gp]. Since the guest has "
+"not yet set up an interrupt handler, this `#GP` leads directly to a triple "
+"fault. So next time, we'll implement proper handling of CR accesses made by "
+"the guest."
 
 #: src/vmm/msr.md:535
 msgid ""
 "まだシリアルコンソールの仮想化はしていないため、ゲストは直接シリアルを触りに"
 "いっています。今はまだ許してあげることにしましょう。"
 msgstr ""
-"まだシリアルコンソールの仮想化はしていないため、ゲストは直接シリアルを触りに"
-"いっています。今はまだ許してあげることにしましょう。"
+"Since serial console virtualization is not yet implemented, the guest is "
+"accessing the serial port directly. For now, let's allow this behavior."
 
 #: src/vmm/msr.md:536
 msgid ""
