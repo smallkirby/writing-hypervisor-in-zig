@@ -10,7 +10,7 @@
 > **This blog series has been translated to the following languages:**
 >
 > - [Japanese](/index.md)
-> - [English (WIP)](/en/index.md)
+> - [English](/en/index.md)
 >
 > **You can switch the language by clicking the earth icon on the top right corner of the page.**
 >
@@ -165,4 +165,5 @@ SDM 以外には、以下の情報を参考にしています:
 
 | Date | Log |
 | --- | --- |
+| 2025.06.08 | 英語バージョン公開 |
 | 2024.11.17 | 公開 |

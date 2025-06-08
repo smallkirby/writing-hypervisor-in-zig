@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Writing Hypervisor in Zig\n"
 "POT-Creation-Date: 2025-06-08T22:11:21+09:00\n"
-"PO-Revision-Date: 2025-06-08 22:12+0900\n"
+"PO-Revision-Date: 2025-06-08 22:13+0900\n"
 "Last-Translator: smallkirby <ssmallkirby@gmail.com>\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -578,7 +578,7 @@ msgstr ""
 
 #: src/intro.md:168
 msgid "英語バージョン公開"
-msgstr ""
+msgstr "Translated to English"
 
 #: src/intro.md:169
 msgid "2024.11.17"
