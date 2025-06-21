@@ -1,4 +1,4 @@
-# General-Purpose Memomry Allocator
+# General-Purpose Memory Allocator
 
 [Page Allocator](./page_allocator.md) のチャプターでは、ページ単位でメモリを確保するページアロケータを作成しました。
 このアロケータは `Allocator` インタフェースを実装しているため、汎用的なメモリ確保に利用できます。
@@ -25,7 +25,7 @@ Ymir の汎用アロケータの概略を以下に示します:
 *Ymir BinAllocator Overview*
 
 各 bin は固定サイズの領域 **chunk** の連結リストを保持します。
-Chunck は 利用中 (*in-use*) か 割当て可能 (*free*) のどちらかの状態を持ちます。
+Chunk は 利用中 (*in-use*) か 割当て可能 (*free*) のどちらかの状態を持ちます。
 Free な chunk は次の chunk へのポインタを持ち、全体としてリストを構成します。
 アロケータは利用中の chunk は管理しません。
 

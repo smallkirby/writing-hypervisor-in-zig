@@ -81,7 +81,7 @@ VM-Exit 時には、これらの値が自動的にロードされます。
 このカテゴリは VM Exit 時の挙動を制御します。
 制御する項目は以下を含みます:
 
-- Debug Rgister を保存するかどうか
+- Debug Register を保存するかどうか
 - VM Exit 直後のプロセッサのモードが 64bit モードかどうか
 - **MSR Area**: VM Exit 時にロードするホストの MSR 一覧
 
@@ -93,7 +93,7 @@ VMCS における癒やし枠です。
 このカテゴリは VM Entry 時の挙動を制御します。
 制御する項目は以下を含みます:
 
-- Debug Rgister を保存するかどうか
+- Debug Register を保存するかどうか
 - VM Entry 直後のプロセッサのモードが IA-32e モードかどうか
 - **MSR Area**: VM Entry 時にロードするホストの MSR 一覧
 - **Event Injection**: VM Entry 時に任意の割り込みをゲストに対して注入できる

@@ -36,8 +36,8 @@ Ymir カーネル自体は割り込みを受取り通常通りの処理をしま
 これにより、カーネル自体は VMM の機能を特に意識することなく割り込みを処理することができ、
 VMM 側は任意の割り込みに対して透過的に介入することができるようになります。
 
-![Overview of IRQ sharing betwenn Ymir and Guest OS.](../assets/drawio/irq_share.drawio.png)
-*Overview of IRQ sharing betwenn Ymir and Guest OS.*
+![Overview of IRQ sharing between Ymir and Guest OS.](../assets/drawio/irq_share.drawio.png)
+*Overview of IRQ sharing between Ymir and Guest OS.*
 
 ## 割り込みによる VM Exit
 

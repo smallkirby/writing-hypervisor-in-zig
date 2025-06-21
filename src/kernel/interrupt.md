@@ -19,7 +19,7 @@ Ymir ではこれを置き換えて、割り込みの適切な処理や例外時
 
 ## 割り込みと例外の基礎
 
-CPU は **割り込み (Interrupts)** と **例外 (Excetpions)**  という2つのイベント[^call]を受け取ることができます。
+CPU は **割り込み (Interrupts)** と **例外 (Exceptions)**  という2つのイベント[^call]を受け取ることができます。
 割り込みはハードウェアからの信号によって任意のタイミングで発生[^timing]するのに対し、
 例外は CPU が instruction を実行するタイミングでエラーを検知して発生します。
 なお、どちらもハンドラが呼び出されるのは Instruction Boundary に制限されるため、命令の途中で割り込みハンドラが呼び出されることはありません。
@@ -226,7 +226,7 @@ log.info("Initialized IDT.", .{});
 
 これで空の IDT を設定できました。
 実際に例外を起こしてみましょう。
-Zig で定数値を使って `#DE: Devide Error` を引き起こすのは少し面倒なため、今回は `#GP: General Protection Fault` を引き起こしてみます:
+Zig で定数値を使って `#DE: Divide Error` を引き起こすのは少し面倒なため、今回は `#GP: General Protection Fault` を引き起こしてみます:
 
 <!-- i18n:skip -->
 ```ymir/main.zig

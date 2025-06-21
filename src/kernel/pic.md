@@ -85,7 +85,7 @@ CPU に通知される割り込み番号と IRQ のオフセットを設定す�
 #### ICW3
 
 ICW2 に続く CW は ICW3 として解釈される。
-Primay PIC に対して送信する場合は、各 IRQ が Secondary にカスケードされているかどうかをビットマップで設定する。
+Primary PIC に対して送信する場合は、各 IRQ が Secondary にカスケードされているかどうかをビットマップで設定する。
 Secondary PIC に対して送信する場合は、カスケードされている Primary PIC の *Cascade ID* を設定する。
 
 #### ICW4
