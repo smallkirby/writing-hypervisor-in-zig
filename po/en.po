@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Writing Hypervisor in Zig\n"
-"POT-Creation-Date: 2025-06-08T22:11:21+09:00\n"
-"PO-Revision-Date: 2025-06-08 22:13+0900\n"
+"POT-Creation-Date: 2025-06-21T16:32:16+09:00\n"
+"PO-Revision-Date: 2025-06-21 16:38+0900\n"
 "Last-Translator: smallkirby <ssmallkirby@gmail.com>\n"
 "Language-Team: English\n"
 "Language: en\n"
@@ -265,20 +265,62 @@ msgstr ""
 "chapters and writing the actual code, you will finally impuement a "
 "hypervisor that can boot Linux:"
 
-#: src/intro.md:49
+#: src/intro.md:51 src/bootloader/load_kernel.md:81
+#: src/bootloader/load_kernel.md:305 src/bootloader/jump_to_ymir.md:315
+#: src/kernel/gdt.md:81 src/kernel/gdt.md:116 src/kernel/gdt.md:420
+#: src/kernel/interrupt.md:262 src/kernel/interrupt.md:339
+#: src/kernel/interrupt.md:443 src/kernel/page_allocator.md:111
+#: src/kernel/page_allocator.md:352 src/kernel/paging.md:150
+#: src/kernel/panic.md:7 src/vmm/vmcall.md:31
+msgid "\\[!NOTE\\]"
+msgstr ""
+
+#: src/intro.md:53
+msgid ""
+"本ブログで実装する hypervisor の完成形を実際に手元で動かしたい場合には、以下"
+"のいずれかのブランチを利用してください:"
+msgstr ""
+"If you want to run the final version of the hypervisor implemented in this "
+"blog on your machine, please use one of the following branches:"
+
+#: src/intro.md:55
+msgid "Branch"
+msgstr "Branch"
+
+#: src/intro.md:55
+msgid "Zig version"
+msgstr "Zig version"
+
+#: src/intro.md:57
+msgid "[`whiz-vmm-vmc`](https://github.com/smallkirby/ymir/tree/whiz-vmm-vmc)"
+msgstr "[`whiz-vmm-vmc`](https://github.com/smallkirby/ymir/tree/whiz-vmm-vmc)"
+
+#: src/intro.md:57
+msgid "0.13.0"
+msgstr "0.13.0"
+
+#: src/intro.md:58
+msgid "[`master`](https://github.com/smallkirby/ymir)"
+msgstr "[`master`](https://github.com/smallkirby/ymir)"
+
+#: src/intro.md:58
+msgid "Follow the README"
+msgstr "Follow the README"
+
+#: src/intro.md:60
 msgid "対象読者"
 msgstr "Intended Reader"
 
-#: src/intro.md:51
+#: src/intro.md:62
 msgid "本シリーズは以下のような読者を想定しています:"
 msgstr "This series is intended for the following readers:."
 
-#: src/intro.md:53
+#: src/intro.md:64
 msgid "OS に対するある程度の理解がある、または自分で調べる意欲がある"
 msgstr ""
 "Some understanding of the OS or willingness to investigate on their own"
 
-#: src/intro.md:54
+#: src/intro.md:65
 msgid ""
 "x86-64 アーキテクチャにある程度の理解がある、またはマニュアルを読んで調べるこ"
 "とができる"
@@ -286,7 +328,7 @@ msgstr ""
 "Some understanding of the x86-64 architecture or willingness to read and "
 "examine manuals"
 
-#: src/intro.md:55
+#: src/intro.md:66
 msgid ""
 "Zig 言語に興味がある、使ったことがある、またはリファレンスを読んで調べる意欲"
 "がある"
@@ -294,40 +336,40 @@ msgstr ""
 "Interest in, experience with, or willingness to study through references to "
 "the Zig language"
 
-#: src/intro.md:56
+#: src/intro.md:67
 msgid "フルスクラッチで低レイヤなコードを書きたい"
 msgstr "Willingness to write a low-level code from scratch"
 
-#: src/intro.md:57
+#: src/intro.md:68
 msgid "Intel VT-x をサポートする CPU を持っている"
 msgstr "CPU that supports Intel VT-x"
 
-#: src/intro.md:59
+#: src/intro.md:70
 msgid "逆に、以下のような人には向いていません:"
 msgstr "On the other hand, this blog is not suitable for those who:"
 
-#: src/intro.md:61
+#: src/intro.md:72
 msgid "マイナー言語なんて使いたくない"
 msgstr "don't want to use a non-popular language"
 
-#: src/intro.md:62
+#: src/intro.md:73
 msgid "絶対に自分で言語や CPU のリファレンスを調べたくない"
 msgstr "Never want to look up a language or CPU reference on your own"
 
-#: src/intro.md:63
+#: src/intro.md:74
 msgid "簡単のための機能削減や多少の厳密性の犠牲を許容できない"
 msgstr ""
 "Cannot tolerate feature reductions for simplicity or sacrifice of some rigor"
 
-#: src/intro.md:64
+#: src/intro.md:75
 msgid "Intel 64 の CPU を持っていない"
 msgstr "don't have Intel 64 CPU"
 
-#: src/intro.md:66
+#: src/intro.md:77
 msgid "進め方"
 msgstr "How to Read"
 
-#: src/intro.md:68
+#: src/intro.md:79
 msgid ""
 "本シリーズはチャプター1から順に読み進めていくことを想定しています。 各チャプ"
 "ターはそれまでのチャプターに対する依存を持っており、既に登場したコードは実装"
@@ -337,7 +379,7 @@ msgstr ""
 "dependencies on the previous chapters, and code that has already appeared is "
 "treated as implemented."
 
-#: src/intro.md:71
+#: src/intro.md:82
 msgid ""
 "本シリーズは実際に手を動かしてコードを書いていくことが強く推奨されます。 リ"
 "ファレンス実装である Ymir は [Github で公開](https://github.com/smallkirby/"
@@ -353,7 +395,7 @@ msgstr ""
 "for Writing Hypervisor in Zig. You can refer to the corresponding branch to "
 "see what was omitted in the chapter or what was not clear in the snippet."
 
-#: src/intro.md:77
+#: src/intro.md:88
 msgid ""
 "なお、本シリーズで実装する `whiz-*` ブランチの Ymir は簡単のために `master` "
 "ブランチの Ymir から一部機能が削減・簡略化されている可能性があります。 また、"
@@ -365,15 +407,15 @@ msgstr ""
 "that the fixes will not be applied to all branches, but only to the most "
 "recent `whiz-*` and `master` branches."
 
-#: src/intro.md:81
+#: src/intro.md:92
 msgid "記法について"
 msgstr "Notations"
 
-#: src/intro.md:83
+#: src/intro.md:94
 msgid "コードのスニペットは以下のようなコードブロックで提示されます:"
 msgstr "A snippet of code is presented in a code block like:"
 
-#: src/intro.md:89
+#: src/intro.md:100
 msgid ""
 "ファイル名を持つコードブロックは、そのファイルに対して新たに追加されるコード"
 "を意味します。 このような場合 `...` は既存のコードを省略するのに使われます:"
@@ -381,7 +423,7 @@ msgstr ""
 "A code block with a file name means new code to be added for that file. In "
 "such cases `... ` is used to omit existing code:"
 
-#: src/intro.md:100
+#: src/intro.md:111
 msgid ""
 "ファイル名に `.tmp.` が含まれるコードは、実験等のために一時的に追加するコード"
 "であることを意味します。 このようなコードはチャプターの終了時に削除されるべき"
@@ -390,7 +432,7 @@ msgstr ""
 "Codes with `.tmp.` in the filename mean that they are added temporarily for "
 "experimentation. Such code should be removed at the end of the chapter:"
 
-#: src/intro.md:107
+#: src/intro.md:118
 msgid ""
 "Zig の `struct` や `enum` のフィールドは、本文中で `.field` のように表記しま"
 "す。 例として、以下のような構造体のフィールドは `.one` または `Some.one` のよ"
@@ -399,7 +441,7 @@ msgstr ""
 "Zig's `struct` and `enum` fields are denoted in the text as `.field`. As an "
 "example, the following structure fields is denoted as `.one` or `Some.one`:"
 
-#: src/intro.md:117
+#: src/intro.md:128
 msgid ""
 "レジスタ等において、Nビット目からMビット目を表す場合には `Register[M:N]` のよ"
 "うに表記します。 この際、Mビット目を含むことに注意してください。"
@@ -407,35 +449,35 @@ msgstr ""
 "For registers, the N-th through M-th bits are represented as `Register[M:"
 "N]`. In this case, note that the M-th bit is included."
 
-#: src/intro.md:120
+#: src/intro.md:131
 msgid "改善・修正"
 msgstr "Contributions"
 
-#: src/intro.md:122
+#: src/intro.md:133
 msgid "以下のような場合には、筆者に対して更新をリクエストしてください:"
 msgstr "Please request an update from the author if you"
 
-#: src/intro.md:124
+#: src/intro.md:135
 msgid "説明に技術的な誤りがある"
 msgstr "Found a technical error in the description"
 
-#: src/intro.md:125
+#: src/intro.md:136
 msgid "分かりにくい表現がある"
 msgstr "Found an expression that is difficult to understand"
 
-#: src/intro.md:126
+#: src/intro.md:137
 msgid "誤字・脱字等を見つけた"
 msgstr "Found typo or omissions"
 
-#: src/intro.md:127
+#: src/intro.md:138
 msgid "提示されたコードが動かない、または分かりにくい"
 msgstr "Found that code presented does not work or is difficult to understand"
 
-#: src/intro.md:128
+#: src/intro.md:139
 msgid "本シリーズでは扱っていない内容を新たに扱ってほしい"
 msgstr "Like to see new content that is still not covered in this series"
 
-#: src/intro.md:130
+#: src/intro.md:141
 msgid ""
 "更新リクエストは [GitHub](https://github.com/smallkirby/writing-hypervisor-"
 "in-zig) の Issue や Pull Request で受け付けています。 PR を作る前に Issue を"
@@ -446,14 +488,14 @@ msgstr ""
 "com/smallkirby/writing-hypervisor-in-zig). It is not necessary to create an "
 "Issue before creating a PR. We welcome any kind of requests and fixes."
 
-#: src/intro.md:134 src/bootloader/hello_uefi.md:366
+#: src/intro.md:145 src/bootloader/hello_uefi.md:366
 #: src/bootloader/uefi_log.md:410 src/kernel/pic.md:600
-#: src/vmm/vmentry_vmexit.md:658 src/vmm/ept.md:779 src/vmm/linux_boot.md:740
+#: src/vmm/vmentry_vmexit.md:659 src/vmm/ept.md:779 src/vmm/linux_boot.md:740
 #: src/vmm/io.md:742
 msgid "References"
 msgstr "References"
 
-#: src/intro.md:136
+#: src/intro.md:147
 msgid ""
 "本シリーズにおける主な参考文献は [Intel® 64 and IA-32 Architectures Software "
 "Developer Manuals](https://www.intel.com/content/www/us/en/developer/"
@@ -470,15 +512,15 @@ msgstr ""
 "extracted from SDM are the property of [© Intel Corporation](https://www."
 "intel.com/)."
 
-#: src/intro.md:141
+#: src/intro.md:152
 msgid "SDM 以外には、以下の情報を参考にしています:"
 msgstr "Other than SDM, the following information is available for reference:"
 
-#: src/intro.md:143 src/bootloader/hello_uefi.md:44
+#: src/intro.md:154 src/bootloader/hello_uefi.md:44
 msgid "[BitVisor](https://www.bitvisor.org/)"
 msgstr "[BitVisor](https://www.bitvisor.org/)"
 
-#: src/intro.md:144
+#: src/intro.md:155
 msgid ""
 "[ZystemOS/pluto: An x86 kernel written in Zig](https://github.com/ZystemOS/"
 "pluto)"
@@ -486,7 +528,7 @@ msgstr ""
 "[ZystemOS/pluto: An x86 kernel written in Zig](https://github.com/ZystemOS/"
 "pluto)"
 
-#: src/intro.md:145
+#: src/intro.md:156
 msgid ""
 "[AndreaOrru/zen : Experimental operating system written in Zig](https://"
 "github.com/AndreaOrru/zen)"
@@ -494,7 +536,7 @@ msgstr ""
 "[AndreaOrru/zen : Experimental operating system written in Zig](https://"
 "github.com/AndreaOrru/zen)"
 
-#: src/intro.md:146
+#: src/intro.md:157
 msgid ""
 "[nuta/resea: A microkernel-based hackable operating system.](https://github."
 "com/nuta/resea)"
@@ -502,7 +544,7 @@ msgstr ""
 "[nuta/resea: A microkernel-based hackable operating system.](https://github."
 "com/nuta/resea)"
 
-#: src/intro.md:147
+#: src/intro.md:158
 msgid ""
 "[ハイパーバイザの作り方](https://syuu1228.github.io/"
 "howto_implement_hypervisor/)"
@@ -510,11 +552,11 @@ msgstr ""
 "[ハイパーバイザの作り方](https://syuu1228.github.io/"
 "howto_implement_hypervisor/)"
 
-#: src/intro.md:148
+#: src/intro.md:159
 msgid "[ゼロからの OS 自作入門](https://zero.osdev.jp/)"
 msgstr "[ゼロからの OS 自作入門](https://zero.osdev.jp/)"
 
-#: src/intro.md:149
+#: src/intro.md:160
 msgid ""
 "[5 Days to Virtualization: A Series on Hypervisor Development - Reverse "
 "Engineering](https://revers.engineering/7-days-to-virtualization-a-series-on-"
@@ -524,7 +566,7 @@ msgstr ""
 "Engineering](https://revers.engineering/7-days-to-virtualization-a-series-on-"
 "hypervisor-development/)"
 
-#: src/intro.md:150
+#: src/intro.md:161
 msgid ""
 "[Hypervisor From Scratch - Rayanfam Blog](https://rayanfam.com/topics/"
 "hypervisor-from-scratch-part-1/)"
@@ -532,27 +574,27 @@ msgstr ""
 "[Hypervisor From Scratch - Rayanfam Blog](https://rayanfam.com/topics/"
 "hypervisor-from-scratch-part-1/)"
 
-#: src/intro.md:151
+#: src/intro.md:162
 msgid "[Writing OS in Rust](https://os.phil-opp.com)"
 msgstr "[Writing OS in Rust](https://os.phil-opp.com)"
 
-#: src/intro.md:153
+#: src/intro.md:164
 msgid "その他局所的に参考にした情報については各ページに記載します。"
 msgstr "Other referenced information is provided on each page."
 
-#: src/intro.md:155 src/license.md:1
+#: src/intro.md:166 src/license.md:1
 msgid "ライセンス"
 msgstr "License"
 
-#: src/intro.md:157
+#: src/intro.md:168
 msgid "[ライセンス](./license.md) を参照してください。"
 msgstr "See [License](./license.md)."
 
-#: src/intro.md:159
+#: src/intro.md:170
 msgid "プライバシー"
 msgstr "Privacy"
 
-#: src/intro.md:161
+#: src/intro.md:172
 msgid ""
 "本ウェブサイトは Google Analytics を利用してアクセス解析をしています。 無効化"
 "するには、ブラウザの設定から本サイトのクッキーを無効化してください。"
@@ -560,31 +602,31 @@ msgstr ""
 "This website uses Google Analytics for access analysis. You can disable "
 "cookies for this site in your browser settings."
 
-#: src/intro.md:164
+#: src/intro.md:175
 msgid "Changelog"
 msgstr "Changelog"
 
-#: src/intro.md:166
+#: src/intro.md:177
 msgid "Date"
 msgstr "Date"
 
-#: src/intro.md:166
+#: src/intro.md:177
 msgid "Log"
 msgstr "Log"
 
-#: src/intro.md:168
+#: src/intro.md:179
 msgid "2025.06.08"
 msgstr ""
 
-#: src/intro.md:168
+#: src/intro.md:179
 msgid "英語バージョン公開"
 msgstr "Translated to English"
 
-#: src/intro.md:169
+#: src/intro.md:180
 msgid "2024.11.17"
 msgstr "2024.11.17"
 
-#: src/intro.md:169
+#: src/intro.md:180
 msgid "公開"
 msgstr "Published"
 
@@ -689,7 +731,24 @@ msgstr ""
 "guaranteed. Versions after 0.13.0 may work with some modifications, but this "
 "series focuses only on 0.13.0, the latest version at the time of writing."
 
-#: src/setup.md:39
+#: src/setup.md:39 src/setup.md:66 src/bootloader/load_kernel.md:120
+#: src/bootloader/jump_to_ymir.md:205
+msgid "\\[!WARNING\\]"
+msgstr ""
+
+#: src/setup.md:41
+msgid ""
+"リファレンス実装である [Ymir の `master` ブランチ](https://github.com/"
+"smallkirby/ymir) では 0.13.0 よりも新しいバージョンを使っていることに注意して"
+"ください。 本ブログ及びそこで使う `whiz-*` ブランチでは Zig 0.13.0 を使います"
+"が、`master` ブランチでは今後も Zig のバージョンが更新されていきます。"
+msgstr ""
+"Note that the reference implementation, [Ymir's `master` branch](https://"
+"github.com/smallkirby/ymir), uses a version newer than 0.13.0. While this "
+"blog and the corresponding `whiz-*` branches use Zig 0.13.0, the master "
+"branch will continue to be updated to newer Zig versions in the future."
+
+#: src/setup.md:44
 msgid ""
 "Zig には公式のバージョンマネージャが存在しません。 以下のどちらかの方法で "
 "Zig 0.13.0 をインストールしてください。"
@@ -697,7 +756,7 @@ msgstr ""
 "There is no official version manager for Zig. Please install Zig 0.13.0 in "
 "either of the following ways."
 
-#: src/setup.md:42
+#: src/setup.md:47
 msgid ""
 "1つ目がサードパーティ製のバージョンマネージャを使う方法です。 サードパーティ"
 "製の Zig バージョンマネージャのひとつに [tristanisham/zvm](https://github."
@@ -708,13 +767,13 @@ msgstr ""
 "[tristanisham/zvm](https://github.com/tristanisham/zvm). After installing "
 "zvm following the iREADME, install Zig 0.13.0 with the following command:"
 
-#: src/setup.md:51
+#: src/setup.md:56
 msgid ""
 "zvm にこだわる必要はないため、お好みのバージョンマネージャ[^1] を使ってくださ"
 "い。"
 msgstr "No need to stick with zvm. Use the version manager[^1] of your choice."
 
-#: src/setup.md:53
+#: src/setup.md:58
 msgid ""
 "2つ目が公式のリリースページを使う方法です。 Zig の[リリースページ](https://"
 "ziglang.org/download/)から 0.13.0 のバイナリをダウンロードし、パスが通ってい"
@@ -724,11 +783,11 @@ msgstr ""
 "binary from Zig's [release page](https://ziglang.org/download/) and place it "
 "in an arbitrary directory in PATH."
 
-#: src/setup.md:56
+#: src/setup.md:61
 msgid "Language Server"
 msgstr "Language Server"
 
-#: src/setup.md:58
+#: src/setup.md:63
 msgid ""
 "Zig の language server である [ZLS](https://github.com/zigtools/zls) を使用し"
 "ます。 様々なエディタで利用可能な拡張が存在するため、[Zigのツールガイド]"
@@ -738,20 +797,15 @@ msgstr ""
 "are extensions available for various editors, so follow the [Zig's Tool "
 "Guide](https://ziglang.org/learn/tools/) to set up for your environment."
 
-#: src/setup.md:61 src/bootloader/load_kernel.md:120
-#: src/bootloader/jump_to_ymir.md:205
-msgid "\\[!WARNING\\]"
-msgstr ""
-
-#: src/setup.md:63
+#: src/setup.md:68
 msgid "利用する Zig と ZLS のバージョンは必ず一致させてください[^2]。"
 msgstr "You have to make sure that the version of Zig and ZLS is same[^2]。"
 
-#: src/setup.md:65
+#: src/setup.md:70
 msgid "OVMF"
 msgstr "OVMF"
 
-#: src/setup.md:67
+#: src/setup.md:72
 msgid ""
 "[OVMF](https://github.com/tianocore/tianocore.github.io/wiki/OVMF) は VM 上"
 "で UEFI をサポートするプロジェクト[^3]です。 QEMU ではデフォルトで [SeaBIOS]"
@@ -768,11 +822,11 @@ msgstr ""
 "in 64-bit mode. This allows the bootloader to start running in [Long Mode]"
 "(https://en.wikipedia.org/wiki/Long_mode)."
 
-#: src/setup.md:72
+#: src/setup.md:77
 msgid "Ubuntu を使っている場合には以下のコマンドでインストールできます:"
 msgstr "Ubuntu users can install it with the following command:"
 
-#: src/setup.md:78
+#: src/setup.md:83
 msgid ""
 "他の OS やパッケージマネージャを利用している場合には、それぞれの方法でインス"
 "トールしてください。 また、ソースコードからのビルドも可能です。 その場合には "
@@ -784,12 +838,12 @@ msgstr ""
 "follow the instructions in TianoCore's [GitHub Wiki](https://github.com/"
 "tianocore/tianocore.github.io/wiki/How-to-build-OVMF)."
 
-#: src/setup.md:82
+#: src/setup.md:87
 msgid ""
 "例として、他には [zigup](https://github.com/marler8997/zigup) があります。"
 msgstr "Another example is [zigup](https://github.com/marler8997/zigup)."
 
-#: src/setup.md:83
+#: src/setup.md:88
 msgid ""
 "バージョンを一致させないと ZLS が正常に動作しません (e.g. [\"ZLS not pulling "
 "in information from dependencies\"](https://ziggit.dev/t/zls-not-pulling-in-"
@@ -799,7 +853,7 @@ msgstr ""
 "[“ZLS not pulling in information from dependencies”](https://ziggit.dev/t/"
 "zls-not-pulling-in-information- from-dependencies/4179))"
 
-#: src/setup.md:84
+#: src/setup.md:89
 msgid ""
 "[Open Virtual Machine Firmware (OVMF) Status Report](https://access.redhat."
 "com/articles/1434903)"
@@ -1455,7 +1509,7 @@ msgstr ""
 #: src/kernel/paging.md:573 src/kernel/panic.md:156
 #: src/kernel/general_allocator.md:271 src/kernel/pic.md:587
 #: src/vmm/vmx_root.md:725 src/vmm/vmcs.md:682 src/vmm/vmlaunch.md:1104
-#: src/vmm/vmentry_vmexit.md:624 src/vmm/ept.md:770 src/vmm/linux_boot.md:728
+#: src/vmm/vmentry_vmexit.md:625 src/vmm/ept.md:770 src/vmm/linux_boot.md:728
 #: src/vmm/cpuid.md:545 src/vmm/msr.md:444 src/vmm/cr.md:639 src/vmm/io.md:652
 #: src/vmm/intr_injection.md:481 src/vmm/initramfs.md:212 src/vmm/vmcall.md:135
 msgid "まとめ"
@@ -3490,15 +3544,6 @@ msgstr ""
 "physical address by subtracting `0xFFFFFFFF80000000` from its virtual "
 "address."
 
-#: src/bootloader/load_kernel.md:81 src/bootloader/load_kernel.md:305
-#: src/bootloader/jump_to_ymir.md:315 src/kernel/gdt.md:81
-#: src/kernel/gdt.md:116 src/kernel/gdt.md:420 src/kernel/interrupt.md:262
-#: src/kernel/interrupt.md:339 src/kernel/interrupt.md:443
-#: src/kernel/page_allocator.md:111 src/kernel/page_allocator.md:352
-#: src/kernel/paging.md:150 src/kernel/panic.md:7 src/vmm/vmcall.md:31
-msgid "\\[!NOTE\\]"
-msgstr ""
-
 #: src/bootloader/load_kernel.md:83
 msgid ""
 "Ymir のリンカスクリプトとセグメント構成について、詳しくは [カーネルの起動]"
@@ -4087,7 +4132,7 @@ msgid ""
 "よって、もとのマップをコピーするためのバッファが必要となります。 バッファがど"
 "れだけ必要かは利用されているメモリブロックの個数に依存しますが、今回は固定で4"
 "ページ分のバッファを用意します[^1]。 これだけあればおそらく十分でしょう。 "
-"`getMemoryMap()` は、`MemoryMap` を引数にとった上で、その中身を埋めて返しま"
+"`getMemomryMap()` は、`MemoryMap` を引数にとった上で、その中身を埋めて返しま"
 "す。 引数として渡すマップには、用意したバッファのアドレスとサイズだけを指定す"
 "ればOKです。"
 msgstr ""
@@ -6896,7 +6941,7 @@ msgstr "Overview of Interrupt and Exception"
 
 #: src/kernel/interrupt.md:31
 msgid ""
-"CPU は **割り込み (Interrupts)** と **例外 (Exceptions)**  という2つのイベン"
+"CPU は **割り込み (Interrupts)** と **例外 (Excetpions)**  という2つのイベン"
 "ト[^call]を受け取ることができます。 割り込みはハードウェアからの信号によって"
 "任意のタイミングで発生[^timing]するのに対し、 例外は CPU が instruction を実"
 "行するタイミングでエラーを検知して発生します。 なお、どちらもハンドラが呼び出"
@@ -7366,7 +7411,7 @@ msgstr "Call it from `kernelMain()` to initialize:"
 #: src/kernel/interrupt.md:236
 msgid ""
 "これで空の IDT を設定できました。 実際に例外を起こしてみましょう。 Zig で定数"
-"値を使って `#DE: Divide Error` を引き起こすのは少し面倒なため、今回は `#GP: "
+"値を使って `#DE: Devide Error` を引き起こすのは少し面倒なため、今回は `#GP: "
 "General Protection Fault` を引き起こしてみます:"
 msgstr ""
 "With this, the empty IDT is set up. Let's trigger an exception to test it. "
@@ -9090,7 +9135,7 @@ msgid ""
 "も、それらはページテーブルをマップするものとして扱ってしまうためバグります。 "
 "ただし、Surtr はカーネルのロードで 4KiB だけを使うため、この関数の前提は満た"
 "されます。 途中で存在しない (`present == false`) ページエントリが見つかった場"
-"合には graceful にエラーを返すようにしています。"
+"合には gracefull にエラーを返すようにしています。"
 msgstr ""
 "This function implicitly assumes that the specified virtual address is "
 "mapped to a 4KiB physical page. If a 1GiB or 2MiB page happens to be mapped "
@@ -9427,7 +9472,7 @@ msgstr ""
 "easier."
 
 #: src/kernel/general_allocator.md:1
-msgid "General-Purpose Memory Allocator"
+msgid "General-Purpose Memomry Allocator"
 msgstr "General-Purpose Memory Allocator"
 
 #: src/kernel/general_allocator.md:3
@@ -9500,7 +9545,7 @@ msgstr ""
 
 #: src/kernel/general_allocator.md:35
 msgid ""
-"各 bin は固定サイズの領域 **chunk** の連結リストを保持します。 Chunk は 利用"
+"各 bin は固定サイズの領域 **chunk** の連結リストを保持します。 Chunck は 利用"
 "中 (_in-use_) か 割当て可能 (_free_) のどちらかの状態を持ちます。 Free な "
 "chunk は次の chunk へのポインタを持ち、全体としてリストを構成します。 アロ"
 "ケータは利用中の chunk は管理しません。"
@@ -10072,7 +10117,7 @@ msgstr "ICW3"
 
 #: src/kernel/pic.md:107
 msgid ""
-"ICW2 に続く CW は ICW3 として解釈される。 Primary PIC に対して送信する場合は、"
+"ICW2 に続く CW は ICW3 として解釈される。 Primay PIC に対して送信する場合は、"
 "各 IRQ が Secondary にカスケードされているかどうかをビットマップで設定する。 "
 "Secondary PIC に対して送信する場合は、カスケードされている Primary PIC の "
 "_Cascade ID_ を設定する。"
@@ -11829,7 +11874,7 @@ msgstr ""
 "include the following:"
 
 #: src/vmm/vmcs.md:96 src/vmm/vmcs.md:108
-msgid "Debug Register を保存するかどうか"
+msgid "Debug Rgister を保存するかどうか"
 msgstr "Whether DR (Debug Registers) are saved"
 
 #: src/vmm/vmcs.md:97
@@ -13573,7 +13618,7 @@ msgstr ""
 "them in order. Since RAX will hold the address of `.guest_regs`, we set RAX "
 "last:"
 
-#: src/vmm/vmentry_vmexit.md:402
+#: src/vmm/vmentry_vmexit.md:403
 msgid ""
 "ホストの保存とゲストの復元ができたため、いよいよ VM Entry を実行します。 この"
 "時点で `RFLAGS.ZF` には VMLAUNCH と VMRESUME のどちらを実行するべきかが格納さ"
@@ -13584,7 +13629,7 @@ msgstr ""
 "VMLAUNCH or VMRESUME should be executed. We call the appropriate instruction "
 "based on this flag:"
 
-#: src/vmm/vmentry_vmexit.md:417
+#: src/vmm/vmentry_vmexit.md:418
 msgid ""
 "VM Entry が成功すれば処理はゲストに移るため、このあとの命令が実行されることは"
 "ありません。 VMX 拡張命令が失敗した場合には続く命令が実行されます。 そのた"
@@ -13595,7 +13640,7 @@ msgstr ""
 "the subsequent instructions will run. Therefore, error handling is "
 "implemented immediately after:"
 
-#: src/vmm/vmentry_vmexit.md:443
+#: src/vmm/vmentry_vmexit.md:444
 msgid ""
 "`asmVmEntry()` は成功時に`0`・失敗時に`1`を返すというオレオレ calling "
 "convention にしているため、ここでは`1`をセットします。 先ほどの図で示したとお"
@@ -13608,11 +13653,11 @@ msgstr ""
 "the callee-saved registers. We simply POP to discard the former, then "
 "restore the latter into their respective registers."
 
-#: src/vmm/vmentry_vmexit.md:447
+#: src/vmm/vmentry_vmexit.md:448
 msgid "VM Exit"
 msgstr "VM Exit"
 
-#: src/vmm/vmentry_vmexit.md:449
+#: src/vmm/vmentry_vmexit.md:450
 msgid ""
 "ゲストが何らかの要因で VM Exit すると、VMCS Host-State に設定した RIP に処理"
 "が移ります。 Ymir では `asmVmExit()` をセットするため、この関数にホストへの復"
@@ -13627,7 +13672,7 @@ msgstr ""
 "`&.guest_regs` at the top. Since this is used to save the guest state, we "
 "first retrieve it:"
 
-#: src/vmm/vmentry_vmexit.md:471
+#: src/vmm/vmentry_vmexit.md:472
 msgid ""
 "RAX はスクラッチレジスタとして使います。 ゲストの RAX を失うわけにはいかない"
 "ため、`&.guest_regs` を取り出す前に RAX をスタックに PUSH しています。"
@@ -13635,11 +13680,11 @@ msgstr ""
 "RAX is used as a scratch register. Since we cannot lose the guest's RAX, we "
 "push RAX onto the stack before retrieving `&.guest_regs`."
 
-#: src/vmm/vmentry_vmexit.md:474
+#: src/vmm/vmentry_vmexit.md:475
 msgid "続いてゲストのレジスタを `guest_regs` に保存します:"
 msgstr "Next, we save the guest registers into `guest_regs`:"
 
-#: src/vmm/vmentry_vmexit.md:537
+#: src/vmm/vmentry_vmexit.md:538
 msgid ""
 "ゲストの状態を保存したら、スタックに積んでいたゲストの callee-saved レジスタ"
 "を復元します。"
@@ -13647,7 +13692,7 @@ msgstr ""
 "After saving the guest state, we restore the host's callee-saved registers "
 "on the stack:"
 
-#: src/vmm/vmentry_vmexit.md:552
+#: src/vmm/vmentry_vmexit.md:553
 msgid ""
 "この時点でスタックの最も上には `vmentry()` が CALL の際に積んだ RIP がありま"
 "す。 よって、ここで RET すると `vmentry()` に復帰することができます。 呼び出"
@@ -13659,11 +13704,11 @@ msgstr ""
 "`vmentry()`. **The caller can continue as if `asmVmEntry()` had returned "
 "normally from a function call**:"
 
-#: src/vmm/vmentry_vmexit.md:565
+#: src/vmm/vmentry_vmexit.md:566
 msgid "Exit Handler"
 msgstr "Exit Handler"
 
-#: src/vmm/vmentry_vmexit.md:567
+#: src/vmm/vmentry_vmexit.md:568
 msgid ""
 "以上で VM Entry / VM Exit を経て `vmentry()` → `loop()` に復帰することができ"
 "ました。 このあとは、VM Exit した要因に応じて適切な処理をしてあげます。 VM "
@@ -13674,7 +13719,7 @@ msgstr ""
 "performed depending on the cause of the VM Exit. Let's define the VM Exit "
 "handler function:"
 
-#: src/vmm/vmentry_vmexit.md:592
+#: src/vmm/vmentry_vmexit.md:593
 msgid ""
 "引数には `ExitInfo` 構造体を受け取ります。 この中には VM Exit した大まかな要"
 "因が記録されているため、この要因に応じて `switch` します。 現在はとりあえず "
@@ -13686,7 +13731,7 @@ msgstr ""
 "handle different causes. For now, we only implement handling for VM Exit "
 "caused by HLT, simply logging that a HLT occurred."
 
-#: src/vmm/vmentry_vmexit.md:596
+#: src/vmm/vmentry_vmexit.md:597
 msgid ""
 "`ExitInfo` は VMCS **VM-Exit Information** カテゴリの **Basic VM-Exit "
 "Information** フィールドから取得することができます:"
@@ -13694,7 +13739,7 @@ msgstr ""
 "`ExitInfo` can be obtained from the VMCS **VM-Exit Information** category's "
 "**Basic VM-Exit Information** field:"
 
-#: src/vmm/vmentry_vmexit.md:608
+#: src/vmm/vmentry_vmexit.md:609
 msgid ""
 "Exit ハンドラを呼び出したあとは、`while` ループの先頭に戻り再び VM Entry をし"
 "ます。 ひたすらにこの繰り返しです。"
@@ -13702,7 +13747,7 @@ msgstr ""
 "After calling the exit handler, control returns to the beginning of the "
 "`while` loop, and VM Entry is executed again. This cycle repeats endlessly."
 
-#: src/vmm/vmentry_vmexit.md:611
+#: src/vmm/vmentry_vmexit.md:612
 msgid ""
 "最後に、`setupHostState()` で `vmwrite()` を使って VM Exit 時のエントリポイン"
 "トを設定しておきます:"
@@ -13710,7 +13755,7 @@ msgstr ""
 "Finally, in `setupHostState()`, we use `vmwrite()` to set the entry point "
 "for VM Exit:"
 
-#: src/vmm/vmentry_vmexit.md:626
+#: src/vmm/vmentry_vmexit.md:627
 msgid ""
 "それでは、実装した VM Entry / VM Exit を用いてゲストを実行してみましょう。 "
 "VMCS Execution Controls の Primary Processor-based Controls における `.hlt` "
@@ -13722,7 +13767,7 @@ msgstr ""
 "Controls to `true`, so that a VM Exit occurs on HLT instructions. Running "
 "the guest will produce output similar to the following:"
 
-#: src/vmm/vmentry_vmexit.md:644
+#: src/vmm/vmentry_vmexit.md:645
 msgid ""
 "ひたすらに `HLT` が出力されます。 これは VM Entry / VM Exit ループが正常に動"
 "作していることを示しています。 また、ホストが VM Exit ハンドラにおいて出力を"
@@ -13736,7 +13781,7 @@ msgstr ""
 "properly saved and restored. In other words, this confirms that those "
 "mechanisms are also working as intended."
 
-#: src/vmm/vmentry_vmexit.md:649
+#: src/vmm/vmentry_vmexit.md:650
 msgid ""
 "ゲストの状態が正しく保存・復元されているかどうかが気になる人は、`loop()` の "
 "`while` に入る前に `guest_regs.rax = 0xDEADBEEF` のようにゲストレジスタの値を"
@@ -13751,7 +13796,7 @@ msgstr ""
 "register state via QEMU monitor at that point should show that RAX holds "
 "`0xDEADBEEF`."
 
-#: src/vmm/vmentry_vmexit.md:653
+#: src/vmm/vmentry_vmexit.md:654
 msgid ""
 "本チャプターでは VM Entry / VM Exit の処理を適切に実装することで、何回も VM "
 "Entry を繰り返すことができるようになりました。 前チャプターでは単発の "
@@ -13765,7 +13810,7 @@ msgstr ""
 "this chapter involved writing a lot of assembly code directly, rest assured "
 "that from here on, assembly will rarely appear."
 
-#: src/vmm/vmentry_vmexit.md:660
+#: src/vmm/vmentry_vmexit.md:661
 msgid ""
 "[https://zenn.dev/tanakmura/articles/80391e3284c6bb](https://zenn.dev/"
 "tanakmura/articles/80391e3284c6bb)"
@@ -13773,7 +13818,7 @@ msgstr ""
 "[https://zenn.dev/tanakmura/articles/80391e3284c6bb](https://zenn.dev/"
 "tanakmura/articles/80391e3284c6bb)"
 
-#: src/vmm/vmentry_vmexit.md:662
+#: src/vmm/vmentry_vmexit.md:663
 msgid ""
 "「サポートしない」というのは利用した場合に未定義動作になるという意味ではな"
 "く、システムとしてこれらの機能を利用できなくするという意味です。 これらの機能"
@@ -13786,7 +13831,7 @@ msgstr ""
 "and the XCR0 register, but Ymir can arbitrarily manipulate these values "
 "presented to the guest."
 
-#: src/vmm/vmentry_vmexit.md:664
+#: src/vmm/vmentry_vmexit.md:665
 msgid ""
 "Callee-saved なレジスタを保存しているのに `vmentry()` 内で caller-saved なレ"
 "ジスタ達を [clobber](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm."
@@ -18543,8 +18588,8 @@ msgstr ""
 
 #: src/vmm/intr_injection.md:46
 msgid ""
-"![Overview of IRQ sharing between Ymir and Guest OS.](../assets/drawio/"
-"irq_share.drawio.png) _Overview of IRQ sharing between Ymir and Guest OS._"
+"![Overview of IRQ sharing betwenn Ymir and Guest OS.](../assets/drawio/"
+"irq_share.drawio.png) _Overview of IRQ sharing betwenn Ymir and Guest OS._"
 msgstr ""
 "![Overview of IRQ sharing between Ymir and Guest OS.](../assets/drawio/"
 "irq_share.drawio.png) _Overview of IRQ sharing between Ymir and Guest OS._"
