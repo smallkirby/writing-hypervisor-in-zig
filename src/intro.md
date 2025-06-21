@@ -46,6 +46,17 @@ Ymir は以下の特徴を持ちます:
 
 <img src="assets/ymir.gif" alt="Ymir" id="ymir-gif"/>
 
+<br/>
+
+> [!NOTE]
+>
+> 本ブログで実装する hypervisor の完成形を実際に手元で動かしたい場合には、以下のいずれかのブランチを利用してください:
+>
+> | Branch | Zig version |
+> |---|---|
+> | [`whiz-vmm-vmc`](https://github.com/smallkirby/ymir/tree/whiz-vmm-vmc) | 0.13.0 |
+> | [`master`](https://github.com/smallkirby/ymir) | Follow the README |
+
 ## 対象読者
 
 本シリーズは以下のような読者を想定しています:
