@@ -2,3 +2,4 @@
 /node_modules
 /po/messages.pot
 /po/**/*.mo
+*~
