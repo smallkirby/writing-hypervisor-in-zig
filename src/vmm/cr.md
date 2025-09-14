@@ -162,6 +162,9 @@ MOV to か from かは Exit Qualification を取得して判断する必要が�
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
+const qual = vmx.qual;
+const cr = @import("cr.zig");
+
 fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
     switch (exit_info.basic_reason) {
         .cr => {
@@ -179,6 +182,11 @@ CR Access を原因とする VM Exit が発生したら、先ほどの関数を�
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
+const Vcpu = @import("vcpu.zig").Vcpu;
+const vmx = @import("common.zig");
+const VmxError = vmx.VmxError;
+const log = @import("std").log.scoped(.cr);
+
 pub fn handleAccessCr(vcpu: *Vcpu, qual: QualCr) VmxError!void {
     switch (qual.access_type) {
         .mov_to => ...
@@ -206,6 +214,9 @@ CR の値をゲストにそのままパススルーするためのヘルパー�
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
+const vmcs = @import("vmcs.zig");
+const QualCr = vmx.qual.QualCr;
+
 fn passthroughRead(vcpu: *Vcpu, qual: QualCr) VmxError!void {
     const value = switch (qual.index) {
         3 => try vmx.vmread(vmcs.guest.cr3),
@@ -325,6 +336,8 @@ fn passthroughWrite(vcpu: *Vcpu, qual: QualCr) VmxError!void {
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/cr.zig
+const am = @import("../asm.zig");
+
 fn adjustCr0(value: u64) u64 {
     var ret: u64 = @bitCast(value);
     const vmx_cr0_fixed0: u32 = @truncate(am.readMsr(.vmx_cr0_fixed0));
@@ -412,6 +425,49 @@ switch (qual.access_type) {
     ...
 }
 ```
+
+忘れないで:
+
+```ymir/arch/x86/vmx/vcpu.zig
+pub const Vcpu = struct {
+    ...
+    ia32e_enabled: bool = false;
+    ...
+}
+```
+
+<details>
+<summary>Eferの定義:</summary>
+
+```ymir/arch/x86/asm.zig
+/// IA32_EFER MSR.
+pub const Efer = packed struct(u64) {
+    /// System call extensions.
+    sce: bool,
+    /// ReservedZ.
+    reserved1: u7 = 0,
+    /// Long mode enable.
+    lme: bool,
+    ///
+    ignored: bool,
+    /// Long mode active.
+    lma: bool,
+    /// No execute enable.
+    nxe: bool,
+    /// Secure virtual machine enable.
+    svme: bool,
+    /// Long mode segment limit enable.
+    lmsle: bool,
+    /// Fast FXSAVE/FXRSTOR.
+    ffxsr: bool,
+    /// Translation cache extension.
+    tce: bool,
+    /// ReservedZ.
+    reserved2: u48 = 0,
+};
+```
+
+</details>
 
 ### MOV to CR3
 
@@ -524,7 +580,10 @@ MOV to CR3 の最後に、INVVPID を使って Combined Mappings をフラッシ
                 ...
                 am.invvpid(.single_context, vcpu.vpid);
             },
-            ...
+            else => {
+                log.err("Unimplemented CR access: {?}", .{qual});
+                vcpu.abort();
+            },
         }
     },
 
@@ -595,7 +654,7 @@ Linux がブートし始めています！
 `Linux version...` 以降のログは、展開されたカーネルのログです。
 ブートログから分かることがいくつかありますね:
 
-- `vendo_id` が `YmirYmirYmir` となっている。これは CPUID で指定した値。
+- `vendor_id` が `YmirYmirYmir` となっている。これは CPUID で指定した値。
 - `Command line` に `BootParams` で指定した文字列がそのまま表示されている。
 - `BIOS-e820` が表示されている。これは `BootParams` で指定した E820 マップ。
 - `X86/PAT: PAT not supported by the CPU.` と表示されている。これも CPUID で指定したから。
@@ -618,7 +677,7 @@ Linux がブートし始めています！
 ```ymir/arch/x86/vmx/vcpu.zig
 fn setupExecCtrls(vcpu: *Vcpu, _: Allocator) VmxError!void {
     ...
-    ppb_exec_ctrl2.enable_invpcid = false;
+    ppb_exec_ctrl2.enable_invpcid = true;
     ...
 }
 ```

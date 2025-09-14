@@ -81,6 +81,12 @@ Qualification の `.string` で表現されるような [OUTS](https://www.felix
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
+const std = @import("std");
+const Vcpu = @import("vcpu.zig").Vcpu;
+const QualIo = @import("common.zig").qual.QualIo;
+const VmxError = @import("common.zig").VmxError;
+const log = std.log.scoped(.io);
+
 pub fn handleIo(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     return switch (qual.direction) {
         .in => try handleIoIn(vcpu, qual),
@@ -113,6 +119,10 @@ VM Exit ハンドラである `Vcpu.handleExit()` では、Exit Reason が `.io`
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vcpu.zig
+const io = @import("io.zig");
+...
+pub const Vcpu = struct {
+    ...
     fn handleExit(self: *Self, exit_info: vmx.ExitInfo) VmxError!void {
         switch (exit_info.basic_reason) {
             .io => {
@@ -242,11 +252,23 @@ pub const Serial = struct {
 };
 ```
 
+```ymir/arch/x86/vmx/vcpu.zig
+pub const Vcpu = struct {
+    ...
+    /// 8250 serial port.
+    serial: io.Serial = io.Serial.new(),
+
+    ...
+};
+```
+
 まずは読み込みアクセスについて仮想化します。
 読み込みで使われるレジスタは、RX / DLL / IER / DLH / IIR / LCR / MCR / LSR / MSR / SR です:
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
+const am = @import("../asm.zig");
+
 fn handleSerialIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     const regs = &vcpu.guest_regs;
     switch (qual.port) {
@@ -287,7 +309,7 @@ fn handleSerialIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/io.zig
-const sr = arch.serial;
+const sr = @import("../serial.zig");
 
 fn handleSerialOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     const regs = &vcpu.guest_regs;
@@ -386,6 +408,49 @@ fn handlePitOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
 }
 ```
 
+<details>
+<summary>命令の定義: `in`、`ink`、`out`、`out`:</summary>
+
+```ymir/arch/x86/asm.zig
+...
+pub inline fn inw(port: u16) u16 {
+    return asm volatile (
+        \\inw %[port], %[ret]
+        : [ret] "={ax}" (-> u16),
+        : [port] "{dx}" (port),
+    );
+}
+
+pub inline fn inl(port: u16) u32 {
+    return asm volatile (
+        \\inl %[port], %[ret]
+        : [ret] "={eax}" (-> u32),
+        : [port] "{dx}" (port),
+    );
+}
+...
+pub inline fn outw(value: u16, port: u16) void {
+    asm volatile (
+        \\outw %[value], %[port]
+        :
+        : [value] "{ax}" (value),
+          [port] "{dx}" (port),
+    );
+}
+
+pub inline fn outl(value: u32, port: u16) void {
+    asm volatile (
+        \\outl %[value], %[port]
+        :
+        : [value] "{eax}" (value),
+          [port] "{dx}" (port),
+    );
+}
+...
+```
+
+</details>
+
 このへんは、前述した I/O Bitmap を使ってパススルーすることで、より簡単にかつ効率的に実装することができます。
 興味がある人はぜひ [本家 Ymir](https://github.com/smallkirby/ymir) を参照しつつ実装してみてください。
 今回は、唯一アクセスサイズによる分岐だけをおこないパススルーしています。
@@ -458,11 +523,11 @@ pub const Pic = struct {
     secondary_base: u8 = 0,
 
     const InitPhase = enum {
-        uninitialized,  // ICW1 が送信される前
-        phase1,         // ICW1 が送信された後
-        phase2,         // ICW2 が送信された後
-        phase3,         // ICW3 が送信された後
-        inited,         // ICW4 が送信され初期化終了
+        uninitialized,  // Before ICW1 is sent.
+        phase1,         // After ICW1 is sent.
+        phase2,         // After ICW2 is sent.
+        phase3,         // After ICW3 is sent.
+        initialized,    // After ICW4 is sent and initialization is complete.
     };
 
     pub fn new() Pic {
@@ -471,6 +536,16 @@ pub const Pic = struct {
             .secondary_mask = 0xFF,
         };
     }
+};
+```
+
+```ymir/arch/x86/vmx/vcpu.zig
+pub const Vcpu = struct {
+    ...
+    /// PIC
+    pic: io.Pic = io.Pic.new(),
+
+    ...
 };
 ```
 
@@ -491,12 +566,12 @@ fn handlePicIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
     switch (qual.port) {
         // Primary PIC data.
         0x21 => switch (pic.primary_phase) {
-            .uninitialized, .inited => regs.rax = pic.primary_mask,
+            .uninitialized, .initialized => regs.rax = pic.primary_mask,
             else => vcpu.abort(),
         },
         // Secondary PIC data.
         0xA1 => switch (pic.secondary_phase) {
-            .uninitialized, .inited => regs.rax = pic.secondary_mask,
+            .uninitialized, .initialized => regs.rax = pic.secondary_mask,
             else => vcpu.abort(),
         },
         else => vcpu.abort(),
@@ -528,18 +603,17 @@ fn handlePicOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
         },
         // Primary PIC data.
         0x21 => switch (pic.primary_phase) {
-            .uninitialized, .inited => pic.primary_mask = dx,
+            .uninitialized, .initialized => pic.primary_mask = dx,
             .phase1 => {
                 log.info("Primary PIC vector offset: 0x{X}", .{dx});
                 pic.primary_base = dx;
                 pic.primary_phase = .phase2;
             },
             .phase2 =>
-                if (dx != (1 << 2)) vcpu.abort(),
-                else pic.primary_phase = .phase3,
-            .phase3 => pic.primary_phase = .inited,
+                if (dx != (1 << 2)) { vcpu.abort(); },
+                else { pic.primary_phase = .phase3; },
+            .phase3 => pic.primary_phase = .initialized,
         },
-
         // Secondary PIC command.
         0xA0 => switch (dx) {
             0x11 => pic.secondary_phase = .phase1,
@@ -550,16 +624,16 @@ fn handlePicOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
         },
         // Secondary PIC data.
         0xA1 => switch (pic.secondary_phase) {
-            .uninitialized, .inited => pic.secondary_mask = dx,
+            .uninitialized, .initialized => pic.secondary_mask = dx,
             .phase1 => {
                 log.info("Secondary PIC vector offset: 0x{X}", .{dx});
                 pic.secondary_base = dx;
                 pic.secondary_phase = .phase2;
             },
             .phase2 =>
-                if (dx != 2) vcpu.abort(),
-                else pic.secondary_phase = .phase3,
-            .phase3 => pic.secondary_phase = .inited,
+                if (dx != 2) { vcpu.abort(); },
+                else { pic.secondary_phase = .phase3; },
+            .phase3 => pic.secondary_phase = .initialized,
         },
         else => vcpu.abort(),
     }
@@ -622,7 +696,6 @@ fn handleIoIn(vcpu: *Vcpu, qual: QualIo) VmxError!void {
 }
 
 fn handleIoOut(vcpu: *Vcpu, qual: QualIo) VmxError!void {
-    const regs = &vcpu.guest_regs;
     switch (qual.port) {
         0x0020...0x0021 => try handlePicOut(vcpu, qual),
         0x0040...0x0047 => try handlePitOut(vcpu, qual),

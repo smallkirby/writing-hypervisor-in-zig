@@ -40,6 +40,10 @@ VMCALL Service の `0` には `hello` という名前をつけて、ロゴとメ
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmc.zig
+const vmx = @import("common.zig");
+const Vcpu = @import("vcpu.zig").Vcpu;
+const VmxError = vmx.VmxError;
+
 const VmcallNr = enum(u64) {
     hello = 0,
 
@@ -62,6 +66,9 @@ pub fn handleVmcall(vcpu: *Vcpu) VmxError!void {
 
 <!-- i18n:skip -->
 ```ymir/arch/x86/vmx/vmc.zig
+const std = @import("std");
+const log = std.log.scoped(.vmc);
+
 const logo =
     \\   ____     __ ,---.    ,---..-./`) .-------.
     \\   \   \   /  /|    \  /    |\ .-.')|  _ _   \
@@ -78,6 +85,22 @@ fn vmcHello(_: *Vcpu) VmxError!void {
     log.info("GREETINGS FROM VMX-ROOT...\n{s}\n", .{logo});
     log.info("This OS is hypervisored by Ymir.\n", .{});
 }
+```
+
+次に、VMCALL ケースを `Vcpu.handleExit` 関数に追加します:
+
+```ymir/arch/x86/vmx/vcpu.zig
+const vmc = @import("vmc.zig");
+
+pub const Vcpu = struct {
+    ...
+    fn handleExit(self: *Self, exit_info: vmcs.ExitInfo) VmxError!void {
+        switch (exit_info.basic_reason) {
+            .vmcall => {
+                try vmc.handleVmcall(self);
+                try self.stepNextInst();
+            },
+            ...
 ```
 
 ## ymirsh
